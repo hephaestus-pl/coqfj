@@ -2,14 +2,14 @@
 CDecl . CD ::= "class" Id "extends" Id "{" [FD] KD [MD] "}" ;
 
 -- Fields Declaration
-FDecl . FD ::= Id Id ;
+FDecl . FD ::= Id Id ";" ;
 
 -- Constructor Declaration
-KDecl . KD ::= Id "(" [Fields] ")" "{" "super" "(" ID ")" ";" [Assignments] ";" "}" ;
+KDecl . KD ::= Id "(" [Fields] ")" "{" "super" "(" [Identifiers] ")" ";" [Assignments] "}" ;
 
 Field . Fields ::= Id Id ;
-Id . ID ::= Id ;
-Assignment . Assignments ::= "this" "." Id "=" Id ;
+Identifier . Identifiers ::= Id ;
+Assignment . Assignments ::= "this" "." Id "=" Id ";" ;
 
 -- Method Declaration
 MethodDecl . MD ::= Id Id "(" [Fields] ")" "{" "return" Term ";" "}" ;
@@ -22,10 +22,10 @@ TermCast . Term ::= "(" Id ")" Term ;
 
 Identifier . Id ::= String ;
 
-separator FD ";" ;
-separator MD ""  ;
+separator FD "" ;
+separator MD "" ;
 separator Fields "," ;
-separator ID "," ;
-separator Assignments ";" ;
+separator Identifiers "," ;
+separator Assignments "" ;
 separator Term "," ;
 

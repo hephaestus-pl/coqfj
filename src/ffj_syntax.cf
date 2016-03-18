@@ -1,0 +1,48 @@
+-- Class Definitions:
+-- -- A class definition can be either a class declaration or class refinements
+CDDecl . CDef ::= CD ;
+CDRef . CDef ::= CR ;
+
+-- Class Declaration
+CDecl . CD ::= "class" Id "extends" Id "{" [FD] KD [MD] "}" ;
+
+-- Class Refinements
+CRef . CR ::= "refines" "class" Id "{" [FD] KR [MD] [MR] "}" ;
+
+-- Fields Declaration
+FDecl . FD ::= Id Id ";" ;
+
+-- Constructor Declaration
+KDecl . KD ::= Id "(" [Field] ")" "{" "super" "(" [Arg] ")" ";" [Assignment] "}" ;
+
+-- Constructor Refinements 
+KRef . KR  ::= "refines" Id "(" [Field] ")" "{" "original" "(" [Arg] ")" ";" [Assignment] "}" ;
+
+Field . Field ::= Id Id ;
+FormalArg . FormalArg ::= Id Id ;
+Arg . Arg ::= Id ;
+Assignment . Assignment ::= "this" "." Id "=" Id ";" ;
+
+-- Method Declaration
+MethodDecl . MD ::= Id Id "(" [FormalArg] ")" "{" "return" Term ";" "}" ;
+
+-- Method Refinements 
+MethodRef . MR ::= "refines" Id Id "(" [FormalArg] ")" "{" "return" Term ";" "}" ;
+
+TermVar . Term ::= Id ;
+TermFieldAccess . Term ::= Term "." Id ; 
+TermMethodInvoc . Term ::= Term "." Id "(" [Term] ")" ;
+TermObjectCreation . Term ::= "new" Id "(" [Term] ")" ;
+TermCast . Term ::= "(" Id ")" Term ;
+
+Identifier . Id ::= String ;
+
+separator FD "" ;
+separator MD "" ;
+separator MR "" ;
+separator Field "," ;
+separator FormalArg "," ;
+separator Arg "," ;
+separator Assignment "" ;
+separator Term "," ;
+

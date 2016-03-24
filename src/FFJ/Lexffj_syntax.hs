@@ -1,9 +1,8 @@
 {-# LANGUAGE CPP,MagicHash #-}
-{-# LINE 3 "FJ/LexFjSyntax.x" #-}
+{-# LINE 3 "FFJ/Lexffj_syntax.x" #-}
 
 {-# OPTIONS -fno-warn-incomplete-patterns #-}
-{-# OPTIONS_GHC -w #-}
-module FJ.LexFjSyntax where
+module FFJ.Lexffj_syntax where
 
 
 
@@ -41,10 +40,9 @@ alex_deflt :: AlexAddr
 alex_deflt = AlexA# "\xff\xff\x04\x00\xff\xff\x04\x00\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff\xff"#
 
 alex_accept = listArray (0::Int,9) [AlexAccNone,AlexAccNone,AlexAccNone,AlexAccNone,AlexAccNone,AlexAccNone,AlexAccSkip,AlexAcc (alex_action_1),AlexAcc (alex_action_2),AlexAcc (alex_action_3)]
-{-# LINE 36 "FJ/LexFjSyntax.x" #-}
+{-# LINE 35 "FFJ/Lexffj_syntax.x" #-}
 
 
-tok :: (Posn -> String -> Token) -> (Posn -> String -> Token)
 tok f p s = f p s
 
 share :: String -> String
@@ -60,33 +58,21 @@ data Tok =
 
  deriving (Eq,Show,Ord)
 
-data Token =
+data Token = 
    PT  Posn Tok
  | Err Posn
   deriving (Eq,Show,Ord)
 
-tokenPos :: [Token] -> String
 tokenPos (PT (Pn _ l _) _ :_) = "line " ++ show l
 tokenPos (Err (Pn _ l _) :_) = "line " ++ show l
 tokenPos _ = "end of file"
 
-tokenPosn :: Token -> Posn
-tokenPosn (PT p _) = p
-tokenPosn (Err p) = p
-
-tokenLineCol :: Token -> (Int, Int)
-tokenLineCol = posLineCol . tokenPosn
-
-posLineCol :: Posn -> (Int, Int)
 posLineCol (Pn _ l c) = (l,c)
-
-mkPosToken :: Token -> ((Int, Int), String)
 mkPosToken t@(PT p _) = (posLineCol p, prToken t)
 
-prToken :: Token -> String
 prToken t = case t of
   PT _ (TS s _) -> s
-  PT _ (TL s)   -> show s
+  PT _ (TL s)   -> s
   PT _ (TI s)   -> s
   PT _ (TV s)   -> s
   PT _ (TD s)   -> s
@@ -103,8 +89,7 @@ eitherResIdent tv s = treeFind resWords
                               | s > a  = treeFind right
                               | s == a = t
 
-resWords :: BTree
-resWords = b "extends" 8 (b "." 4 (b ")" 2 (b "(" 1 N N) (b "," 3 N N)) (b "=" 6 (b ";" 5 N N) (b "class" 7 N N))) (b "this" 12 (b "return" 10 (b "new" 9 N N) (b "super" 11 N N)) (b "}" 14 (b "{" 13 N N) N))
+resWords = b "new" 9 (b ";" 5 (b "," 3 (b ")" 2 (b "(" 1 N N) N) (b "." 4 N N)) (b "class" 7 (b "=" 6 N N) (b "extends" 8 N N))) (b "super" 13 (b "refines" 11 (b "original" 10 N N) (b "return" 12 N N)) (b "{" 15 (b "this" 14 N N) (b "}" 16 N N)))
    where b s n = let bs = id s
                   in B bs (TS bs n)
 
@@ -165,7 +150,7 @@ alexGetByte (p, _, [], s) =
 alexInputPrevChar :: AlexInput -> Char
 alexInputPrevChar (p, c, bs, s) = c
 
--- | Encode a Haskell String to a list of Word8 values, in UTF8 format.
+  -- | Encode a Haskell String to a list of Word8 values, in UTF8 format.
 utf8Encode :: Char -> [Word8]
 utf8Encode = map fromIntegral . go . ord
  where

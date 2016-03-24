@@ -2,7 +2,7 @@
 -- Copyright (C) 2004  Author:  Aarne Ranta
 
 -- This file comes with NO WARRANTY and may be used FOR ANY PURPOSE.
-module FJ.ErrM where
+module FFJ.ErrM where
 
 -- the Error monad: like Maybe type with error msgs
 

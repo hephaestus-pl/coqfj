@@ -79,16 +79,28 @@ instance Print Double where
 
 
 
+instance Print Id where
+  prt _ (Id i) = doc (showString ( i))
+
+
+
+instance Print CDList where
+  prt i e = case e of
+   CDList cdefs exp -> prPrec i 0 (concatD [prt 0 cdefs , prt 0 exp])
+
 
 instance Print CDef where
   prt i e = case e of
    CDDecl cd -> prPrec i 0 (concatD [prt 0 cd])
    CDRef cr -> prPrec i 0 (concatD [prt 0 cr])
 
+  prtList es = case es of
+   [] -> (concatD [])
+   x:xs -> (concatD [prt 0 x , prt 0 xs])
 
 instance Print CD where
   prt i e = case e of
-   CDecl id0 id fds kd mds -> prPrec i 0 (concatD [doc (showString "class") , prt 0 id0 , doc (showString "extends") , prt 0 id , doc (showString "{") , prt 0 fds , prt 0 kd , prt 0 mds , doc (showString "}")])
+   CDecl id type' fds kd mds -> prPrec i 0 (concatD [doc (showString "class") , prt 0 id , doc (showString "extends") , prt 0 type' , doc (showString "{") , prt 0 fds , prt 0 kd , prt 0 mds , doc (showString "}")])
 
 
 instance Print CR where
@@ -98,7 +110,7 @@ instance Print CR where
 
 instance Print FD where
   prt i e = case e of
-   FDecl id0 id -> prPrec i 0 (concatD [prt 0 id0 , prt 0 id , doc (showString ";")])
+   FDecl type' id -> prPrec i 0 (concatD [prt 0 type' , prt 0 id , doc (showString ";")])
 
   prtList es = case es of
    [] -> (concatD [])
@@ -116,7 +128,7 @@ instance Print KR where
 
 instance Print Field where
   prt i e = case e of
-   Field id0 id -> prPrec i 0 (concatD [prt 0 id0 , prt 0 id])
+   Field type' id -> prPrec i 0 (concatD [prt 0 type' , prt 0 id])
 
   prtList es = case es of
    [] -> (concatD [])
@@ -125,7 +137,7 @@ instance Print Field where
 
 instance Print FormalArg where
   prt i e = case e of
-   FormalArg id0 id -> prPrec i 0 (concatD [prt 0 id0 , prt 0 id])
+   FormalArg type' id -> prPrec i 0 (concatD [prt 0 type' , prt 0 id])
 
   prtList es = case es of
    [] -> (concatD [])
@@ -151,7 +163,7 @@ instance Print Assignment where
 
 instance Print MD where
   prt i e = case e of
-   MethodDecl id0 id formalargs term -> prPrec i 0 (concatD [prt 0 id0 , prt 0 id , doc (showString "(") , prt 0 formalargs , doc (showString ")") , doc (showString "{") , doc (showString "return") , prt 0 term , doc (showString ";") , doc (showString "}")])
+   MethodDecl type' id formalargs term -> prPrec i 0 (concatD [prt 0 type' , prt 0 id , doc (showString "(") , prt 0 formalargs , doc (showString ")") , doc (showString "{") , doc (showString "return") , prt 0 term , doc (showString ";") , doc (showString "}")])
 
   prtList es = case es of
    [] -> (concatD [])
@@ -165,22 +177,28 @@ instance Print MR where
    [] -> (concatD [])
    x:xs -> (concatD [prt 0 x , prt 0 xs])
 
+instance Print Type where
+  prt i e = case e of
+   TypeObject  -> prPrec i 0 (concatD [doc (showString "Object")])
+   TypeId id -> prPrec i 0 (concatD [prt 0 id])
+
+
 instance Print Term where
   prt i e = case e of
    TermVar id -> prPrec i 0 (concatD [prt 0 id])
    TermFieldAccess term id -> prPrec i 0 (concatD [prt 0 term , doc (showString ".") , prt 0 id])
    TermMethodInvoc term id terms -> prPrec i 0 (concatD [prt 0 term , doc (showString ".") , prt 0 id , doc (showString "(") , prt 0 terms , doc (showString ")")])
-   TermObjectCreation id terms -> prPrec i 0 (concatD [doc (showString "new") , prt 0 id , doc (showString "(") , prt 0 terms , doc (showString ")")])
-   TermCast id term -> prPrec i 0 (concatD [doc (showString "(") , prt 0 id , doc (showString ")") , prt 0 term])
+   TermExp exp -> prPrec i 0 (concatD [prt 0 exp])
 
   prtList es = case es of
    [] -> (concatD [])
    [x] -> (concatD [prt 0 x])
    x:xs -> (concatD [prt 0 x , doc (showString ",") , prt 0 xs])
 
-instance Print Id where
+instance Print Exp where
   prt i e = case e of
-   Identifier str -> prPrec i 0 (concatD [prt 0 str])
+   CastExp id term -> prPrec i 0 (concatD [doc (showString "(") , prt 0 id , doc (showString ")") , prt 0 term])
+   NewExp id terms -> prPrec i 0 (concatD [doc (showString "new") , prt 0 id , doc (showString "(") , prt 0 terms , doc (showString ")")])
 
 
 

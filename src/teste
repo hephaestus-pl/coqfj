@@ -1,0 +1,8 @@
+class teste extends object{
+teste(){super();}
+}
+class teste extends object{
+teste(){super();}
+}
+
+new teste()

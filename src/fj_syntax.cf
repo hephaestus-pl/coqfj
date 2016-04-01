@@ -1,4 +1,5 @@
 -- Class Declaration
+-- CList . CL ::= [CD] ;
 CDecl . CD ::= "class" Id "extends" Id "{" [FD] KD [MD] "}" ;
 
 -- Fields Declaration
@@ -23,6 +24,7 @@ TermCast . Term ::= "(" Id ")" Term ;
 
 Identifier . Id ::= String ;
 
+separator CD "" ;
 separator FD "" ;
 separator MD "" ;
 separator Field "," ;

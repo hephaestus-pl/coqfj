@@ -9,6 +9,16 @@ type Result = Err String
 failure :: Show a => a -> Result
 failure x = Bad $ "Undefined case: " ++ show x
 
+transId :: Id -> Result
+transId x = case x of
+  Id str  -> failure x
+
+
+transCDList :: CDList -> Result
+transCDList x = case x of
+  CDList cdefs exp  -> failure x
+
+
 transCDef :: CDef -> Result
 transCDef x = case x of
   CDDecl cd  -> failure x
@@ -17,7 +27,7 @@ transCDef x = case x of
 
 transCD :: CD -> Result
 transCD x = case x of
-  CDecl id0 id fds kd mds  -> failure x
+  CDecl id type' fds kd mds  -> failure x
 
 
 transCR :: CR -> Result
@@ -27,7 +37,7 @@ transCR x = case x of
 
 transFD :: FD -> Result
 transFD x = case x of
-  FDecl id0 id  -> failure x
+  FDecl type' id  -> failure x
 
 
 transKD :: KD -> Result
@@ -42,12 +52,12 @@ transKR x = case x of
 
 transField :: Field -> Result
 transField x = case x of
-  Field id0 id  -> failure x
+  Field type' id  -> failure x
 
 
 transFormalArg :: FormalArg -> Result
 transFormalArg x = case x of
-  FormalArg id0 id  -> failure x
+  FormalArg type' id  -> failure x
 
 
 transArg :: Arg -> Result
@@ -62,7 +72,7 @@ transAssignment x = case x of
 
 transMD :: MD -> Result
 transMD x = case x of
-  MethodDecl id0 id formalargs term  -> failure x
+  MethodDecl type' id formalargs term  -> failure x
 
 
 transMR :: MR -> Result
@@ -70,18 +80,24 @@ transMR x = case x of
   MethodRef id0 id formalargs term  -> failure x
 
 
+transType :: Type -> Result
+transType x = case x of
+  TypeObject  -> failure x
+  TypeId id  -> failure x
+
+
 transTerm :: Term -> Result
 transTerm x = case x of
   TermVar id  -> failure x
   TermFieldAccess term id  -> failure x
   TermMethodInvoc term id terms  -> failure x
-  TermObjectCreation id terms  -> failure x
-  TermCast id term  -> failure x
+  TermExp exp  -> failure x
 
 
-transId :: Id -> Result
-transId x = case x of
-  Identifier str  -> failure x
+transExp :: Exp -> Result
+transExp x = case x of
+  CastExp id term  -> failure x
+  NewExp id terms  -> failure x
 
 
 

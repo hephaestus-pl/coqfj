@@ -25,4 +25,4 @@ distclean_ffj: clean
 
 distclean_fj: clean
 	-rm -f FJ/DocFjSyntax.* FJ/LexFjSyntax.* FJ/ParFjSyntax.* FJ/LayoutFjSyntax.* FJ/SkelFjSyntax.* FJ/PrintFjSyntax.* FJ/TestFjSyntax.* FJ/AbsFjSyntax.* FJ/TestFjSyntax FJ/ErrM.* FJ/SharedString.* FJ/ComposOp.* FJ/fj_syntax.dtd FJ/XMLFjSyntax.* Makefile*
-		-rmdir -p FJ/
+	-rmdir -p FJ/

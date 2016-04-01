@@ -25,9 +25,10 @@ $u = [\0-\255]          -- universal: any character
 
 $white+ ;
 @rsyms { tok (\p s -> PT p (eitherResIdent (TV . share) s)) }
+$l ($l | $d | \_)* { tok (\p s -> PT p (eitherResIdent (T_Id . share) s)) }
 
 $l $i*   { tok (\p s -> PT p (eitherResIdent (TV . share) s)) }
-\" ([$u # [\" \\ \n]] | (\\ (\" | \\ | \' | n | t)))* \"{ tok (\p s -> PT p (TL $ share $ unescapeInitTail s)) }
+
 
 
 
@@ -46,6 +47,7 @@ data Tok =
  | TV !String         -- identifiers
  | TD !String         -- double precision float literals
  | TC !String         -- character literals
+ | T_Id !String
 
  deriving (Eq,Show,Ord)
 
@@ -68,6 +70,7 @@ prToken t = case t of
   PT _ (TV s)   -> s
   PT _ (TD s)   -> s
   PT _ (TC s)   -> s
+  PT _ (T_Id s) -> s
 
 
 data BTree = N | B String Tok BTree BTree deriving (Show)
@@ -80,7 +83,7 @@ eitherResIdent tv s = treeFind resWords
                               | s > a  = treeFind right
                               | s == a = t
 
-resWords = b "new" 9 (b ";" 5 (b "," 3 (b ")" 2 (b "(" 1 N N) N) (b "." 4 N N)) (b "class" 7 (b "=" 6 N N) (b "extends" 8 N N))) (b "super" 13 (b "refines" 11 (b "original" 10 N N) (b "return" 12 N N)) (b "{" 15 (b "this" 14 N N) (b "}" 16 N N)))
+resWords = b "extends" 9 (b ";" 5 (b "," 3 (b ")" 2 (b "(" 1 N N) N) (b "." 4 N N)) (b "Object" 7 (b "=" 6 N N) (b "class" 8 N N))) (b "super" 14 (b "refines" 12 (b "original" 11 (b "new" 10 N N) N) (b "return" 13 N N)) (b "{" 16 (b "this" 15 N N) (b "}" 17 N N)))
    where b s n = let bs = id s
                   in B bs (TS bs n)
 

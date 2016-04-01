@@ -8,6 +8,7 @@ import FFJ.ErrM
 
 }
 
+%name pCDList CDList
 %name pCDef CDef
 %name pCD CD
 %name pCR CR
@@ -20,8 +21,10 @@ import FFJ.ErrM
 %name pAssignment Assignment
 %name pMD MD
 %name pMR MR
+%name pType Type
 %name pTerm Term
-%name pId Id
+%name pExp Exp
+%name pListCDef ListCDef
 %name pListFD ListFD
 %name pListMD ListMD
 %name pListMR ListMR
@@ -42,24 +45,29 @@ import FFJ.ErrM
  '.' { PT _ (TS _ 4) }
  ';' { PT _ (TS _ 5) }
  '=' { PT _ (TS _ 6) }
- 'class' { PT _ (TS _ 7) }
- 'extends' { PT _ (TS _ 8) }
- 'new' { PT _ (TS _ 9) }
- 'original' { PT _ (TS _ 10) }
- 'refines' { PT _ (TS _ 11) }
- 'return' { PT _ (TS _ 12) }
- 'super' { PT _ (TS _ 13) }
- 'this' { PT _ (TS _ 14) }
- '{' { PT _ (TS _ 15) }
- '}' { PT _ (TS _ 16) }
+ 'Object' { PT _ (TS _ 7) }
+ 'class' { PT _ (TS _ 8) }
+ 'extends' { PT _ (TS _ 9) }
+ 'new' { PT _ (TS _ 10) }
+ 'original' { PT _ (TS _ 11) }
+ 'refines' { PT _ (TS _ 12) }
+ 'return' { PT _ (TS _ 13) }
+ 'super' { PT _ (TS _ 14) }
+ 'this' { PT _ (TS _ 15) }
+ '{' { PT _ (TS _ 16) }
+ '}' { PT _ (TS _ 17) }
 
-L_quoted { PT _ (TL $$) }
+L_Id { PT _ (T_Id $$) }
 L_err    { _ }
 
 
 %%
 
-String  :: { String }  : L_quoted {  $1 }
+Id    :: { Id} : L_Id { Id ($1)}
+
+CDList :: { CDList }
+CDList : ListCDef Exp { CDList (reverse $1) $2 } 
+
 
 CDef :: { CDef }
 CDef : CD { CDDecl $1 } 
@@ -67,7 +75,7 @@ CDef : CD { CDDecl $1 }
 
 
 CD :: { CD }
-CD : 'class' Id 'extends' Id '{' ListFD KD ListMD '}' { CDecl $2 $4 (reverse $6) $7 (reverse $8) } 
+CD : 'class' Id 'extends' Type '{' ListFD KD ListMD '}' { CDecl $2 $4 (reverse $6) $7 (reverse $8) } 
 
 
 CR :: { CR }
@@ -75,7 +83,7 @@ CR : 'refines' 'class' Id '{' ListFD KR ListMD ListMR '}' { CRef $3 (reverse $5)
 
 
 FD :: { FD }
-FD : Id Id ';' { FDecl $1 $2 } 
+FD : Type Id ';' { FDecl $1 $2 } 
 
 
 KD :: { KD }
@@ -87,11 +95,11 @@ KR : 'refines' Id '(' ListField ')' '{' 'original' '(' ListArg ')' ';' ListAssig
 
 
 Field :: { Field }
-Field : Id Id { Field $1 $2 } 
+Field : Type Id { Field $1 $2 } 
 
 
 FormalArg :: { FormalArg }
-FormalArg : Id Id { FormalArg $1 $2 } 
+FormalArg : Type Id { FormalArg $1 $2 } 
 
 
 Arg :: { Arg }
@@ -103,23 +111,33 @@ Assignment : 'this' '.' Id '=' Id ';' { Assignment $3 $5 }
 
 
 MD :: { MD }
-MD : Id Id '(' ListFormalArg ')' '{' 'return' Term ';' '}' { MethodDecl $1 $2 $4 $8 } 
+MD : Type Id '(' ListFormalArg ')' '{' 'return' Term ';' '}' { MethodDecl $1 $2 $4 $8 } 
 
 
 MR :: { MR }
 MR : 'refines' Id Id '(' ListFormalArg ')' '{' 'return' Term ';' '}' { MethodRef $2 $3 $5 $9 } 
 
 
+Type :: { Type }
+Type : 'Object' { TypeObject } 
+  | Id { TypeId $1 }
+
+
 Term :: { Term }
 Term : Id { TermVar $1 } 
   | Term '.' Id { TermFieldAccess $1 $3 }
   | Term '.' Id '(' ListTerm ')' { TermMethodInvoc $1 $3 $5 }
-  | 'new' Id '(' ListTerm ')' { TermObjectCreation $2 $4 }
-  | '(' Id ')' Term { TermCast $2 $4 }
+  | Exp { TermExp $1 }
 
 
-Id :: { Id }
-Id : String { Identifier $1 } 
+Exp :: { Exp }
+Exp : '(' Id ')' Term { CastExp $2 $4 } 
+  | 'new' Id '(' ListTerm ')' { NewExp $2 $4 }
+
+
+ListCDef :: { [CDef] }
+ListCDef : {- empty -} { [] } 
+  | ListCDef CDef { flip (:) $1 $2 }
 
 
 ListFD :: { [FD] }

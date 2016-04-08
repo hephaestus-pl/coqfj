@@ -8,21 +8,23 @@ ffj:
 	ghc --make FFJ/Testffj_syntax.hs -o FFJ/Testffj_syntax
 
 fj:
-	happy -gca FJ/ParFjSyntax.y
-	alex -g FJ/LexFjSyntax.x
-	ghc --make FJ/TestFjSyntax.hs -o FJ/TestFjSyntax
+	happy -gca FJ/Syntax/Parfj_syntax.y
+	alex -g FJ/Syntax/Lexfj_syntax.x
+	@#(cd FJ/Syntax/; latex Docfj_syntax.tex; dvips Docfj_syntax.dvi -o Docfj_syntax.ps)
+	ghc --make FJ/Syntax/Testfj_syntax.hs -o FJ/Syntax/Testfj_syntax
 
-clean_ffj:
+cclean_ffj:
 	-rm -f FFJ/*.log FFJ/*.aux FFJ/*.hi FFJ/*.o FFJ/*.dvi
 	-rm -f FFJ/Docffj_syntax.ps
 
 clean_fj:
-	-rm -f FJ/*.log FJ/*.aux FJ/*.hi FJ/*.o FJ/*.dvi
+	-rm -f FJ/Syntax/*.log FJ/Syntax/*.aux FJ/Syntax/*.hi FJ/Syntax/*.o FJ/Syntax/*.dvi
 
 distclean_ffj: clean
 	-rm -f FFJ/Docffj_syntax.* FFJ/Lexffj_syntax.* FFJ/Parffj_syntax.* FFJ/Layoutffj_syntax.* FFJ/Skelffj_syntax.* FFJ/Printffj_syntax.* FFJ/Testffj_syntax.* FFJ/Absffj_syntax.* FFJ/Testffj_syntax FFJ/ErrM.* FFJ/SharedString.* FFJ/ffj_syntax.dtd FFJ/XMLffj_syntax.* Makefile*
 	-rmdir -p FFJ/
 
 distclean_fj: clean
-	-rm -f FJ/DocFjSyntax.* FJ/LexFjSyntax.* FJ/ParFjSyntax.* FJ/LayoutFjSyntax.* FJ/SkelFjSyntax.* FJ/PrintFjSyntax.* FJ/TestFjSyntax.* FJ/AbsFjSyntax.* FJ/TestFjSyntax FJ/ErrM.* FJ/SharedString.* FJ/ComposOp.* FJ/fj_syntax.dtd FJ/XMLFjSyntax.* Makefile*
-	-rmdir -p FJ/
+	-rm -f FJ/Syntax/DocFjSyntax.* FJ/Syntax/LexFjSyntax.* FJ/Syntax/ParFjSyntax.* FJ/Syntax/LayoutFjSyntax.* FJ/Syntax/SkelFjSyntax.* FJ/Syntax/PrintFjSyntax.* FJ/Syntax/TestFjSyntax.* FJ/Syntax/AbsFjSyntax.* FJ/Syntax/TestFjSyntax FJ/Syntax/ErrM.* FJ/Syntax/SharedString.* FJ/Syntax/ComposOp.* FJ/Syntax/fj_syntax.dtd FJ/Syntax/XMLFjSyntax.* Makefile*
+	-rmdir -p FJ/Syntax/
+	-rm dir -p FJ

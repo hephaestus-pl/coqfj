@@ -1,3 +1,0 @@
-class "teste" extends "object"{
-       "teste" () { super(); } 
-}

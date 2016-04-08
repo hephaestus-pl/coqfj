@@ -1,14 +1,14 @@
 -- Class Declaration
 
-CList . CL ::= [CD] Exp;
+CProgram . Program ::= [ClassDecl] Exp;
 
-CDecl . CD ::= "class" Id "extends" Type "{" [FD] KD [MD] "}" ;
+CDecl . ClassDecl ::= "class" Id "extends" Type "{" [FieldDecl] Constructor [MethodDecl] "}" ;
 
 -- Fields Declaration
-FDecl . FD ::= Type Id ";" ;
+FDecl . FieldDecl ::= Type Id ";" ;
 
 -- Constructor Declaration
-KDecl . KD ::= Id "(" [Field] ")" "{" "super" "(" [Arg] ")" ";" [Assignment] "}" ;
+KDecl . Constructor ::= Id "(" [Field] ")" "{" "super" "(" [Arg] ")" ";" [Assignment] "}" ;
 
 Field . Field ::= Type Id ;
 FormalArg . FormalArg ::= Type Id ;
@@ -16,7 +16,7 @@ Arg . Arg ::= Id ;
 Assignment . Assignment ::= "this" "." Id "=" Id ";" ;
 
 -- Method Declaration
-MethodDecl . MD ::= Type Id "(" [FormalArg] ")" "{" "return" Term ";" "}" ;
+MethodDecl . MethodDecl ::= Type Id "(" [FormalArg] ")" "{" "return" Term ";" "}" ;
 
 TermVar . Term ::= Id ;
 TermFieldAccess . Term ::= Term "." Id ; 
@@ -26,14 +26,14 @@ TermExp . Term ::= Exp ;
 CastExp . Exp ::= "(" Type")" Term ;
 NewExp . Exp ::= "new" Id "(" [Term] ")" ;
 
-Identifier . Id ::= String ;
+token Id (letter (letter | digit | '_')*) ;
 
 TypeObject . Type ::= "Object" ;
 TypeId . Type ::= Id ;
 
-separator CD "" ;
-separator FD "" ;
-separator MD "" ;
+separator ClassDecl "" ;
+separator FieldDecl "" ;
+separator MethodDecl "" ;
 separator Field "," ;
 separator FormalArg "," ;
 separator Arg "," ;

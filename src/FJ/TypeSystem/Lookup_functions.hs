@@ -1,6 +1,6 @@
-module FJ.Meta_functions where
+module FJ.TypeSystem.Lookup_functions where
 
-import FJ.AbsFjSyntax
+import FJ.Syntax.Absfj_syntax
 
 
 get_ct :: Prog -> [CD]

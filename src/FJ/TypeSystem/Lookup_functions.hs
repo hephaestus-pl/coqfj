@@ -1,5 +1,6 @@
 module FJ.TypeSystem.Lookup_functions where
 
+import FJ.TypeSystem.Types
 import FJ.Syntax.Absfj_syntax
 
 

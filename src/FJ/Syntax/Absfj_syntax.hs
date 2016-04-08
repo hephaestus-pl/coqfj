@@ -11,11 +11,6 @@ data ClassDecl =
    CDecl Id Type [FieldDecl] Constructor [MethodDecl]
   deriving (Eq,Ord,Show)
 
-type CTEntry = (Id, ClassDecl)
-
-newtype ClassTable = ClassTable [CTEntry]
-  deriving (Eq,Ord,Show)
-
 data FieldDecl =
    FDecl Type Id
   deriving (Eq,Ord,Show)

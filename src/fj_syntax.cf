@@ -2,34 +2,34 @@
 
 CProgram . Program ::= [ClassDecl] Exp;
 
-CDecl . ClassDecl ::= "class" Id "extends" Type "{" [FieldDecl] Constructor [MethodDecl] "}" ;
+CDecl . ClassDecl ::= "class" Id "extends" ClassName "{" [FieldDecl] Constructor [MethodDecl] "}" ;
 
 -- Fields Declaration
-FDecl . FieldDecl ::= Type Id ";" ;
+FDecl . FieldDecl ::= ClassName Id ";" ;
 
 -- Constructor Declaration
 KDecl . Constructor ::= Id "(" [Field] ")" "{" "super" "(" [Arg] ")" ";" [Assignment] "}" ;
 
-Field . Field ::= Type Id ;
-FormalArg . FormalArg ::= Type Id ;
+Field . Field ::= ClassName Id ;
+FormalArg . FormalArg ::= ClassName ;
 Arg . Arg ::= Id ;
 Assignment . Assignment ::= "this" "." Id "=" Id ";" ;
 
 -- Method Declaration
-MethodDecl . MethodDecl ::= Type Id "(" [FormalArg] ")" "{" "return" Term ";" "}" ;
+MethodDecl . MethodDecl ::= ClassName Id "(" [FormalArg] ")" "{" "return" Term ";" "}" ;
 
 TermVar . Term ::= Id ;
 TermFieldAccess . Term ::= Term "." Id ; 
 TermMethodInvoc . Term ::= Term "." Id "(" [Term] ")" ;
 TermExp . Term ::= Exp ;
 
-CastExp . Exp ::= "(" Type")" Term ;
+CastExp . Exp ::= "(" ClassName ")" Term ;
 NewExp . Exp ::= "new" Id "(" [Term] ")" ;
 
 token Id (letter (letter | digit | '_')*) ;
 
-TypeObject . Type ::= "Object" ;
-TypeId . Type ::= Id ;
+ClassObject . ClassName ::= "Object" ;
+ClassId . ClassName ::= Id ;
 
 separator ClassDecl "" ;
 separator FieldDecl "" ;

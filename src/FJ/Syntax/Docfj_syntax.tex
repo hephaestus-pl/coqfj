@@ -63,11 +63,11 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{ClassDecl}} & {\arrow}  &{\terminal{class}} {\nonterminal{Id}} {\terminal{extends}} {\nonterminal{Type}} {\terminal{\{}} {\nonterminal{ListFieldDecl}} {\nonterminal{Constructor}} {\nonterminal{ListMethodDecl}} {\terminal{\}}}  \\
+{\nonterminal{ClassDecl}} & {\arrow}  &{\terminal{class}} {\nonterminal{Id}} {\terminal{extends}} {\nonterminal{ClassName}} {\terminal{\{}} {\nonterminal{ListFieldDecl}} {\nonterminal{Constructor}} {\nonterminal{ListMethodDecl}} {\terminal{\}}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{FieldDecl}} & {\arrow}  &{\nonterminal{Type}} {\nonterminal{Id}} {\terminal{;}}  \\
+{\nonterminal{FieldDecl}} & {\arrow}  &{\nonterminal{ClassName}} {\nonterminal{Id}} {\terminal{;}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -75,11 +75,11 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Field}} & {\arrow}  &{\nonterminal{Type}} {\nonterminal{Id}}  \\
+{\nonterminal{Field}} & {\arrow}  &{\nonterminal{ClassName}} {\nonterminal{Id}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{FormalArg}} & {\arrow}  &{\nonterminal{Type}} {\nonterminal{Id}}  \\
+{\nonterminal{FormalArg}} & {\arrow}  &{\nonterminal{ClassName}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -91,7 +91,7 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{MethodDecl}} & {\arrow}  &{\nonterminal{Type}} {\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListFormalArg}} {\terminal{)}} {\terminal{\{}} {\terminal{return}} {\nonterminal{Term}} {\terminal{;}} {\terminal{\}}}  \\
+{\nonterminal{MethodDecl}} & {\arrow}  &{\nonterminal{ClassName}} {\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListFormalArg}} {\terminal{)}} {\terminal{\{}} {\terminal{return}} {\nonterminal{Term}} {\terminal{;}} {\terminal{\}}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -102,12 +102,12 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Exp}} & {\arrow}  &{\terminal{(}} {\nonterminal{Type}} {\terminal{)}} {\nonterminal{Term}}  \\
+{\nonterminal{Exp}} & {\arrow}  &{\terminal{(}} {\nonterminal{ClassName}} {\terminal{)}} {\nonterminal{Term}}  \\
  & {\delimit}  &{\terminal{new}} {\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListTerm}} {\terminal{)}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Type}} & {\arrow}  &{\terminal{Object}}  \\
+{\nonterminal{ClassName}} & {\arrow}  &{\terminal{Object}}  \\
  & {\delimit}  &{\nonterminal{Id}}  \\
 \end{tabular}\\
 

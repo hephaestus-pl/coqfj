@@ -19,7 +19,7 @@ import FJ.Syntax.ErrM
 %name pMethodDecl MethodDecl
 %name pTerm Term
 %name pExp Exp
-%name pType Type
+%name pClassName ClassName
 %name pListClassDecl ListClassDecl
 %name pListFieldDecl ListFieldDecl
 %name pListMethodDecl ListMethodDecl
@@ -63,11 +63,11 @@ Program : ListClassDecl Exp { CProgram (reverse $1) $2 }
 
 
 ClassDecl :: { ClassDecl }
-ClassDecl : 'class' Id 'extends' Type '{' ListFieldDecl Constructor ListMethodDecl '}' { CDecl $2 $4 (reverse $6) $7 (reverse $8) } 
+ClassDecl : 'class' Id 'extends' ClassName '{' ListFieldDecl Constructor ListMethodDecl '}' { CDecl $2 $4 (reverse $6) $7 (reverse $8) } 
 
 
 FieldDecl :: { FieldDecl }
-FieldDecl : Type Id ';' { FDecl $1 $2 } 
+FieldDecl : ClassName Id ';' { FDecl $1 $2 } 
 
 
 Constructor :: { Constructor }
@@ -75,11 +75,11 @@ Constructor : Id '(' ListField ')' '{' 'super' '(' ListArg ')' ';' ListAssignmen
 
 
 Field :: { Field }
-Field : Type Id { Field $1 $2 } 
+Field : ClassName Id { Field $1 $2 } 
 
 
 FormalArg :: { FormalArg }
-FormalArg : Type Id { FormalArg $1 $2 } 
+FormalArg : ClassName { FormalArg $1 } 
 
 
 Arg :: { Arg }
@@ -91,7 +91,7 @@ Assignment : 'this' '.' Id '=' Id ';' { Assignment $3 $5 }
 
 
 MethodDecl :: { MethodDecl }
-MethodDecl : Type Id '(' ListFormalArg ')' '{' 'return' Term ';' '}' { MethodDecl $1 $2 $4 $8 } 
+MethodDecl : ClassName Id '(' ListFormalArg ')' '{' 'return' Term ';' '}' { MethodDecl $1 $2 $4 $8 } 
 
 
 Term :: { Term }
@@ -102,13 +102,13 @@ Term : Id { TermVar $1 }
 
 
 Exp :: { Exp }
-Exp : '(' Type ')' Term { CastExp $2 $4 } 
+Exp : '(' ClassName ')' Term { CastExp $2 $4 } 
   | 'new' Id '(' ListTerm ')' { NewExp $2 $4 }
 
 
-Type :: { Type }
-Type : 'Object' { TypeObject } 
-  | Id { TypeId $1 }
+ClassName :: { ClassName }
+ClassName : 'Object' { ClassObject } 
+  | Id { ClassId $1 }
 
 
 ListClassDecl :: { [ClassDecl] }

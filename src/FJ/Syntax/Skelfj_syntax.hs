@@ -21,12 +21,12 @@ transProgram x = case x of
 
 transClassDecl :: ClassDecl -> Result
 transClassDecl x = case x of
-  CDecl id type' fielddecls constructor methoddecls  -> failure x
+  CDecl id classname fielddecls constructor methoddecls  -> failure x
 
 
 transFieldDecl :: FieldDecl -> Result
 transFieldDecl x = case x of
-  FDecl type' id  -> failure x
+  FDecl classname id  -> failure x
 
 
 transConstructor :: Constructor -> Result
@@ -36,12 +36,12 @@ transConstructor x = case x of
 
 transField :: Field -> Result
 transField x = case x of
-  Field type' id  -> failure x
+  Field classname id  -> failure x
 
 
 transFormalArg :: FormalArg -> Result
 transFormalArg x = case x of
-  FormalArg type' id  -> failure x
+  FormalArg classname  -> failure x
 
 
 transArg :: Arg -> Result
@@ -56,7 +56,7 @@ transAssignment x = case x of
 
 transMethodDecl :: MethodDecl -> Result
 transMethodDecl x = case x of
-  MethodDecl type' id formalargs term  -> failure x
+  MethodDecl classname id formalargs term  -> failure x
 
 
 transTerm :: Term -> Result
@@ -69,14 +69,14 @@ transTerm x = case x of
 
 transExp :: Exp -> Result
 transExp x = case x of
-  CastExp type' term  -> failure x
+  CastExp classname term  -> failure x
   NewExp id terms  -> failure x
 
 
-transType :: Type -> Result
-transType x = case x of
-  TypeObject  -> failure x
-  TypeId id  -> failure x
+transClassName :: ClassName -> Result
+transClassName x = case x of
+  ClassObject  -> failure x
+  ClassId id  -> failure x
 
 
 

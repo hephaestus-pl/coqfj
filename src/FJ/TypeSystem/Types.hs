@@ -7,7 +7,8 @@ type CTEntry = (Id, ClassDecl)
 newtype ClassTable = ClassTable [CTEntry]
   deriving (Eq,Ord,Show)
 
-data Type =
-  | BType CTEntry
-  | FType Type BType 
+data Type = 
+    BType CTEntry
+  | FType Type CTEntry 
+  deriving (Eq,Ord,Show)
 

@@ -43,15 +43,14 @@ superclassOf :: ClassDecl -> ClassName
 superclassOf (CDecl _ superclass _ _ _ ) = superclass
 
 classCompare :: ClassName -> CTEntry -> Bool
-classCompare cname cte = 
-  case cname of ClassObject -> False
-                ClassId id -> id == fst cte
-  
+classCOmpare cname ClassObject = False
+classCOmpare cname (ClassId id) = fst cte
+ 
 findClass :: ClassName -> ClassTable -> ClassDecl
-findClass cname (ClassTable ct) = snd (head (filter (classCompare cname) ct))
+findClass cname (ClassTable ct) = snd $ head $ filter (classCompare cname) ct
 
 findMethod :: Id -> [MethodDecl] -> MethodDecl
-findMethod mname (m@(MethodDecl _ id _ _):ms) =
+findMethod mname m@(MethodDecl _ id _ _):ms =
   if mname == id
   	then m
   	else findMethod mname ms
@@ -69,27 +68,6 @@ mbodyof mname (CDecl _ _ _ _ mlist) = (formalargs, term) where
 
 mbody :: Id -> ClassName -> ClassTable -> ([FormalArg], Term)
 mbody mname cname ct = mbodyof mname (findClass cname ct)
-
--- fields :: ClassTable -> ClassName -> [FieldDecl]
-
-
-{-
-transFD_Field :: [FD] -> [Field]
-transFD_Field [] = []
-transFD_Field ((FDecl t i):xs) = (Field t i):transFD_Field xs
-
-
-field_lookup' :: [CD] -> [CD] -> ClassName -> [Field]
-field_lookup' _ _ TypeObject = []
-field_lookup' [] _ _ = []
-field_lookup' ct@(CDecl id parent_class fields  _ _ : xs) consumed (TypeId id') = 
-            if id == id' then (transFD_Field fields) ++ (field_lookup (ct++consumed) parent_class)
-            else field_lookup' xs (x:consumed) (TypeId id') 
-  where x = head ct
-
-field_lookup :: [CD] -> Type -> [Field]
-field_lookup ct ty = field_lookup' ct [] ty
--}
 
 test_prog = CProgram [CDecl (Id "teste") ClassObject [FDecl ClassObject (Id "a")] (KDecl (Id "teste") [Field ClassObject (Id "a")] [] [Assignment (Id "a") (Id "a")]) [], CDecl (Id "teste2") (ClassId $ Id "teste") [] (KDecl (Id "teste2") [] [] []) []] (NewExp (Id "teste") [])
 

@@ -11,7 +11,7 @@ FDecl . FieldDecl ::= ClassName Id ";" ;
 KDecl . Constructor ::= Id "(" [Field] ")" "{" "super" "(" [Arg] ")" ";" [Assignment] "}" ;
 
 Field . Field ::= ClassName Id ;
-FormalArg . FormalArg ::= ClassName ;
+FormalArg . FormalArg ::= ClassName Id;
 Arg . Arg ::= Id ;
 Assignment . Assignment ::= "this" "." Id "=" Id ";" ;
 

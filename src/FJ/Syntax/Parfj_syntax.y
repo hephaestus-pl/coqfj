@@ -79,7 +79,7 @@ Field : ClassName Id { Field $1 $2 }
 
 
 FormalArg :: { FormalArg }
-FormalArg : ClassName { FormalArg $1 } 
+FormalArg : ClassName Id { FormalArg $1 $2 } 
 
 
 Arg :: { Arg }

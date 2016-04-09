@@ -121,7 +121,7 @@ instance Print Field where
 
 instance Print FormalArg where
   prt i e = case e of
-   FormalArg classname -> prPrec i 0 (concatD [prt 0 classname])
+   FormalArg classname id -> prPrec i 0 (concatD [prt 0 classname , prt 0 id])
 
   prtList es = case es of
    [] -> (concatD [])

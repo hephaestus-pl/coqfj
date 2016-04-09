@@ -4,7 +4,7 @@ Description :  Class lookup auxiliar functions
 Copyright   :  (c) <Authors or Affiliations>
 License     :  <license>
 
-Maintainer  :  abreu223@hotmail.com & daniangelos@hotmail.com
+Maintainer  :  abreu223@hotmail.com & daniaangelos@gmail.com
 Stability   :  experimental 
 Portability :  portable | non-portable (<reason>)
 
@@ -41,6 +41,34 @@ className (CDecl (Id name) _ _ _ _) = name
 
 superclassOf :: ClassDecl -> ClassName
 superclassOf (CDecl _ superclass _ _ _ ) = superclass
+
+classCompare :: ClassName -> CTEntry -> Bool
+classCompare cname cte = 
+  case cname of ClassObject -> False
+                ClassId id -> id == fst cte
+  
+findClass :: ClassName -> ClassTable -> ClassDecl
+findClass cname (ClassTable ct) = snd (head (filter (classCompare cname) ct))
+
+findMethod :: Id -> [MethodDecl] -> MethodDecl
+findMethod mname (m@(MethodDecl _ id _ _):ms) =
+  if mname == id
+  	then m
+  	else findMethod mname ms
+
+methodFormalArgs :: MethodDecl -> [FormalArg]
+methodFormalArgs (MethodDecl _ _ fl _) = fl
+
+methodTerm :: MethodDecl -> Term
+methodTerm (MethodDecl _ _ _ t) = t
+
+mbodyof :: Id -> ClassDecl -> ([FormalArg], Term)
+mbodyof mname (CDecl _ _ _ _ mlist) = (formalargs, term) where
+  formalargs = methodFormalArgs (findMethod mname mlist)
+  term = methodTerm (findMethod mname mlist)
+
+mbody :: Id -> ClassName -> ClassTable -> ([FormalArg], Term)
+mbody mname cname ct = mbodyof mname (findClass cname ct)
 
 -- fields :: ClassTable -> ClassName -> [FieldDecl]
 

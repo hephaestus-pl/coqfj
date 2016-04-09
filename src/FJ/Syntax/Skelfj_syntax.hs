@@ -41,7 +41,7 @@ transField x = case x of
 
 transFormalArg :: FormalArg -> Result
 transFormalArg x = case x of
-  FormalArg classname  -> failure x
+  FormalArg classname id  -> failure x
 
 
 transArg :: Arg -> Result

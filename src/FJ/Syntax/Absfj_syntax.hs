@@ -4,7 +4,6 @@ module FJ.Syntax.Absfj_syntax where
 
 
 newtype Id = Id String deriving (Eq,Ord,Show)
-
 data Program =
    CProgram [ClassDecl] Exp
   deriving (Eq,Ord,Show)
@@ -26,7 +25,7 @@ data Field =
   deriving (Eq,Ord,Show)
 
 data FormalArg =
-   FormalArg ClassName
+   FormalArg ClassName Id
   deriving (Eq,Ord,Show)
 
 data Arg =

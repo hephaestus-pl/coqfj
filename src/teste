@@ -1,8 +1,21 @@
-class teste extends object{
-teste(){super();}
+class A extends Object{
+    A(){super();}
 }
-class teste extends object{
-teste(){super();}
+class B extends Object{
+    B(){super();}
 }
 
+class Pair extends Object{
+    Object fst;
+    Object snd;
+    Pair(Object fst, Object snd){
+        super();
+        this.fst=fst;
+        this.snd=snd;
+    }
+    Pair setfst(Object newfst, Object newsnd){
+        return new Pair(newfst, newsnd);
+    }
+    
+}
 new teste()

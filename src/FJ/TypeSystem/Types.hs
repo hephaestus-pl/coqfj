@@ -8,7 +8,8 @@ newtype ClassTable = ClassTable [CTEntry]
   deriving (Eq,Ord,Show)
 
 data Type = 
-    BType CTEntry
-  | FType Type CTEntry 
+    CType ClassName
+  | FType Type Type 
   deriving (Eq,Ord,Show)
 
+-- data a :~> b = FType a b

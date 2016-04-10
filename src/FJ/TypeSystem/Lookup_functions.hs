@@ -17,6 +17,7 @@ method_body  to retrieve the method body of a class given its Name, ClassName an
 
 module FJ.TypeSystem.Lookup_functions where
 
+
 import FJ.TypeSystem.Types
 import FJ.Syntax.Absfj_syntax
 
@@ -26,7 +27,6 @@ classId (CDecl id _ _ _ _) = id
 ctEntry :: ClassDecl -> CTEntry
 ctEntry cdecl = (classId cdecl, cdecl)
 
-classEntries :: [ClassDecl] -> ClassTable
 classEntries [] = ClassTable []  
 classEntries cdeclList = ClassTable $ map ctEntry cdeclList
 
@@ -43,14 +43,15 @@ superclassOf :: ClassDecl -> ClassName
 superclassOf (CDecl _ superclass _ _ _ ) = superclass
 
 classCompare :: ClassName -> CTEntry -> Bool
-classCOmpare cname ClassObject = False
-classCOmpare cname (ClassId id) = fst cte
- 
+classCompare cname cte = 
+  case cname of ClassObject -> False
+                ClassId id -> id == fst cte
+  
 findClass :: ClassName -> ClassTable -> ClassDecl
-findClass cname (ClassTable ct) = snd $ head $ filter (classCompare cname) ct
+findClass cname (ClassTable ct) = snd (head (filter (classCompare cname) ct))
 
 findMethod :: Id -> [MethodDecl] -> MethodDecl
-findMethod mname m@(MethodDecl _ id _ _):ms =
+findMethod mname (m@(MethodDecl _ id _ _):ms) =
   if mname == id
   	then m
   	else findMethod mname ms
@@ -69,7 +70,24 @@ mbodyof mname (CDecl _ _ _ _ mlist) = (formalargs, term) where
 mbody :: Id -> ClassName -> ClassTable -> ([FormalArg], Term)
 mbody mname cname ct = mbodyof mname (findClass cname ct)
 
+
+fargType :: FormalArg -> Type
+fargType (FormalArg cn _) = CType cn
+
+
+fargsToType :: [FormalArg] -> ClassName -> Type
+fargsToType [] cn = CType cn
+fargsToType (FormalArg farType _ :xs) cd = FType (CType farType) $ fargsToType xs cd
+
+
+mtype :: MethodDecl -> ClassDecl -> Type
+mtype (MethodDecl returnType mname _ _ t) (CDecl cname _ _ _ mlist) = 
+    fargsToType (methodFormalArgs mdecl) returnType
+
+
 test_prog = CProgram [CDecl (Id "teste") ClassObject [FDecl ClassObject (Id "a")] (KDecl (Id "teste") [Field ClassObject (Id "a")] [] [Assignment (Id "a") (Id "a")]) [], CDecl (Id "teste2") (ClassId $ Id "teste") [] (KDecl (Id "teste2") [] [] []) []] (NewExp (Id "teste") [])
 
-test_progCT = programCT test_prog
+test_prog2 = CProgram [CDecl (Id "A") ClassObject [] (KDecl (Id "A") [] [] []) [],CDecl (Id "B") ClassObject [] (KDecl (Id "B") [] [] []) [],CDecl (Id "Pair") ClassObject [FDecl ClassObject (Id "fst"),FDecl ClassObject (Id "snd")] (KDecl (Id "Pair") [Field ClassObject (Id "fst"),Field ClassObject (Id "snd")] [] [Assignment (Id "fst") (Id "fst"),Assignment (Id "snd") (Id "snd")]) [MethodDecl (ClassId (Id "Pair")) (Id "setfst") [FormalArg ClassObject (Id "newfst"),FormalArg ClassObject (Id "newsnd")] (TermExp (NewExp (Id "Pair") [TermVar (Id "newfst"),TermVar (Id "newsnd")]))]] (NewExp (Id "teste") [])
 
+test_progCT = programCT test_prog
+test_prog2CT = programCT test_prog2

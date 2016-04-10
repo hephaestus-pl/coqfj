@@ -70,7 +70,6 @@ mbodyof mname (CDecl _ _ _ _ mlist) = (formalargs, term) where
 mbody :: Id -> ClassName -> ClassTable -> ([FormalArg], Term)
 mbody mname cname ct = mbodyof mname (findClass cname ct)
 
-
 fargType :: FormalArg -> Type
 fargType (FormalArg cn _) = CType cn
 
@@ -79,10 +78,12 @@ fargsToType :: [FormalArg] -> ClassName -> Type
 fargsToType [] cn = CType cn
 fargsToType (FormalArg farType _ :xs) cd = FType (CType farType) $ fargsToType xs cd
 
-
+--This function takes a Method name, the Class Name and a CT 
 mtype :: MethodDecl -> ClassDecl -> Type
-mtype (MethodDecl returnType mname _ _ t) (CDecl cname _ _ _ mlist) = 
-    fargsToType (methodFormalArgs mdecl) returnType
+mtype m@(MethodDecl returnType mname _ t) (CDecl cname _ _ _ mlist) = 
+    if m `elem` mlist
+        then fargsToType (methodFormalArgs m) returnType
+        else CType ClassObject
 
 
 test_prog = CProgram [CDecl (Id "teste") ClassObject [FDecl ClassObject (Id "a")] (KDecl (Id "teste") [Field ClassObject (Id "a")] [] [Assignment (Id "a") (Id "a")]) [], CDecl (Id "teste2") (ClassId $ Id "teste") [] (KDecl (Id "teste2") [] [] []) []] (NewExp (Id "teste") [])

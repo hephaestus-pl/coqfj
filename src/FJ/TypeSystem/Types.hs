@@ -7,9 +7,12 @@ type CTEntry = (Id, ClassDecl)
 newtype ClassTable = ClassTable [CTEntry]
   deriving (Eq,Ord,Show)
 
+type a :~> b = FType a b
+
 data Type = 
     CType ClassName
-  | FType Type Type 
+  | forall a b. a :~> b 
   deriving (Eq,Ord,Show)
 
--- data a :~> b = FType a b
+
+

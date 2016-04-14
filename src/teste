@@ -8,12 +8,12 @@ class B extends Object{
 class Pair extends Object{
     A fst;
     B snd;
-    Pair(Object fst, Object snd){
+   Pair(A fst, B snd){
         super();
         this.fst=fst;
         this.snd=snd;
     }
-    Pair setfst(Object newfst, Object newsnd){
+    Pair setfst(A newfst, B newsnd){
         return new Pair(newfst, newsnd);
     }
     

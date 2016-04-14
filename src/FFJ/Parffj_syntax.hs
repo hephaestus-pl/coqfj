@@ -7,10 +7,8 @@ import FFJ.Lexffj_syntax
 import FFJ.ErrM
 import qualified Data.Array as Happy_Data_Array
 import qualified GHC.Exts as Happy_GHC_Exts
-import Control.Applicative(Applicative(..))
-import Control.Monad (ap)
 
--- parser produced by Happy Version 1.19.5
+-- parser produced by Happy Version 1.19.0
 
 newtype HappyAbsSyn  = HappyAbsSyn HappyAny
 #if __GLASGOW_HASKELL__ >= 607
@@ -824,9 +822,8 @@ happyError ts =
 myLexer = tokens
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
-{-# LINE 1 "<built-in>" #-}
 {-# LINE 1 "<command-line>" #-}
-{-# LINE 11 "<command-line>" #-}
+{-# LINE 8 "<command-line>" #-}
 # 1 "/usr/include/stdc-predef.h" 1 3 4
 
 # 17 "/usr/include/stdc-predef.h" 3 4
@@ -844,6 +841,9 @@ myLexer = tokens
 
 
 
+# 1 "/usr/include/x86_64-linux-gnu/bits/predefs.h" 1 3 4
+
+# 18 "/usr/include/x86_64-linux-gnu/bits/predefs.h" 3 4
 
 
 
@@ -856,6 +856,7 @@ myLexer = tokens
 
 
 
+# 31 "/usr/include/stdc-predef.h" 2 3 4
 
 
 
@@ -864,34 +865,7 @@ myLexer = tokens
 
 
 
-
-
-
-
-
-
-
-
-{-# LINE 11 "<command-line>" #-}
-{-# LINE 1 "/home/ghc/hp/build/ghc-bindist/local/lib/ghc-7.10.3/include/ghcversion.h" #-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-{-# LINE 11 "<command-line>" #-}
+# 8 "<command-line>" 2
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 -- Id: GenericTemplate.hs,v 1.26 2005/01/14 14:47:22 simonmar Exp 
 
@@ -901,7 +875,6 @@ myLexer = tokens
 
 
 
--- Do not remove this comment. Required to fix CPP parsing when using GCC and a clang-compiled alex.
 #if __GLASGOW_HASKELL__ > 706
 #define LT(n,m) ((Happy_GHC_Exts.tagToEnum# (n Happy_GHC_Exts.<# m)) :: Bool)
 #define GTE(n,m) ((Happy_GHC_Exts.tagToEnum# (n Happy_GHC_Exts.>=# m)) :: Bool)
@@ -911,7 +884,7 @@ myLexer = tokens
 #define GTE(n,m) (n Happy_GHC_Exts.>=# m)
 #define EQ(n,m) (n Happy_GHC_Exts.==# m)
 #endif
-{-# LINE 46 "templates/GenericTemplate.hs" #-}
+{-# LINE 45 "templates/GenericTemplate.hs" #-}
 
 
 data Happy_IntList = HappyCons Happy_GHC_Exts.Int# Happy_IntList
@@ -920,11 +893,11 @@ data Happy_IntList = HappyCons Happy_GHC_Exts.Int# Happy_IntList
 
 
 
-{-# LINE 67 "templates/GenericTemplate.hs" #-}
+{-# LINE 66 "templates/GenericTemplate.hs" #-}
 
-{-# LINE 77 "templates/GenericTemplate.hs" #-}
+{-# LINE 76 "templates/GenericTemplate.hs" #-}
 
-{-# LINE 86 "templates/GenericTemplate.hs" #-}
+{-# LINE 85 "templates/GenericTemplate.hs" #-}
 
 infixr 9 `HappyStk`
 data HappyStk a = HappyStk a (HappyStk a)
@@ -941,9 +914,9 @@ happyParse start_state = happyNewToken start_state notHappyAtAll notHappyAtAll
 -- parse (a %partial parser).  We must ignore the saved token on the top of
 -- the stack in this case.
 happyAccept 0# tk st sts (_ `HappyStk` ans `HappyStk` _) =
-        happyReturn1 ans
+	happyReturn1 ans
 happyAccept j tk st sts (HappyStk ans _) = 
-        (happyTcHack j (happyTcHack st)) (happyReturn1 ans)
+	(happyTcHack j (happyTcHack st)) (happyReturn1 ans)
 
 -----------------------------------------------------------------------------
 -- Arrays only: do the next action
@@ -951,35 +924,35 @@ happyAccept j tk st sts (HappyStk ans _) =
 
 
 happyDoAction i tk st
-        = {- nothing -}
+	= {- nothing -}
 
 
-          case action of
-                0#           -> {- nothing -}
-                                     happyFail i tk st
-                -1#          -> {- nothing -}
-                                     happyAccept i tk st
-                n | LT(n,(0# :: Happy_GHC_Exts.Int#)) -> {- nothing -}
+	  case action of
+		0#		  -> {- nothing -}
+				     happyFail i tk st
+		-1# 	  -> {- nothing -}
+				     happyAccept i tk st
+		n | LT(n,(0# :: Happy_GHC_Exts.Int#)) -> {- nothing -}
 
-                                                   (happyReduceArr Happy_Data_Array.! rule) i tk st
-                                                   where rule = (Happy_GHC_Exts.I# ((Happy_GHC_Exts.negateInt# ((n Happy_GHC_Exts.+# (1# :: Happy_GHC_Exts.Int#))))))
-                n                 -> {- nothing -}
+				     (happyReduceArr Happy_Data_Array.! rule) i tk st
+				     where rule = (Happy_GHC_Exts.I# ((Happy_GHC_Exts.negateInt# ((n Happy_GHC_Exts.+# (1# :: Happy_GHC_Exts.Int#))))))
+		n		  -> {- nothing -}
 
 
-                                     happyShift new_state i tk st
+				     happyShift new_state i tk st
                                      where new_state = (n Happy_GHC_Exts.-# (1# :: Happy_GHC_Exts.Int#))
    where off    = indexShortOffAddr happyActOffsets st
          off_i  = (off Happy_GHC_Exts.+# i)
-         check  = if GTE(off_i,(0# :: Happy_GHC_Exts.Int#))
+	 check  = if GTE(off_i,(0# :: Happy_GHC_Exts.Int#))
                   then EQ(indexShortOffAddr happyCheck off_i, i)
-                  else False
+		  else False
          action
           | check     = indexShortOffAddr happyTable off_i
           | otherwise = indexShortOffAddr happyDefActions st
 
 
 indexShortOffAddr (HappyA# arr) off =
-        Happy_GHC_Exts.narrow16Int# i
+	Happy_GHC_Exts.narrow16Int# i
   where
         i = Happy_GHC_Exts.word2Int# (Happy_GHC_Exts.or# (Happy_GHC_Exts.uncheckedShiftL# high 8#) low)
         high = Happy_GHC_Exts.int2Word# (Happy_GHC_Exts.ord# (Happy_GHC_Exts.indexCharOffAddr# arr (off' Happy_GHC_Exts.+# 1#)))
@@ -998,7 +971,7 @@ data HappyAddr = HappyA# Happy_GHC_Exts.Addr#
 -----------------------------------------------------------------------------
 -- HappyState data type (not arrays)
 
-{-# LINE 170 "templates/GenericTemplate.hs" #-}
+{-# LINE 169 "templates/GenericTemplate.hs" #-}
 
 -----------------------------------------------------------------------------
 -- Shifting a token
@@ -1040,9 +1013,9 @@ happyReduce k i fn 0# tk st sts stk
      = happyFail 0# tk st sts stk
 happyReduce k nt fn j tk st sts stk
      = case happyDrop (k Happy_GHC_Exts.-# (1# :: Happy_GHC_Exts.Int#)) sts of
-         sts1@((HappyCons (st1@(action)) (_))) ->
-                let r = fn stk in  -- it doesn't hurt to always seq here...
-                happyDoSeq r (happyGoto nt j tk st1 sts1 r)
+	 sts1@((HappyCons (st1@(action)) (_))) ->
+        	let r = fn stk in  -- it doesn't hurt to always seq here...
+       		happyDoSeq r (happyGoto nt j tk st1 sts1 r)
 
 happyMonadReduce k nt fn 0# tk st sts stk
      = happyFail 0# tk st sts stk
@@ -1094,7 +1067,7 @@ happyGoto nt j tk st =
 -- parse error if we are in recovery and we fail again
 happyFail 0# tk old_st _ stk@(x `HappyStk` _) =
      let i = (case Happy_GHC_Exts.unsafeCoerce# x of { (Happy_GHC_Exts.I# (i)) -> i }) in
---      trace "failing" $ 
+--	trace "failing" $ 
         happyError_ i tk
 
 {-  We don't need state discarding for our restricted implementation of
@@ -1103,16 +1076,16 @@ happyFail 0# tk old_st _ stk@(x `HappyStk` _) =
 
 -- discard a state
 happyFail  0# tk old_st (HappyCons ((action)) (sts)) 
-                                                (saved_tok `HappyStk` _ `HappyStk` stk) =
---      trace ("discarding state, depth " ++ show (length stk))  $
-        happyDoAction 0# tk action sts ((saved_tok`HappyStk`stk))
+						(saved_tok `HappyStk` _ `HappyStk` stk) =
+--	trace ("discarding state, depth " ++ show (length stk))  $
+	happyDoAction 0# tk action sts ((saved_tok`HappyStk`stk))
 -}
 
 -- Enter error recovery: generate an error token,
 --                       save the old token and carry on.
 happyFail  i tk (action) sts stk =
 --      trace "entering error recovery" $
-        happyDoAction 0# tk action sts ( (Happy_GHC_Exts.unsafeCoerce# (Happy_GHC_Exts.I# (i))) `HappyStk` stk)
+	happyDoAction 0# tk action sts ( (Happy_GHC_Exts.unsafeCoerce# (Happy_GHC_Exts.I# (i))) `HappyStk` stk)
 
 -- Internal happy errors:
 
@@ -1130,9 +1103,9 @@ happyTcHack x y = y
 
 -----------------------------------------------------------------------------
 -- Seq-ing.  If the --strict flag is given, then Happy emits 
---      happySeq = happyDoSeq
+--	happySeq = happyDoSeq
 -- otherwise it emits
---      happySeq = happyDontSeq
+-- 	happySeq = happyDontSeq
 
 happyDoSeq, happyDontSeq :: a -> b -> b
 happyDoSeq   a b = a `seq` b

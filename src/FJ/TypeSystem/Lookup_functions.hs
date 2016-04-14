@@ -6,7 +6,7 @@ License     :  <license>
 
 Maintainer  :  abreu223@hotmail.com & daniaangelos@gmail.com
 Stability   :  experimental 
-Portability :  portable | non-portable (<reason>)
+Portability :  portable
 
 <module description starting at first column>
 Class Lookup auxiliar functions 
@@ -27,6 +27,7 @@ classId (CDecl id _ _ _ _) = id
 ctEntry :: ClassDecl -> CTEntry
 ctEntry cdecl = (classId cdecl, cdecl)
 
+classEntries :: [ClassDecl] -> ClassTable
 classEntries [] = ClassTable []  
 classEntries cdeclList = ClassTable $ map ctEntry cdeclList
 
@@ -78,17 +79,42 @@ fargsToType :: [FormalArg] -> ClassName -> Type
 fargsToType [] cn = CType cn
 fargsToType (FormalArg farType _ :xs) cd = FType (CType farType) $ fargsToType xs cd
 
---This function takes a Method name, the Class Name and a CT 
-mtype :: MethodDecl -> ClassDecl -> Type
-mtype m@(MethodDecl returnType mname _ t) (CDecl cname _ _ _ mlist) = 
+--This function takes a Method Name, the Class Name and a CT 
+mtype' :: MethodDecl -> ClassDecl -> Type
+mtype' m@(MethodDecl returnType mname _ t) (CDecl cname _ _ _ mlist) = 
     if m `elem` mlist
         then fargsToType (methodFormalArgs m) returnType
         else CType ClassObject
 
 
+methodId :: MethodDecl -> Id
+methodId (MethodDecl _ mname _ _) = mname
+
+classMethods :: ClassDecl -> [MethodDecl]
+classMethods (CDecl _ _ _ _ mdecls) = mdecls
+
+methodDecl :: Id -> ClassDecl -> MethodDecl
+methodDecl mname (CDecl _ _ _ _ mdecls) = head $ filter (\m -> methodId m == mname) mdecls
+
+methodType :: Id -> ClassName -> ClassTable -> Type
+methodType mname cname ct = 
+    if mdecl `elem` classMethods cdecl
+        then fargsToType (methodFormalArgs mdecl) (cname)
+        else methodType mname (superclassOf cdecl) ct
+    where cdecl = findClass cname ct
+          mdecl = methodDecl mname cdecl
+
+
+
 test_prog = CProgram [CDecl (Id "teste") ClassObject [FDecl ClassObject (Id "a")] (KDecl (Id "teste") [Field ClassObject (Id "a")] [] [Assignment (Id "a") (Id "a")]) [], CDecl (Id "teste2") (ClassId $ Id "teste") [] (KDecl (Id "teste2") [] [] []) []] (NewExp (Id "teste") [])
 
-test_prog2 = CProgram [CDecl (Id "A") ClassObject [] (KDecl (Id "A") [] [] []) [],CDecl (Id "B") ClassObject [] (KDecl (Id "B") [] [] []) [],CDecl (Id "Pair") ClassObject [FDecl ClassObject (Id "fst"),FDecl ClassObject (Id "snd")] (KDecl (Id "Pair") [Field ClassObject (Id "fst"),Field ClassObject (Id "snd")] [] [Assignment (Id "fst") (Id "fst"),Assignment (Id "snd") (Id "snd")]) [MethodDecl (ClassId (Id "Pair")) (Id "setfst") [FormalArg ClassObject (Id "newfst"),FormalArg ClassObject (Id "newsnd")] (TermExp (NewExp (Id "Pair") [TermVar (Id "newfst"),TermVar (Id "newsnd")]))]] (NewExp (Id "teste") [])
+test_prog2 = CProgram [CDecl (Id "A") ClassObject [] (KDecl (Id "A") [] [] []) [],CDecl (Id "B") ClassObject [] (KDecl (Id "B") [] [] []) [],CDecl (Id "Pair") ClassObject [FDecl (ClassId $ Id "A") (Id "fst"),FDecl (ClassId $ Id "B")(Id "snd")] (KDecl (Id "Pair") [Field (ClassId $ Id "A")(Id "fst"),Field (ClassId $ Id "B")(Id "snd")] [] [Assignment (Id "fst") (Id "fst"), Assignment (Id "snd") (Id "snd")]) [MethodDecl (ClassId (Id "Pair")) (Id "setfst") [FormalArg (ClassId $ Id "A")(Id "newfst"),FormalArg (ClassId $ Id "B")(Id "newsnd")] (TermExp (NewExp (Id "Pair") [TermVar (Id "newfst"),TermVar (Id "newsnd")]))]] (NewExp (Id "teste") [])
 
 test_progCT = programCT test_prog
 test_prog2CT = programCT test_prog2
+a_class = findClass (ClassId $ Id "A") test_prog2CT
+pair_class = findClass (ClassId $ Id "Pair") test_prog2CT
+setfst_body = methodDecl (Id "setfst") pair_class
+
+setfst_type = methodType (Id "setfst") (ClassId $ Id "Pair") test_prog2CT
+

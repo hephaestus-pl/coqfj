@@ -178,9 +178,14 @@ alex_action_2 =  tok (\p s -> PT p (eitherResIdent (T_Id . share) s))
 alex_action_3 =  tok (\p s -> PT p (eitherResIdent (TV . share) s)) 
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
-{-# LINE 1 "<built-in>" #-}
 {-# LINE 1 "<command-line>" #-}
-{-# LINE 10 "<command-line>" #-}
+
+
+
+
+
+
+
 # 1 "/usr/include/stdc-predef.h" 1 3 4
 
 # 17 "/usr/include/stdc-predef.h" 3 4
@@ -198,6 +203,9 @@ alex_action_3 =  tok (\p s -> PT p (eitherResIdent (TV . share) s))
 
 
 
+# 1 "/usr/include/x86_64-linux-gnu/bits/predefs.h" 1 3 4
+
+# 18 "/usr/include/x86_64-linux-gnu/bits/predefs.h" 3 4
 
 
 
@@ -210,6 +218,7 @@ alex_action_3 =  tok (\p s -> PT p (eitherResIdent (TV . share) s))
 
 
 
+# 31 "/usr/include/stdc-predef.h" 2 3 4
 
 
 
@@ -218,34 +227,7 @@ alex_action_3 =  tok (\p s -> PT p (eitherResIdent (TV . share) s))
 
 
 
-
-
-
-
-
-
-
-
-{-# LINE 10 "<command-line>" #-}
-{-# LINE 1 "/home/ghc/hp/build/ghc-bindist/local/lib/ghc-7.10.3/include/ghcversion.h" #-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-{-# LINE 10 "<command-line>" #-}
+# 7 "<command-line>" 2
 {-# LINE 1 "templates/GenericTemplate.hs" #-}
 -- -----------------------------------------------------------------------------
 -- ALEX TEMPLATE
@@ -262,7 +244,6 @@ alex_action_3 =  tok (\p s -> PT p (eitherResIdent (TV . share) s))
 
 
 
--- Do not remove this comment. Required to fix CPP parsing when using GCC and a clang-compiled alex.
 #if __GLASGOW_HASKELL__ > 706
 #define GTE(n,m) (tagToEnum# (n >=# m))
 #define EQ(n,m) (tagToEnum# (n ==# m))
@@ -270,11 +251,11 @@ alex_action_3 =  tok (\p s -> PT p (eitherResIdent (TV . share) s))
 #define GTE(n,m) (n >=# m)
 #define EQ(n,m) (n ==# m)
 #endif
-{-# LINE 51 "templates/GenericTemplate.hs" #-}
+{-# LINE 50 "templates/GenericTemplate.hs" #-}
 
 
 data AlexAddr = AlexA# Addr#
--- Do not remove this comment. Required to fix CPP parsing when using GCC and a clang-compiled alex.
+
 #if __GLASGOW_HASKELL__ < 503
 uncheckedShiftL# = shiftL#
 #endif
@@ -312,7 +293,6 @@ alexIndexInt32OffAddr (AlexA# arr) off =
 #else
   indexInt32OffAddr# arr off
 #endif
-
 
 
 
@@ -406,7 +386,7 @@ alex_scan_tkn user orig_input len input s last_acc =
 	check_accs (AlexAccNone) = last_acc
 	check_accs (AlexAcc a  ) = AlexLastAcc a input (I# (len))
 	check_accs (AlexAccSkip) = AlexLastSkip  input (I# (len))
-{-# LINE 198 "templates/GenericTemplate.hs" #-}
+{-# LINE 196 "templates/GenericTemplate.hs" #-}
 
 data AlexLastAcc a
   = AlexNone
@@ -422,7 +402,7 @@ data AlexAcc a user
   = AlexAccNone
   | AlexAcc a
   | AlexAccSkip
-{-# LINE 242 "templates/GenericTemplate.hs" #-}
+{-# LINE 240 "templates/GenericTemplate.hs" #-}
 
 -- used by wrappers
 iUnbox (I# (i)) = i

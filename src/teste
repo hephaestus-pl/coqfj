@@ -6,8 +6,8 @@ class B extends Object{
 }
 
 class Pair extends Object{
-    Object fst;
-    Object snd;
+    A fst;
+    B snd;
     Pair(Object fst, Object snd){
         super();
         this.fst=fst;

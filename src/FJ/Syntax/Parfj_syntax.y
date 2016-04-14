@@ -12,20 +12,21 @@ import FJ.Syntax.ErrM
 %name pClassDecl ClassDecl
 %name pFieldDecl FieldDecl
 %name pConstructor Constructor
-%name pField Field
+%name pFieldParam FieldParam
 %name pFormalArg FormalArg
-%name pArg Arg
+%name pArgument Argument
 %name pAssignment Assignment
 %name pMethodDecl MethodDecl
 %name pTerm Term
+%name pAccess Access
 %name pExp Exp
 %name pClassName ClassName
 %name pListClassDecl ListClassDecl
 %name pListFieldDecl ListFieldDecl
 %name pListMethodDecl ListMethodDecl
-%name pListField ListField
+%name pListFieldParam ListFieldParam
 %name pListFormalArg ListFormalArg
-%name pListArg ListArg
+%name pListArgument ListArgument
 %name pListAssignment ListAssignment
 %name pListTerm ListTerm
 
@@ -71,34 +72,39 @@ FieldDecl : ClassName Id ';' { FDecl $1 $2 }
 
 
 Constructor :: { Constructor }
-Constructor : Id '(' ListField ')' '{' 'super' '(' ListArg ')' ';' ListAssignment '}' { KDecl $1 $3 $8 (reverse $11) } 
+Constructor : Id '(' ListFieldParam ')' '{' 'super' '(' ListArgument ')' ';' ListAssignment '}' { KDecl $1 $3 $8 (reverse $11) } 
 
 
-Field :: { Field }
-Field : ClassName Id { Field $1 $2 } 
+FieldParam :: { FieldParam }
+FieldParam : ClassName Id { Field $1 $2 } 
 
 
 FormalArg :: { FormalArg }
-FormalArg : ClassName Id { FormalArg $1 $2 } 
+FormalArg : ClassName Id { FArg $1 $2 } 
 
 
-Arg :: { Arg }
-Arg : Id { Arg $1 } 
+Argument :: { Argument }
+Argument : Id { Arg $1 } 
 
 
 Assignment :: { Assignment }
-Assignment : 'this' '.' Id '=' Id ';' { Assignment $3 $5 } 
+Assignment : 'this' '.' Id '=' Id ';' { Assgnmt $3 $5 } 
 
 
 MethodDecl :: { MethodDecl }
-MethodDecl : ClassName Id '(' ListFormalArg ')' '{' 'return' Term ';' '}' { MethodDecl $1 $2 $4 $8 } 
+MethodDecl : ClassName Id '(' ListFormalArg ')' '{' 'return' Term ';' '}' { MDecl $1 $2 $4 $8 } 
 
 
 Term :: { Term }
 Term : Id { TermVar $1 } 
-  | Term '.' Id { TermFieldAccess $1 $3 }
-  | Term '.' Id '(' ListTerm ')' { TermMethodInvoc $1 $3 $5 }
+  | Access '.' Id { TermFieldAccess $1 $3 }
+  | Access '.' Id '(' ListTerm ')' { TermMethodInvoc $1 $3 $5 }
   | Exp { TermExp $1 }
+
+
+Access :: { Access }
+Access : 'this' { ThisAccess } 
+  | Term { TermAcces $1 }
 
 
 Exp :: { Exp }
@@ -126,10 +132,10 @@ ListMethodDecl : {- empty -} { [] }
   | ListMethodDecl MethodDecl { flip (:) $1 $2 }
 
 
-ListField :: { [Field] }
-ListField : {- empty -} { [] } 
-  | Field { (:[]) $1 }
-  | Field ',' ListField { (:) $1 $3 }
+ListFieldParam :: { [FieldParam] }
+ListFieldParam : {- empty -} { [] } 
+  | FieldParam { (:[]) $1 }
+  | FieldParam ',' ListFieldParam { (:) $1 $3 }
 
 
 ListFormalArg :: { [FormalArg] }
@@ -138,10 +144,10 @@ ListFormalArg : {- empty -} { [] }
   | FormalArg ',' ListFormalArg { (:) $1 $3 }
 
 
-ListArg :: { [Arg] }
-ListArg : {- empty -} { [] } 
-  | Arg { (:[]) $1 }
-  | Arg ',' ListArg { (:) $1 $3 }
+ListArgument :: { [Argument] }
+ListArgument : {- empty -} { [] } 
+  | Argument { (:[]) $1 }
+  | Argument ',' ListArgument { (:) $1 $3 }
 
 
 ListAssignment :: { [Assignment] }

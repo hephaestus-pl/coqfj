@@ -71,11 +71,11 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Constructor}} & {\arrow}  &{\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListField}} {\terminal{)}} {\terminal{\{}} {\terminal{super}} {\terminal{(}} {\nonterminal{ListArg}} {\terminal{)}} {\terminal{;}} {\nonterminal{ListAssignment}} {\terminal{\}}}  \\
+{\nonterminal{Constructor}} & {\arrow}  &{\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListFieldParam}} {\terminal{)}} {\terminal{\{}} {\terminal{super}} {\terminal{(}} {\nonterminal{ListArgument}} {\terminal{)}} {\terminal{;}} {\nonterminal{ListAssignment}} {\terminal{\}}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Field}} & {\arrow}  &{\nonterminal{ClassName}} {\nonterminal{Id}}  \\
+{\nonterminal{FieldParam}} & {\arrow}  &{\nonterminal{ClassName}} {\nonterminal{Id}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -83,7 +83,7 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Arg}} & {\arrow}  &{\nonterminal{Id}}  \\
+{\nonterminal{Argument}} & {\arrow}  &{\nonterminal{Id}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -96,9 +96,14 @@ All other symbols are terminals.\\
 
 \begin{tabular}{lll}
 {\nonterminal{Term}} & {\arrow}  &{\nonterminal{Id}}  \\
- & {\delimit}  &{\nonterminal{Term}} {\terminal{.}} {\nonterminal{Id}}  \\
- & {\delimit}  &{\nonterminal{Term}} {\terminal{.}} {\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListTerm}} {\terminal{)}}  \\
+ & {\delimit}  &{\nonterminal{Access}} {\terminal{.}} {\nonterminal{Id}}  \\
+ & {\delimit}  &{\nonterminal{Access}} {\terminal{.}} {\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListTerm}} {\terminal{)}}  \\
  & {\delimit}  &{\nonterminal{Exp}}  \\
+\end{tabular}\\
+
+\begin{tabular}{lll}
+{\nonterminal{Access}} & {\arrow}  &{\terminal{this}}  \\
+ & {\delimit}  &{\nonterminal{Term}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -127,9 +132,9 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{ListField}} & {\arrow}  &{\emptyP} \\
- & {\delimit}  &{\nonterminal{Field}}  \\
- & {\delimit}  &{\nonterminal{Field}} {\terminal{,}} {\nonterminal{ListField}}  \\
+{\nonterminal{ListFieldParam}} & {\arrow}  &{\emptyP} \\
+ & {\delimit}  &{\nonterminal{FieldParam}}  \\
+ & {\delimit}  &{\nonterminal{FieldParam}} {\terminal{,}} {\nonterminal{ListFieldParam}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -139,9 +144,9 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{ListArg}} & {\arrow}  &{\emptyP} \\
- & {\delimit}  &{\nonterminal{Arg}}  \\
- & {\delimit}  &{\nonterminal{Arg}} {\terminal{,}} {\nonterminal{ListArg}}  \\
+{\nonterminal{ListArgument}} & {\arrow}  &{\emptyP} \\
+ & {\delimit}  &{\nonterminal{Argument}}  \\
+ & {\delimit}  &{\nonterminal{Argument}} {\terminal{,}} {\nonterminal{ListArgument}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}

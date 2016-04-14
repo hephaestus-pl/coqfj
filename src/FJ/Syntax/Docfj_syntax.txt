@@ -41,16 +41,18 @@ All other symbols are terminals.
   | //Program// | -> | //[ClassDecl]// //Exp// 
   | //ClassDecl// | -> | ``class`` //Id// ``extends`` //ClassName// ``{`` //[FieldDecl]// //Constructor// //[MethodDecl]// ``}`` 
   | //FieldDecl// | -> | //ClassName// //Id// ``;`` 
-  | //Constructor// | -> | //Id// ``(`` //[Field]// ``)`` ``{`` ``super`` ``(`` //[Arg]// ``)`` ``;`` //[Assignment]// ``}`` 
-  | //Field// | -> | //ClassName// //Id// 
+  | //Constructor// | -> | //Id// ``(`` //[FieldParam]// ``)`` ``{`` ``super`` ``(`` //[Argument]// ``)`` ``;`` //[Assignment]// ``}`` 
+  | //FieldParam// | -> | //ClassName// //Id// 
   | //FormalArg// | -> | //ClassName// //Id// 
-  | //Arg// | -> | //Id// 
+  | //Argument// | -> | //Id// 
   | //Assignment// | -> | ``this`` ``.`` //Id// ``=`` //Id// ``;`` 
   | //MethodDecl// | -> | //ClassName// //Id// ``(`` //[FormalArg]// ``)`` ``{`` ``return`` //Term// ``;`` ``}`` 
   | //Term// | -> | //Id// 
-  |  |  **|**  | //Term// ``.`` //Id// 
-  |  |  **|**  | //Term// ``.`` //Id// ``(`` //[Term]// ``)`` 
+  |  |  **|**  | //Access// ``.`` //Id// 
+  |  |  **|**  | //Access// ``.`` //Id// ``(`` //[Term]// ``)`` 
   |  |  **|**  | //Exp// 
+  | //Access// | -> | ``this`` 
+  |  |  **|**  | //Term// 
   | //Exp// | -> | ``(`` //ClassName// ``)`` //Term// 
   |  |  **|**  | ``new`` //Id// ``(`` //[Term]// ``)`` 
   | //ClassName// | -> | ``Object`` 
@@ -61,15 +63,15 @@ All other symbols are terminals.
   |  |  **|**  | //FieldDecl// //[FieldDecl]// 
   | //[MethodDecl]// | -> | **eps**
   |  |  **|**  | //MethodDecl// //[MethodDecl]// 
-  | //[Field]// | -> | **eps**
-  |  |  **|**  | //Field// 
-  |  |  **|**  | //Field// ``,`` //[Field]// 
+  | //[FieldParam]// | -> | **eps**
+  |  |  **|**  | //FieldParam// 
+  |  |  **|**  | //FieldParam// ``,`` //[FieldParam]// 
   | //[FormalArg]// | -> | **eps**
   |  |  **|**  | //FormalArg// 
   |  |  **|**  | //FormalArg// ``,`` //[FormalArg]// 
-  | //[Arg]// | -> | **eps**
-  |  |  **|**  | //Arg// 
-  |  |  **|**  | //Arg// ``,`` //[Arg]// 
+  | //[Argument]// | -> | **eps**
+  |  |  **|**  | //Argument// 
+  |  |  **|**  | //Argument// ``,`` //[Argument]// 
   | //[Assignment]// | -> | **eps**
   |  |  **|**  | //Assignment// //[Assignment]// 
   | //[Term]// | -> | **eps**

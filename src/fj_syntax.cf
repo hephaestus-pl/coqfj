@@ -8,20 +8,23 @@ CDecl . ClassDecl ::= "class" Id "extends" ClassName "{" [FieldDecl] Constructor
 FDecl . FieldDecl ::= ClassName Id ";" ;
 
 -- Constructor Declaration
-KDecl . Constructor ::= Id "(" [Field] ")" "{" "super" "(" [Arg] ")" ";" [Assignment] "}" ;
+KDecl . Constructor ::= Id "(" [FieldParam] ")" "{" "super" "(" [Argument] ")" ";" [Assignment] "}" ;
 
-Field . Field ::= ClassName Id ;
-FormalArg . FormalArg ::= ClassName Id;
-Arg . Arg ::= Id ;
-Assignment . Assignment ::= "this" "." Id "=" Id ";" ;
+Field . FieldParam ::= ClassName Id ;
+FArg . FormalArg ::= ClassName Id;
+Arg . Argument ::= Id ;
+Assgnmt . Assignment ::= "this" "." Id "=" Id ";" ;
 
 -- Method Declaration
-MethodDecl . MethodDecl ::= ClassName Id "(" [FormalArg] ")" "{" "return" Term ";" "}" ;
+MDecl . MethodDecl ::= ClassName Id "(" [FormalArg] ")" "{" "return" Term ";" "}" ;
 
 TermVar . Term ::= Id ;
-TermFieldAccess . Term ::= Term "." Id ; 
-TermMethodInvoc . Term ::= Term "." Id "(" [Term] ")" ;
+TermFieldAccess . Term ::= Access "." Id ; 
+TermMethodInvoc . Term ::= Access "." Id "(" [Term] ")" ;
 TermExp . Term ::= Exp ;
+
+ThisAccess . Access ::= "this" ;
+TermAcces . Access ::= Term ;
 
 CastExp . Exp ::= "(" ClassName ")" Term ;
 NewExp . Exp ::= "new" Id "(" [Term] ")" ;
@@ -34,9 +37,9 @@ ClassId . ClassName ::= Id ;
 separator ClassDecl "" ;
 separator FieldDecl "" ;
 separator MethodDecl "" ;
-separator Field "," ;
+separator FieldParam "," ;
 separator FormalArg "," ;
-separator Arg "," ;
+separator Argument "," ;
 separator Assignment "" ;
 separator Term "," ;
 

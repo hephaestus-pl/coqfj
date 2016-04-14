@@ -31,40 +31,46 @@ transFieldDecl x = case x of
 
 transConstructor :: Constructor -> Result
 transConstructor x = case x of
-  KDecl id fields args assignments  -> failure x
+  KDecl id fieldparams arguments assignments  -> failure x
 
 
-transField :: Field -> Result
-transField x = case x of
+transFieldParam :: FieldParam -> Result
+transFieldParam x = case x of
   Field classname id  -> failure x
 
 
 transFormalArg :: FormalArg -> Result
 transFormalArg x = case x of
-  FormalArg classname id  -> failure x
+  FArg classname id  -> failure x
 
 
-transArg :: Arg -> Result
-transArg x = case x of
+transArgument :: Argument -> Result
+transArgument x = case x of
   Arg id  -> failure x
 
 
 transAssignment :: Assignment -> Result
 transAssignment x = case x of
-  Assignment id1 id2  -> failure x
+  Assgnmt id1 id2  -> failure x
 
 
 transMethodDecl :: MethodDecl -> Result
 transMethodDecl x = case x of
-  MethodDecl classname id formalargs term  -> failure x
+  MDecl classname id formalargs term  -> failure x
 
 
 transTerm :: Term -> Result
 transTerm x = case x of
   TermVar id  -> failure x
-  TermFieldAccess term id  -> failure x
-  TermMethodInvoc term id terms  -> failure x
+  TermFieldAccess access id  -> failure x
+  TermMethodInvoc access id terms  -> failure x
   TermExp exp  -> failure x
+
+
+transAccess :: Access -> Result
+transAccess x = case x of
+  ThisAccess  -> failure x
+  TermAcces term  -> failure x
 
 
 transExp :: Exp -> Result

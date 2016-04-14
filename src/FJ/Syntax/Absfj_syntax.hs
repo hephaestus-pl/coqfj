@@ -17,34 +17,39 @@ data FieldDecl =
   deriving (Eq,Ord,Show)
 
 data Constructor =
-   KDecl Id [Field] [Arg] [Assignment]
+   KDecl Id [FieldParam] [Argument] [Assignment]
   deriving (Eq,Ord,Show)
 
-data Field =
+data FieldParam =
    Field ClassName Id
   deriving (Eq,Ord,Show)
 
 data FormalArg =
-   FormalArg ClassName Id
+   FArg ClassName Id
   deriving (Eq,Ord,Show)
 
-data Arg =
+data Argument =
    Arg Id
   deriving (Eq,Ord,Show)
 
 data Assignment =
-   Assignment Id Id
+   Assgnmt Id Id
   deriving (Eq,Ord,Show)
 
 data MethodDecl =
-   MethodDecl ClassName Id [FormalArg] Term
+   MDecl ClassName Id [FormalArg] Term
   deriving (Eq,Ord,Show)
 
 data Term =
    TermVar Id
- | TermFieldAccess Term Id
- | TermMethodInvoc Term Id [Term]
+ | TermFieldAccess Access Id
+ | TermMethodInvoc Access Id [Term]
  | TermExp Exp
+  deriving (Eq,Ord,Show)
+
+data Access =
+   ThisAccess
+ | TermAcces Term
   deriving (Eq,Ord,Show)
 
 data Exp =

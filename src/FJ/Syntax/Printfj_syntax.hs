@@ -107,10 +107,10 @@ instance Print FieldDecl where
 
 instance Print Constructor where
   prt i e = case e of
-   KDecl id fields args assignments -> prPrec i 0 (concatD [prt 0 id , doc (showString "(") , prt 0 fields , doc (showString ")") , doc (showString "{") , doc (showString "super") , doc (showString "(") , prt 0 args , doc (showString ")") , doc (showString ";") , prt 0 assignments , doc (showString "}")])
+   KDecl id fieldparams arguments assignments -> prPrec i 0 (concatD [prt 0 id , doc (showString "(") , prt 0 fieldparams , doc (showString ")") , doc (showString "{") , doc (showString "super") , doc (showString "(") , prt 0 arguments , doc (showString ")") , doc (showString ";") , prt 0 assignments , doc (showString "}")])
 
 
-instance Print Field where
+instance Print FieldParam where
   prt i e = case e of
    Field classname id -> prPrec i 0 (concatD [prt 0 classname , prt 0 id])
 
@@ -121,14 +121,14 @@ instance Print Field where
 
 instance Print FormalArg where
   prt i e = case e of
-   FormalArg classname id -> prPrec i 0 (concatD [prt 0 classname , prt 0 id])
+   FArg classname id -> prPrec i 0 (concatD [prt 0 classname , prt 0 id])
 
   prtList es = case es of
    [] -> (concatD [])
    [x] -> (concatD [prt 0 x])
    x:xs -> (concatD [prt 0 x , doc (showString ",") , prt 0 xs])
 
-instance Print Arg where
+instance Print Argument where
   prt i e = case e of
    Arg id -> prPrec i 0 (concatD [prt 0 id])
 
@@ -139,7 +139,7 @@ instance Print Arg where
 
 instance Print Assignment where
   prt i e = case e of
-   Assignment id0 id -> prPrec i 0 (concatD [doc (showString "this") , doc (showString ".") , prt 0 id0 , doc (showString "=") , prt 0 id , doc (showString ";")])
+   Assgnmt id0 id -> prPrec i 0 (concatD [doc (showString "this") , doc (showString ".") , prt 0 id0 , doc (showString "=") , prt 0 id , doc (showString ";")])
 
   prtList es = case es of
    [] -> (concatD [])
@@ -147,7 +147,7 @@ instance Print Assignment where
 
 instance Print MethodDecl where
   prt i e = case e of
-   MethodDecl classname id formalargs term -> prPrec i 0 (concatD [prt 0 classname , prt 0 id , doc (showString "(") , prt 0 formalargs , doc (showString ")") , doc (showString "{") , doc (showString "return") , prt 0 term , doc (showString ";") , doc (showString "}")])
+   MDecl classname id formalargs term -> prPrec i 0 (concatD [prt 0 classname , prt 0 id , doc (showString "(") , prt 0 formalargs , doc (showString ")") , doc (showString "{") , doc (showString "return") , prt 0 term , doc (showString ";") , doc (showString "}")])
 
   prtList es = case es of
    [] -> (concatD [])
@@ -156,14 +156,20 @@ instance Print MethodDecl where
 instance Print Term where
   prt i e = case e of
    TermVar id -> prPrec i 0 (concatD [prt 0 id])
-   TermFieldAccess term id -> prPrec i 0 (concatD [prt 0 term , doc (showString ".") , prt 0 id])
-   TermMethodInvoc term id terms -> prPrec i 0 (concatD [prt 0 term , doc (showString ".") , prt 0 id , doc (showString "(") , prt 0 terms , doc (showString ")")])
+   TermFieldAccess access id -> prPrec i 0 (concatD [prt 0 access , doc (showString ".") , prt 0 id])
+   TermMethodInvoc access id terms -> prPrec i 0 (concatD [prt 0 access , doc (showString ".") , prt 0 id , doc (showString "(") , prt 0 terms , doc (showString ")")])
    TermExp exp -> prPrec i 0 (concatD [prt 0 exp])
 
   prtList es = case es of
    [] -> (concatD [])
    [x] -> (concatD [prt 0 x])
    x:xs -> (concatD [prt 0 x , doc (showString ",") , prt 0 xs])
+
+instance Print Access where
+  prt i e = case e of
+   ThisAccess  -> prPrec i 0 (concatD [doc (showString "this")])
+   TermAcces term -> prPrec i 0 (concatD [prt 0 term])
+
 
 instance Print Exp where
   prt i e = case e of

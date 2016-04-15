@@ -10,7 +10,7 @@ newtype ClassTable = ClassTable [CTEntry]
 
 data Type = 
     CType ClassName
-  | FType Type ClassName 
+  | FType Type Type 
   deriving (Eq,Ord,Show)
 
 

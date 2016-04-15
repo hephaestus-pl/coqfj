@@ -1,0 +1,33 @@
+teste
+
+Parse Successful!
+
+[Abstract Syntax]
+
+CProgram [CDecl (Id "A") ClassObject [] (KDecl (Id "A") [] [] []) [],CDecl (Id "B") ClassObject [] (KDecl (Id "B") [] [] []) [],CDecl (Id "Pair") ClassObject [FDecl (ClassId (Id "A")) (Id "fst"),FDecl (ClassId (Id "B")) (Id "snd")] (KDecl (Id "Pair") [Field (ClassId (Id "A")) (Id "fst"),Field (ClassId (Id "B")) (Id "snd")] [] [Assgnmt (Id "fst") (Id "fst"),Assgnmt (Id "snd") (Id "snd")]) [MDecl (ClassId (Id "Pair")) (Id "setfst") [FArg (ClassId (Id "A")) (Id "newfst"),FArg (ClassId (Id "B")) (Id "newsnd")] (TermExp (NewExp (Id "Pair") [TermVar (Id "newfst"),TermVar (Id "newsnd")]))]] (NewExp (Id "teste") [])
+
+[Linearized tree]
+
+class A extends Object {
+  A () {
+    super () ;
+    }
+  }
+class B extends Object {
+  B () {
+    super () ;
+    }
+  }
+class Pair extends Object {
+  A fst ;
+  B snd ;
+  Pair (A fst, B snd){
+    super () ;
+    this . fst = fst ;
+    this . snd = snd ;
+    }
+  Pair setfst (A newfst, B newsnd){
+    return new Pair (newfst, newsnd);
+    }
+  }
+new teste ()

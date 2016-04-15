@@ -76,7 +76,7 @@ fargType (FArg cn _) = CType cn
 
 fargsToType :: [FormalArg] -> ClassName -> Type
 fargsToType [] cn = CType cn
-fargsToType (FArg farType _ :xs) cd = FType (CType farType) $ fargsToType xs cd
+fargsToType (FArg farType _ :xs) cd = CType farType :~>: fargsToType xs cd
 
 --This function takes a Method Name, the Class Name and a CT 
 mtype' :: MethodDecl -> ClassDecl -> Type

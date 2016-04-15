@@ -34,6 +34,10 @@ classEntries cdeclList = ClassTable $ map ctEntry cdeclList
 programCT :: Program -> ClassTable
 programCT (CProgram ct _) = (classEntries ct)
 
+-- perhaps we'll eventually have to refactor this to signature
+-- Id -> ClassName -> ClassTable -> [FieldDecl]
+-- so we can have ClassObject with nil fields
+-- The same idea applies to findClass
 classFields :: ClassDecl -> [FieldDecl]
 classFields (CDecl _ _ fieldsDecl _ _) = fieldsDecl
 
@@ -77,7 +81,7 @@ fargType (FArg cn _) = CType cn
 
 fargsToType :: [FormalArg] -> ClassName -> Type
 fargsToType [] cn = CType cn
-fargsToType (FArg farType _ :xs) cd = FType (CType farType) $ fargsToType xs cd
+fargsToType (FArg farType _ :xs) cn = FType (CType farType) $ fargsToType xs cn
 
 --This function takes a Method Name, the Class Name and a CT 
 mtype' :: MethodDecl -> ClassDecl -> Type
@@ -116,5 +120,5 @@ a_class = findClass (ClassId $ Id "A") test_prog2CT
 pair_class = findClass (ClassId $ Id "Pair") test_prog2CT
 setfst_body = methodDecl (Id "setfst") pair_class
 
-setfst_type = methodType (Id "setfst") (ClassId $ Id "Pair") test_prog2CT
+setfst_type = methodType (Id "sefst") (ClassId $ Id "Pair") test_prog2CT
 

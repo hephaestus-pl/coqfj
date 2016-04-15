@@ -44,9 +44,8 @@ superclassOf :: ClassDecl -> ClassName
 superclassOf (CDecl _ superclass _ _ _ ) = superclass
 
 classCompare :: ClassName -> CTEntry -> Bool
-classCompare cname cte = 
-  case cname of ClassObject -> False
-                ClassId id -> id == fst cte
+classCompare ClassObject _ = False
+classCompare (ClassId id) cte = id == (fst cte)
   
 findClass :: ClassName -> ClassTable -> ClassDecl
 findClass cname (ClassTable ct) = snd (head (filter (classCompare cname) ct))

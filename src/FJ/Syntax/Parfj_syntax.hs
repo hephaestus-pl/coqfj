@@ -82,17 +82,10 @@ happyIn34 x = Happy_GHC_Exts.unsafeCoerce# x
 happyOut34 :: (HappyAbsSyn ) -> (Term)
 happyOut34 x = Happy_GHC_Exts.unsafeCoerce# x
 {-# INLINE happyOut34 #-}
-<<<<<<< Updated upstream
 happyIn35 :: (Access) -> (HappyAbsSyn )
 happyIn35 x = Happy_GHC_Exts.unsafeCoerce# x
 {-# INLINE happyIn35 #-}
 happyOut35 :: (HappyAbsSyn ) -> (Access)
-=======
-happyIn35 :: (ClassName) -> (HappyAbsSyn )
-happyIn35 x = Happy_GHC_Exts.unsafeCoerce# x
-{-# INLINE happyIn35 #-}
-happyOut35 :: (HappyAbsSyn ) -> (ClassName)
->>>>>>> Stashed changes
 happyOut35 x = Happy_GHC_Exts.unsafeCoerce# x
 {-# INLINE happyOut35 #-}
 happyIn36 :: (Exp) -> (HappyAbsSyn )
@@ -428,7 +421,6 @@ happyReduction_38 (happy_x_5 `HappyStk`
 		 (NewExp happy_var_2 happy_var_4
 	) `HappyStk` happyRest}}
 
-<<<<<<< Updated upstream
 happyReduce_39 = happySpecReduce_1  13# happyReduction_39
 happyReduction_39 happy_x_1
 	 =  happyIn37
@@ -439,18 +431,6 @@ happyReduce_40 = happySpecReduce_1  13# happyReduction_40
 happyReduction_40 happy_x_1
 	 =  case happyOut24 happy_x_1 of { happy_var_1 -> 
 	happyIn37
-=======
-happyReduce_36 = happySpecReduce_1  12# happyReduction_36
-happyReduction_36 happy_x_1
-	 =  happyIn35
-		 (ClassObject
-	)
-
-happyReduce_37 = happySpecReduce_1  12# happyReduction_37
-happyReduction_37 happy_x_1
-	 =  case happyOut23 happy_x_1 of { happy_var_1 -> 
-	happyIn35
->>>>>>> Stashed changes
 		 (ClassId happy_var_1
 	)}
 
@@ -674,11 +654,7 @@ pExp tks = happySomeParser where
   happySomeParser = happyThen (happyParse 11# tks) (\x -> happyReturn (happyOut36 x))
 
 pClassName tks = happySomeParser where
-<<<<<<< Updated upstream
   happySomeParser = happyThen (happyParse 12# tks) (\x -> happyReturn (happyOut37 x))
-=======
-  happySomeParser = happyThen (happyParse 11# tks) (\x -> happyReturn (happyOut35 x))
->>>>>>> Stashed changes
 
 pListClassDecl tks = happySomeParser where
   happySomeParser = happyThen (happyParse 13# tks) (\x -> happyReturn (happyOut38 x))

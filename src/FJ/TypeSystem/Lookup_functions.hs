@@ -54,9 +54,12 @@ classCompare (ClassId id) cte = id == (fst cte)
 objConstr = KDecl (Id "Object") [] [] []
 objectCDecl = CDecl (Id "Object") ClassObject [] objConstr []
 
-findClass :: ClassName -> ClassTable -> ClassDecl
-findClass ClassObject _ = objectCDecl
-findClass cname (ClassTable ct) = snd (head (filter (classCompare cname) ct))
+findClass :: ClassName -> ClassTable -> Maybe ClassDecl
+findClass ClassObject _ = Just objectCDecl
+findClass cname (ClassTable ct) = -- return 
+    case (filter (classCompare cname) ct) of
+     [] -> Nothing
+     (c:cs) -> Just $ snd c 
 
 findMethod :: Id -> [MethodDecl] -> MethodDecl
 findMethod mname (m@(MDecl _ id _ _):ms) =
@@ -75,8 +78,8 @@ mbodyof mname (CDecl _ _ _ _ mlist) = (formalargs, term) where
   formalargs = methodFormalArgs (findMethod mname mlist)
   term = methodTerm (findMethod mname mlist)
 
-mbody :: Id -> ClassName -> ClassTable -> ([FormalArg], Term)
-mbody mname cname ct = mbodyof mname (findClass cname ct)
+--mbody :: Id -> ClassName -> ClassTable -> ([FormalArg], Term)
+--mbody mname cname ct = mbodyof mname (findClass cname ct)
 
 fargType :: FormalArg -> Type
 fargType (FArg cn _) = CType cn
@@ -113,16 +116,19 @@ cNameToString :: ClassName -> String
 cNameToString ClassObject = "Object"
 cNameToString (ClassId (Id str)) = str
 
-methodType :: Id -> ClassName -> ClassTable -> Type
+methodType :: Id -> ClassName -> ClassTable -> Maybe Type
 methodType mname cname ct = 
-    case foundMethod of
-        Just mdecl -> fargsToType (methodFormalArgs mdecl) (cname)
-        Nothing -> 
-            if cNameToString cname == "Object" 
-                then error $ "The method " ++ idToString mname ++ " could not be found in any class"
-                else methodType mname (superclassOf cdecl) ct
-    where cdecl = findClass cname ct
-          foundMethod = methodDecl mname cdecl
+    findClass cname ct     >>= \cdecl -> 
+    methodDecl mname cdecl >>= \mdecl -> 
+    return $ fargsToType (methodFormalArgs mdecl) cname 
+ --   case foundMethod of
+ --       Just mdecl -> fargsToType (methodFormalArgs mdecl) (cname)
+ --       Nothing -> 
+ --           if cNameToString cname == "Object" 
+ --               then error $ "The method " ++ idToString mname ++ " could not be found in any class"
+ --               else methodType mname (superclassOf cdecl) ct
+ --   where cdecl = findClass cname ct
+ --         foundMethod = methodDecl mname cdecl
 
 
 
@@ -133,8 +139,8 @@ test_prog2 = CProgram [CDecl (Id "A") ClassObject [] (KDecl (Id "A") [] [] []) [
 test_progCT = programCT test_prog
 test_prog2CT = programCT test_prog2
 a_class = findClass (ClassId $ Id "A") test_prog2CT
-pair_class = findClass (ClassId $ Id "Pair") test_prog2CT
-setfst_body = methodDecl (Id "setfst") pair_class
+--pair_class = findClass (ClassId $ Id "Pair") test_prog2CT
+--setfst_body = methodDecl (Id "setfst") pair_class
 
-setfst_type = methodType (Id "etfst") (ClassId $ Id "Pair") test_prog2CT
+setfst_type = methodType (Id "setfst") (ClassId $ Id "Pair") test_prog2CT
 

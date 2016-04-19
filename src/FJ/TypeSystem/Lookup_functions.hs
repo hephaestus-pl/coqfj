@@ -51,7 +51,11 @@ classCompare :: ClassName -> CTEntry -> Bool
 classCompare ClassObject _ = False
 classCompare (ClassId id) cte = id == (fst cte)
   
+objConstr = KDecl (Id "Object") [] [] []
+objectCDecl = CDecl (Id "Object") ClassObject [] objConstr []
+
 findClass :: ClassName -> ClassTable -> ClassDecl
+findClass ClassObject _ = objectCDecl
 findClass cname (ClassTable ct) = snd (head (filter (classCompare cname) ct))
 
 findMethod :: Id -> [MethodDecl] -> MethodDecl
@@ -96,16 +100,29 @@ methodId (MDecl _ mname _ _) = mname
 classMethods :: ClassDecl -> [MethodDecl]
 classMethods (CDecl _ _ _ _ mdecls) = mdecls
 
-methodDecl :: Id -> ClassDecl -> MethodDecl
-methodDecl mname (CDecl _ _ _ _ mdecls) = head $ filter (\m -> methodId m == mname) mdecls
+methodDecl :: Id -> ClassDecl -> Maybe MethodDecl
+methodDecl mname (CDecl _ _ _ _ mdecls) = 
+  case filter (\m -> methodId m == mname) mdecls of
+      [] -> Nothing
+      x:xs -> Just x
+
+idToString :: Id -> String
+idToString (Id str) = str
+
+cNameToString :: ClassName -> String
+cNameToString ClassObject = "Object"
+cNameToString (ClassId (Id str)) = str
 
 methodType :: Id -> ClassName -> ClassTable -> Type
 methodType mname cname ct = 
-    if mdecl `elem` classMethods cdecl
-        then fargsToType (methodFormalArgs mdecl) (cname)
-        else methodType mname (superclassOf cdecl) ct
+    case foundMethod of
+        Just mdecl -> fargsToType (methodFormalArgs mdecl) (cname)
+        Nothing -> 
+            if cNameToString cname == "Object" 
+                then error $ "The method " ++ idToString mname ++ " could not be found in any class"
+                else methodType mname (superclassOf cdecl) ct
     where cdecl = findClass cname ct
-          mdecl = methodDecl mname cdecl
+          foundMethod = methodDecl mname cdecl
 
 
 
@@ -119,5 +136,5 @@ a_class = findClass (ClassId $ Id "A") test_prog2CT
 pair_class = findClass (ClassId $ Id "Pair") test_prog2CT
 setfst_body = methodDecl (Id "setfst") pair_class
 
-setfst_type = methodType (Id "sefst") (ClassId $ Id "Pair") test_prog2CT
+setfst_type = methodType (Id "etfst") (ClassId $ Id "Pair") test_prog2CT
 

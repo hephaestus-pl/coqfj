@@ -12,5 +12,4 @@ data Type =
   | Type :~>: Type 
   deriving (Eq,Ord,Show)
 
-
-
+--type (:#:) = CType

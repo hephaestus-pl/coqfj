@@ -53,7 +53,7 @@ data Access =
   deriving (Eq,Ord,Show)
 
 data Exp =
-   CastExp ClassName Term
+   CastExp ClassName Exp
  | NewExp Id [Term]
   deriving (Eq,Ord,Show)
 

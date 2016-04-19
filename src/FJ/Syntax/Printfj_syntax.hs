@@ -173,7 +173,7 @@ instance Print Access where
 
 instance Print Exp where
   prt i e = case e of
-   CastExp classname term -> prPrec i 0 (concatD [doc (showString "(") , prt 0 classname , doc (showString ")") , prt 0 term])
+   CastExp classname exp -> prPrec i 0 (concatD [doc (showString "(") , prt 0 classname , doc (showString ")") , prt 0 exp])
    NewExp id terms -> prPrec i 0 (concatD [doc (showString "new") , prt 0 id , doc (showString "(") , prt 0 terms , doc (showString ")")])
 
 

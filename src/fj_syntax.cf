@@ -26,7 +26,7 @@ TermExp . Term ::= Exp ;
 ThisAccess . Access ::= "this" ;
 TermAcces . Access ::= Term ;
 
-CastExp . Exp ::= "(" ClassName ")" Term ;
+CastExp . Exp ::= "(" ClassName ")" Exp ;
 NewExp . Exp ::= "new" Id "(" [Term] ")" ;
 
 token Id (letter (letter | digit | '_')*) ;

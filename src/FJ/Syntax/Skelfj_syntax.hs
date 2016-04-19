@@ -75,7 +75,7 @@ transAccess x = case x of
 
 transExp :: Exp -> Result
 transExp x = case x of
-  CastExp classname term  -> failure x
+  CastExp classname exp  -> failure x
   NewExp id terms  -> failure x
 
 

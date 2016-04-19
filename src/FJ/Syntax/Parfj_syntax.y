@@ -108,7 +108,7 @@ Access : 'this' { ThisAccess }
 
 
 Exp :: { Exp }
-Exp : '(' ClassName ')' Term { CastExp $2 $4 } 
+Exp : '(' ClassName ')' Exp { CastExp $2 $4 } 
   | 'new' Id '(' ListTerm ')' { NewExp $2 $4 }
 
 

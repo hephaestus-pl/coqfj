@@ -53,7 +53,7 @@ All other symbols are terminals.
   |  |  **|**  | //Exp// 
   | //Access// | -> | ``this`` 
   |  |  **|**  | //Term// 
-  | //Exp// | -> | ``(`` //ClassName// ``)`` //Term// 
+  | //Exp// | -> | ``(`` //ClassName// ``)`` //Exp// 
   |  |  **|**  | ``new`` //Id// ``(`` //[Term]// ``)`` 
   | //ClassName// | -> | ``Object`` 
   |  |  **|**  | //Id// 

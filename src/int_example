@@ -1,0 +1,29 @@
+class Int extends Object{
+    Int(){super();}
+
+    Int add(Int lhs){
+    }
+}
+
+class O extends Int{
+    O(){super();}
+
+    Int add(Int lhs){
+        return lhs;
+    }
+}
+
+class S extends Int{
+    Int num;
+
+    S(Int num){
+        super();
+        this.num=num;
+    }
+
+    Int add(Int lhs){
+        return num.add(new S(lhs))
+    }
+    
+}
+new S(new O()).add(new O()); ~~> new S(new O())

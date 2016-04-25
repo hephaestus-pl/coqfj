@@ -8,8 +8,8 @@ class Int extends Object{
 class O extends Int{
     O(){super();}
 
-    Int add(Int lhs){
-        return lhs;
+    Int add(Int rhs){
+        return rhs;
     }
 }
 
@@ -21,9 +21,9 @@ class S extends Int{
         this.num=num;
     }
 
-    Int add(Int lhs){
-        return num.add(new S(lhs))
+    Int add(Int rhs){
+        return num.add(new S(rhs))
     }
     
 }
-new S(new O()).add(new O()); ~~> new S(new O())
+new S(new O()).add(new S(new O()));

@@ -1,8 +1,5 @@
 class Int extends Object{
     Int(){super();}
-
-    Int add(Int lhs){
-    }
 }
 
 class O extends Int{

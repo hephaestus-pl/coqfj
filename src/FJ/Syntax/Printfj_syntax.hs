@@ -147,18 +147,19 @@ instance Print Assignment where
 
 instance Print MethodDecl where
   prt i e = case e of
-   MDecl classname id formalargs term -> prPrec i 0 (concatD [prt 0 classname , prt 0 id , doc (showString "(") , prt 0 formalargs , doc (showString ")") , doc (showString "{") , doc (showString "return") , prt 0 term , doc (showString ";") , doc (showString "}")])
+   MDecl classname id formalargs exp -> prPrec i 0 (concatD [prt 0 classname , prt 0 id , doc (showString "(") , prt 0 formalargs , doc (showString ")") , doc (showString "{") , doc (showString "return") , prt 0 exp , doc (showString ";") , doc (showString "}")])
 
   prtList es = case es of
    [] -> (concatD [])
    x:xs -> (concatD [prt 0 x , prt 0 xs])
 
-instance Print Term where
+instance Print Exp where
   prt i e = case e of
-   TermVar id -> prPrec i 0 (concatD [prt 0 id])
-   TermFieldAccess access id -> prPrec i 0 (concatD [prt 0 access , doc (showString ".") , prt 0 id])
-   TermMethodInvoc access id terms -> prPrec i 0 (concatD [prt 0 access , doc (showString ".") , prt 0 id , doc (showString "(") , prt 0 terms , doc (showString ")")])
-   TermExp exp -> prPrec i 0 (concatD [prt 0 exp])
+   ExpVar id -> prPrec i 0 (concatD [prt 0 id])
+   ExpFieldAccess access id -> prPrec i 0 (concatD [prt 0 access , doc (showString ".") , prt 0 id])
+   ExpMethodInvoc access id exps -> prPrec i 0 (concatD [prt 0 access , doc (showString ".") , prt 0 id , doc (showString "(") , prt 0 exps , doc (showString ")")])
+   CastExp classname exp -> prPrec i 0 (concatD [doc (showString "(") , prt 0 classname , doc (showString ")") , prt 0 exp])
+   NewExp id exps -> prPrec i 0 (concatD [doc (showString "new") , prt 0 id , doc (showString "(") , prt 0 exps , doc (showString ")")])
 
   prtList es = case es of
    [] -> (concatD [])
@@ -168,13 +169,7 @@ instance Print Term where
 instance Print Access where
   prt i e = case e of
    ThisAccess  -> prPrec i 0 (concatD [doc (showString "this")])
-   TermAcces term -> prPrec i 0 (concatD [prt 0 term])
-
-
-instance Print Exp where
-  prt i e = case e of
-   CastExp classname exp -> prPrec i 0 (concatD [doc (showString "(") , prt 0 classname , doc (showString ")") , prt 0 exp])
-   NewExp id terms -> prPrec i 0 (concatD [doc (showString "new") , prt 0 id , doc (showString "(") , prt 0 terms , doc (showString ")")])
+   ExpAccess exp -> prPrec i 0 (concatD [prt 0 exp])
 
 
 instance Print ClassName where

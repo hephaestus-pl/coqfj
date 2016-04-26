@@ -37,24 +37,20 @@ data Assignment =
   deriving (Eq,Ord,Show)
 
 data MethodDecl =
-   MDecl ClassName Id [FormalArg] Term
+   MDecl ClassName Id [FormalArg] Exp
   deriving (Eq,Ord,Show)
 
-data Term =
-   TermVar Id
- | TermFieldAccess Access Id
- | TermMethodInvoc Access Id [Term]
- | TermExp Exp
+data Exp =
+   ExpVar Id
+ | ExpFieldAccess Access Id
+ | ExpMethodInvoc Access Id [Exp]
+ | CastExp ClassName Exp
+ | NewExp Id [Exp]
   deriving (Eq,Ord,Show)
 
 data Access =
    ThisAccess
- | TermAcces Term
-  deriving (Eq,Ord,Show)
-
-data Exp =
-   CastExp ClassName Exp
- | NewExp Id [Term]
+ | ExpAccess Exp
   deriving (Eq,Ord,Show)
 
 data ClassName =

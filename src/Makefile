@@ -2,12 +2,14 @@ all:
 	@echo "Usage: make ffj or make fj"
 
 ffj:
+	bnfc -p FFJ.Syntax ffj_syntax.cf
 	happy -gca FFJ/Parffj_syntax.y
 	alex -g FFJ/Lexffj_syntax.x
 	@#(cd FFJ/; latex Docffj_syntax.tex; dvips Docffj_syntax.dvi -o Docffj_syntax.ps)
 	ghc --make FFJ/Testffj_syntax.hs -o FFJ/Testffj_syntax
 
 fj:
+	bnfc -p FJ.Syntax fj_syntax.cf
 	happy -gca FJ/Syntax/Parfj_syntax.y
 	alex -g FJ/Syntax/Lexfj_syntax.x
 	@#(cd FJ/Syntax/; latex Docfj_syntax.tex; dvips Docfj_syntax.dvi -o Docfj_syntax.ps)

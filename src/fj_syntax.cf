@@ -16,18 +16,16 @@ Arg . Argument ::= Id ;
 Assgnmt . Assignment ::= "this" "." Id "=" Id ";" ;
 
 -- Method Declaration
-MDecl . MethodDecl ::= ClassName Id "(" [FormalArg] ")" "{" "return" Term ";" "}" ;
+MDecl . MethodDecl ::= ClassName Id "(" [FormalArg] ")" "{" "return" Exp ";" "}" ;
 
-TermVar . Term ::= Id ;
-TermFieldAccess . Term ::= Access "." Id ; 
-TermMethodInvoc . Term ::= Access "." Id "(" [Term] ")" ;
-TermExp . Term ::= Exp ;
+ExpVar . Exp ::= Id ;
+ExpFieldAccess . Exp ::= Access "." Id ; 
+ExpMethodInvoc . Exp ::= Access "." Id "(" [Exp] ")" ;
+CastExp . Exp ::= "(" ClassName ")" Exp ;
+NewExp . Exp ::= "new" Id "(" [Exp] ")" ;
 
 ThisAccess . Access ::= "this" ;
-TermAcces . Access ::= Term ;
-
-CastExp . Exp ::= "(" ClassName ")" Exp ;
-NewExp . Exp ::= "new" Id "(" [Term] ")" ;
+ExpAccess . Access ::= Exp ;
 
 token Id (letter (letter | digit | '_')*) ;
 
@@ -41,5 +39,5 @@ separator FieldParam "," ;
 separator FormalArg "," ;
 separator Argument "," ;
 separator Assignment "" ;
-separator Term "," ;
+separator Exp "," ;
 

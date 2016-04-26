@@ -91,24 +91,20 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{MethodDecl}} & {\arrow}  &{\nonterminal{ClassName}} {\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListFormalArg}} {\terminal{)}} {\terminal{\{}} {\terminal{return}} {\nonterminal{Term}} {\terminal{;}} {\terminal{\}}}  \\
+{\nonterminal{MethodDecl}} & {\arrow}  &{\nonterminal{ClassName}} {\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListFormalArg}} {\terminal{)}} {\terminal{\{}} {\terminal{return}} {\nonterminal{Exp}} {\terminal{;}} {\terminal{\}}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Term}} & {\arrow}  &{\nonterminal{Id}}  \\
+{\nonterminal{Exp}} & {\arrow}  &{\nonterminal{Id}}  \\
  & {\delimit}  &{\nonterminal{Access}} {\terminal{.}} {\nonterminal{Id}}  \\
- & {\delimit}  &{\nonterminal{Access}} {\terminal{.}} {\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListTerm}} {\terminal{)}}  \\
- & {\delimit}  &{\nonterminal{Exp}}  \\
+ & {\delimit}  &{\nonterminal{Access}} {\terminal{.}} {\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListExp}} {\terminal{)}}  \\
+ & {\delimit}  &{\terminal{(}} {\nonterminal{ClassName}} {\terminal{)}} {\nonterminal{Exp}}  \\
+ & {\delimit}  &{\terminal{new}} {\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListExp}} {\terminal{)}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
 {\nonterminal{Access}} & {\arrow}  &{\terminal{this}}  \\
- & {\delimit}  &{\nonterminal{Term}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
-{\nonterminal{Exp}} & {\arrow}  &{\terminal{(}} {\nonterminal{ClassName}} {\terminal{)}} {\nonterminal{Exp}}  \\
- & {\delimit}  &{\terminal{new}} {\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListTerm}} {\terminal{)}}  \\
+ & {\delimit}  &{\nonterminal{Exp}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -155,9 +151,9 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{ListTerm}} & {\arrow}  &{\emptyP} \\
- & {\delimit}  &{\nonterminal{Term}}  \\
- & {\delimit}  &{\nonterminal{Term}} {\terminal{,}} {\nonterminal{ListTerm}}  \\
+{\nonterminal{ListExp}} & {\arrow}  &{\emptyP} \\
+ & {\delimit}  &{\nonterminal{Exp}}  \\
+ & {\delimit}  &{\nonterminal{Exp}} {\terminal{,}} {\nonterminal{ListExp}}  \\
 \end{tabular}\\
 
 

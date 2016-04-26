@@ -56,27 +56,22 @@ transAssignment x = case x of
 
 transMethodDecl :: MethodDecl -> Result
 transMethodDecl x = case x of
-  MDecl classname id formalargs term  -> failure x
+  MDecl classname id formalargs exp  -> failure x
 
 
-transTerm :: Term -> Result
-transTerm x = case x of
-  TermVar id  -> failure x
-  TermFieldAccess access id  -> failure x
-  TermMethodInvoc access id terms  -> failure x
-  TermExp exp  -> failure x
+transExp :: Exp -> Result
+transExp x = case x of
+  ExpVar id  -> failure x
+  ExpFieldAccess access id  -> failure x
+  ExpMethodInvoc access id exps  -> failure x
+  CastExp classname exp  -> failure x
+  NewExp id exps  -> failure x
 
 
 transAccess :: Access -> Result
 transAccess x = case x of
   ThisAccess  -> failure x
-  TermAcces term  -> failure x
-
-
-transExp :: Exp -> Result
-transExp x = case x of
-  CastExp classname exp  -> failure x
-  NewExp id terms  -> failure x
+  ExpAccess exp  -> failure x
 
 
 transClassName :: ClassName -> Result

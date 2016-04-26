@@ -17,9 +17,8 @@ import FJ.Syntax.ErrM
 %name pArgument Argument
 %name pAssignment Assignment
 %name pMethodDecl MethodDecl
-%name pTerm Term
-%name pAccess Access
 %name pExp Exp
+%name pAccess Access
 %name pClassName ClassName
 %name pListClassDecl ListClassDecl
 %name pListFieldDecl ListFieldDecl
@@ -28,7 +27,7 @@ import FJ.Syntax.ErrM
 %name pListFormalArg ListFormalArg
 %name pListArgument ListArgument
 %name pListAssignment ListAssignment
-%name pListTerm ListTerm
+%name pListExp ListExp
 
 -- no lexer declaration
 %monad { Err } { thenM } { returnM }
@@ -92,24 +91,20 @@ Assignment : 'this' '.' Id '=' Id ';' { Assgnmt $3 $5 }
 
 
 MethodDecl :: { MethodDecl }
-MethodDecl : ClassName Id '(' ListFormalArg ')' '{' 'return' Term ';' '}' { MDecl $1 $2 $4 $8 } 
+MethodDecl : ClassName Id '(' ListFormalArg ')' '{' 'return' Exp ';' '}' { MDecl $1 $2 $4 $8 } 
 
 
-Term :: { Term }
-Term : Id { TermVar $1 } 
-  | Access '.' Id { TermFieldAccess $1 $3 }
-  | Access '.' Id '(' ListTerm ')' { TermMethodInvoc $1 $3 $5 }
-  | Exp { TermExp $1 }
+Exp :: { Exp }
+Exp : Id { ExpVar $1 } 
+  | Access '.' Id { ExpFieldAccess $1 $3 }
+  | Access '.' Id '(' ListExp ')' { ExpMethodInvoc $1 $3 $5 }
+  | '(' ClassName ')' Exp { CastExp $2 $4 }
+  | 'new' Id '(' ListExp ')' { NewExp $2 $4 }
 
 
 Access :: { Access }
 Access : 'this' { ThisAccess } 
-  | Term { TermAcces $1 }
-
-
-Exp :: { Exp }
-Exp : '(' ClassName ')' Exp { CastExp $2 $4 } 
-  | 'new' Id '(' ListTerm ')' { NewExp $2 $4 }
+  | Exp { ExpAccess $1 }
 
 
 ClassName :: { ClassName }
@@ -155,10 +150,10 @@ ListAssignment : {- empty -} { [] }
   | ListAssignment Assignment { flip (:) $1 $2 }
 
 
-ListTerm :: { [Term] }
-ListTerm : {- empty -} { [] } 
-  | Term { (:[]) $1 }
-  | Term ',' ListTerm { (:) $1 $3 }
+ListExp :: { [Exp] }
+ListExp : {- empty -} { [] } 
+  | Exp { (:[]) $1 }
+  | Exp ',' ListExp { (:) $1 $3 }
 
 
 

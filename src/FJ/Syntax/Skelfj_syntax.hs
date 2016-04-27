@@ -65,7 +65,7 @@ transExp x = case x of
   ExpFieldAccess access id  -> failure x
   ExpMethodInvoc access id exps  -> failure x
   CastExp classname exp  -> failure x
-  NewExp id exps  -> failure x
+  NewExp classname exps  -> failure x
 
 
 transAccess :: Access -> Result

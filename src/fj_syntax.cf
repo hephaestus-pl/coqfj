@@ -22,7 +22,7 @@ ExpVar . Exp ::= Id ;
 ExpFieldAccess . Exp ::= Access "." Id ; 
 ExpMethodInvoc . Exp ::= Access "." Id "(" [Exp] ")" ;
 CastExp . Exp ::= "(" ClassName ")" Exp ;
-NewExp . Exp ::= "new" Id "(" [Exp] ")" ;
+NewExp . Exp ::= "new" ClassName "(" [Exp] ")" ;
 
 ThisAccess . Access ::= "this" ;
 ExpAccess . Access ::= Exp ;

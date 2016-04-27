@@ -159,7 +159,7 @@ instance Print Exp where
    ExpFieldAccess access id -> prPrec i 0 (concatD [prt 0 access , doc (showString ".") , prt 0 id])
    ExpMethodInvoc access id exps -> prPrec i 0 (concatD [prt 0 access , doc (showString ".") , prt 0 id , doc (showString "(") , prt 0 exps , doc (showString ")")])
    CastExp classname exp -> prPrec i 0 (concatD [doc (showString "(") , prt 0 classname , doc (showString ")") , prt 0 exp])
-   NewExp id exps -> prPrec i 0 (concatD [doc (showString "new") , prt 0 id , doc (showString "(") , prt 0 exps , doc (showString ")")])
+   NewExp classname exps -> prPrec i 0 (concatD [doc (showString "new") , prt 0 classname , doc (showString "(") , prt 0 exps , doc (showString ")")])
 
   prtList es = case es of
    [] -> (concatD [])

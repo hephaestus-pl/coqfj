@@ -45,7 +45,7 @@ data Exp =
  | ExpFieldAccess Access Id
  | ExpMethodInvoc Access Id [Exp]
  | CastExp ClassName Exp
- | NewExp Id [Exp]
+ | NewExp ClassName [Exp]
   deriving (Eq,Ord,Show)
 
 data Access =

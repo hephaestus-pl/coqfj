@@ -5,7 +5,7 @@ import FJ.Syntax.Absfj_syntax
 
 type Env = [(Id, Exp)]
 
-data Value  = Object {
+data Value  = ClassInstance {
 	vName :: ClassName,
 	state :: Env
 }deriving(Eq, Show, Ord)

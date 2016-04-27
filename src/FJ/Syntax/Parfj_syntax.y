@@ -99,7 +99,7 @@ Exp : Id { ExpVar $1 }
   | Access '.' Id { ExpFieldAccess $1 $3 }
   | Access '.' Id '(' ListExp ')' { ExpMethodInvoc $1 $3 $5 }
   | '(' ClassName ')' Exp { CastExp $2 $4 }
-  | 'new' Id '(' ListExp ')' { NewExp $2 $4 }
+  | 'new' ClassName '(' ListExp ')' { NewExp $2 $4 }
 
 
 Access :: { Access }

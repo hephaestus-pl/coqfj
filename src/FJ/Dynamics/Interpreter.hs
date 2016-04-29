@@ -17,16 +17,15 @@ import FJ.TypeSystem.Lookup_functions
 import FJ.TypeSystem.Types
 import FJ.Dynamics.Value
 
--- a funcao classFields recebe uma ClassDecl, nao uma ClassId
--- temos primeiro que achar a declaracao da classe na CT
--- esta mesma funcao retorna uma lista de FieldDecl
--- precisamos pegar apenas o Id para que o Object que estamos
--- retornando seja um Value valido
-eval :: ClassTable -> Exp -> Value
-eval ct (NewExp cname args) = 
-    case findClass cname ct of
-        Nothing -> error "no class found with that name"
-        Just cdecl -> ClassInstance cname [(x,y) | (x,y) <- l]
-            where fields = classFields cdecl 
-                  l = zip (map fieldId fields) args
+mZip :: [a] -> [b] -> Result [(a, b)]
+mZip x1 x2 = if length x1 == length x2
+                        then Ok $ zip x1 x2 
+                        else raise "lists have different lengths, abort!"
+
+eval :: ClassTable -> Exp -> Result Value
+eval ct (NewExp cname args) = do 
+    cdecl <- findClass cname ct
+    let fields = classFields cdecl in do
+        l <- mZip (map fieldId fields) args
+        return $ ClassInstance cname [(x,y) | (x,y) <- l]
     

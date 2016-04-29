@@ -57,12 +57,12 @@ classCompare (ClassId id) cte = id == (fst cte)
 objConstr = KDecl (Id "Object") [] [] []
 objectCDecl = CDecl (Id "Object") ClassObject [] objConstr []
 
-findClass :: ClassName -> ClassTable -> Maybe ClassDecl
-findClass ClassObject _ = Just objectCDecl
+findClass :: ClassName -> ClassTable -> Result ClassDecl
+findClass ClassObject _ = Ok objectCDecl
 findClass cname (ClassTable ct) = -- return 
     case (filter (classCompare cname) ct) of
-     [] -> Nothing
-     (c:cs) -> Just $ snd c 
+     [] -> raise "Could not find Class Declaration"
+     (c:cs) -> Ok $ snd c 
 
 findMethod :: Id -> [MethodDecl] -> MethodDecl
 findMethod mname (m@(MDecl _ id _ _):ms) =
@@ -106,11 +106,11 @@ methodId (MDecl _ mname _ _) = mname
 classMethods :: ClassDecl -> [MethodDecl]
 classMethods (CDecl _ _ _ _ mdecls) = mdecls
 
-methodDecl :: Id -> ClassDecl -> Maybe MethodDecl
+methodDecl :: Id -> ClassDecl -> Result MethodDecl
 methodDecl mname (CDecl _ _ _ _ mdecls) = 
   case filter (\m -> methodId m == mname) mdecls of
-      [] -> Nothing
-      x:xs -> Just x
+      [] -> raise $ "Couldn't find method with name " ++ idToString mname
+      x:xs -> Ok x
 
 idToString :: Id -> String
 idToString (Id str) = str
@@ -119,7 +119,7 @@ cNameToString :: ClassName -> String
 cNameToString ClassObject = "Object"
 cNameToString (ClassId (Id str)) = str
 
-methodType :: Id -> ClassName -> ClassTable -> Maybe Type
+methodType :: Id -> ClassName -> ClassTable -> Result Type
 methodType mname cname ct = 
     findClass cname ct     >>= \cdecl -> 
     methodDecl mname cdecl >>= \mdecl -> 
@@ -136,5 +136,5 @@ a_class = findClass (ClassId $ Id "A") test_prog2CT
 --pair_class = findClass (ClassId $ Id "Pair") test_prog2CT
 --setfst_body = methodDecl (Id "setfst") pair_class
 
-setfst_type = methodType (Id "setfst") (ClassId $ Id "Pair") test_prog2CT
+setfst_type = methodType (Id "setfst") (ClassId $ Id "Pai") test_prog2CT
 

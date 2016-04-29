@@ -3,9 +3,11 @@ module FJ.Dynamics.Value where
 import FJ.TypeSystem.Types
 import FJ.Syntax.Absfj_syntax
 
+type Env = [(Id, Exp)]
+
 data Value  = ClassInstance {
 	vName :: ClassName,
-	state :: [(Id, Exp)]
+	state :: Env
 }deriving(Eq, Show, Ord)
 
 newObj = ClassInstance (ClassId (Id "obj")) []
@@ -14,4 +16,3 @@ example_ct = ClassTable [(Id "A", CDecl (Id "A") ClassObject [] (KDecl (Id "A") 
 
 
 
-{-eval example_ct (NewExp (ClassId (Id "Pair")) [(NewExp (ClassId (Id "A")) []), (NewExp (ClassId (Id "B")) [])])-}

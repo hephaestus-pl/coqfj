@@ -14,7 +14,7 @@ class Pair extends Object{
         this.snd=snd;
     }
     Pair setfst(A newfst){
-        return new Pair(newfst, this.snd);
+        return new Pair(newfst, new B());
     }
     
 }

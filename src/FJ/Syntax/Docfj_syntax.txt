@@ -47,13 +47,13 @@ All other symbols are terminals.
   | //Argument// | -> | //Id// 
   | //Assignment// | -> | ``this`` ``.`` //Id// ``=`` //Id// ``;`` 
   | //MethodDecl// | -> | //ClassName// //Id// ``(`` //[FormalArg]// ``)`` ``{`` ``return`` //Exp// ``;`` ``}`` 
-  | //Exp// | -> | //Id// 
-  |  |  **|**  | //Access// ``.`` //Id// 
-  |  |  **|**  | //Access// ``.`` //Id// ``(`` //[Exp]// ``)`` 
+  | //Exp// | -> | //Var// 
+  |  |  **|**  | //Exp// ``.`` //Id// 
+  |  |  **|**  | //Exp// ``.`` //Id// ``(`` //[Exp]// ``)`` 
   |  |  **|**  | ``(`` //ClassName// ``)`` //Exp// 
   |  |  **|**  | ``new`` //ClassName// ``(`` //[Exp]// ``)`` 
-  | //Access// | -> | ``this`` 
-  |  |  **|**  | //Exp// 
+  | //Var// | -> | ``this`` 
+  |  |  **|**  | //Id// 
   | //ClassName// | -> | ``Object`` 
   |  |  **|**  | //Id// 
   | //[ClassDecl]// | -> | **eps**

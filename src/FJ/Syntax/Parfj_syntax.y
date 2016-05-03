@@ -18,7 +18,7 @@ import FJ.Syntax.ErrM
 %name pAssignment Assignment
 %name pMethodDecl MethodDecl
 %name pExp Exp
-%name pAccess Access
+%name pVar Var
 %name pClassName ClassName
 %name pListClassDecl ListClassDecl
 %name pListFieldDecl ListFieldDecl
@@ -95,16 +95,16 @@ MethodDecl : ClassName Id '(' ListFormalArg ')' '{' 'return' Exp ';' '}' { MDecl
 
 
 Exp :: { Exp }
-Exp : Id { ExpVar $1 } 
-  | Access '.' Id { ExpFieldAccess $1 $3 }
-  | Access '.' Id '(' ListExp ')' { ExpMethodInvoc $1 $3 $5 }
+Exp : Var { ExpVar $1 } 
+  | Exp '.' Id { ExpFieldAccess $1 $3 }
+  | Exp '.' Id '(' ListExp ')' { ExpMethodInvoc $1 $3 $5 }
   | '(' ClassName ')' Exp { CastExp $2 $4 }
   | 'new' ClassName '(' ListExp ')' { NewExp $2 $4 }
 
 
-Access :: { Access }
-Access : 'this' { ThisAccess } 
-  | Exp { ExpAccess $1 }
+Var :: { Var }
+Var : 'this' { This } 
+  | Id { IdVar $1 }
 
 
 ClassName :: { ClassName }

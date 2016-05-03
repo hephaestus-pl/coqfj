@@ -41,16 +41,16 @@ data MethodDecl =
   deriving (Eq,Ord,Show)
 
 data Exp =
-   ExpVar Id
- | ExpFieldAccess Access Id
- | ExpMethodInvoc Access Id [Exp]
+   ExpVar Var
+ | ExpFieldAccess Exp Id
+ | ExpMethodInvoc Exp Id [Exp]
  | CastExp ClassName Exp
  | NewExp ClassName [Exp]
   deriving (Eq,Ord,Show)
 
-data Access =
-   ThisAccess
- | ExpAccess Exp
+data Var =
+   This
+ | IdVar Id
   deriving (Eq,Ord,Show)
 
 data ClassName =

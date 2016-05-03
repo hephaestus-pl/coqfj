@@ -61,17 +61,17 @@ transMethodDecl x = case x of
 
 transExp :: Exp -> Result
 transExp x = case x of
-  ExpVar id  -> failure x
-  ExpFieldAccess access id  -> failure x
-  ExpMethodInvoc access id exps  -> failure x
+  ExpVar var  -> failure x
+  ExpFieldAccess exp id  -> failure x
+  ExpMethodInvoc exp id exps  -> failure x
   CastExp classname exp  -> failure x
   NewExp classname exps  -> failure x
 
 
-transAccess :: Access -> Result
-transAccess x = case x of
-  ThisAccess  -> failure x
-  ExpAccess exp  -> failure x
+transVar :: Var -> Result
+transVar x = case x of
+  This  -> failure x
+  IdVar id  -> failure x
 
 
 transClassName :: ClassName -> Result

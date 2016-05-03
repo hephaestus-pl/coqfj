@@ -34,17 +34,15 @@ eval ct (NewExp cname args) = do
     let fields = classFields cdecl in do
     l <- mZip (map fieldId fields) args
     return $ ClassInstance cname l
-eval ct (ExpFieldAccess (ExpAccess exp) id) = do
+eval ct (ExpFieldAccess exp id) =
     value <- eval ct exp
     e <- findExp (state value) id
     eval ct e
-eval ct (ExpMethodInvoc (ExpAccess exp) id args) = do
+eval ct (ExpMethodInvoc exp id args) = do
     value <- eval ct exp
     cdecl <- findClass (vName value) ct
     let (mfargs, mbody) = mbodyof id cdecl in do
     l <- mZip mfargs args
     eval ct mbody -- we need to add the fargs to the env
+eval ct Var 
                  
-cast_ex = eval example_ct (NewExp (ClassId (Id "Pair")) [(NewExp (ClassId (Id "A")) []), (NewExp (ClassId (Id "B")) [])]) 
-method_invoc_ex = eval test_prog2CT (ExpMethodInvoc (ExpAccess $ NewExp (ClassId (Id "Pair")) [(NewExp (ClassId (Id "A")) []), (NewExp (ClassId (Id "B")) [])]) (Id "setfst") [NewExp (ClassId (Id "A")) []]) 
-field_acess_ex = eval example_ct (ExpFieldAccess (ExpAccess $ NewExp (ClassId (Id "Pair")) [(NewExp (ClassId (Id "A")) []), (NewExp (ClassId (Id "B")) [])]) (Id "snd")) 

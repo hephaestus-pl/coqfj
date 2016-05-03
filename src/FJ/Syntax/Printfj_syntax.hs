@@ -155,9 +155,9 @@ instance Print MethodDecl where
 
 instance Print Exp where
   prt i e = case e of
-   ExpVar id -> prPrec i 0 (concatD [prt 0 id])
-   ExpFieldAccess access id -> prPrec i 0 (concatD [prt 0 access , doc (showString ".") , prt 0 id])
-   ExpMethodInvoc access id exps -> prPrec i 0 (concatD [prt 0 access , doc (showString ".") , prt 0 id , doc (showString "(") , prt 0 exps , doc (showString ")")])
+   ExpVar var -> prPrec i 0 (concatD [prt 0 var])
+   ExpFieldAccess exp id -> prPrec i 0 (concatD [prt 0 exp , doc (showString ".") , prt 0 id])
+   ExpMethodInvoc exp id exps -> prPrec i 0 (concatD [prt 0 exp , doc (showString ".") , prt 0 id , doc (showString "(") , prt 0 exps , doc (showString ")")])
    CastExp classname exp -> prPrec i 0 (concatD [doc (showString "(") , prt 0 classname , doc (showString ")") , prt 0 exp])
    NewExp classname exps -> prPrec i 0 (concatD [doc (showString "new") , prt 0 classname , doc (showString "(") , prt 0 exps , doc (showString ")")])
 
@@ -166,10 +166,10 @@ instance Print Exp where
    [x] -> (concatD [prt 0 x])
    x:xs -> (concatD [prt 0 x , doc (showString ",") , prt 0 xs])
 
-instance Print Access where
+instance Print Var where
   prt i e = case e of
-   ThisAccess  -> prPrec i 0 (concatD [doc (showString "this")])
-   ExpAccess exp -> prPrec i 0 (concatD [prt 0 exp])
+   This  -> prPrec i 0 (concatD [doc (showString "this")])
+   IdVar id -> prPrec i 0 (concatD [prt 0 id])
 
 
 instance Print ClassName where

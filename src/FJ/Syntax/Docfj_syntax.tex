@@ -95,16 +95,16 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Exp}} & {\arrow}  &{\nonterminal{Id}}  \\
- & {\delimit}  &{\nonterminal{Access}} {\terminal{.}} {\nonterminal{Id}}  \\
- & {\delimit}  &{\nonterminal{Access}} {\terminal{.}} {\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListExp}} {\terminal{)}}  \\
+{\nonterminal{Exp}} & {\arrow}  &{\nonterminal{Var}}  \\
+ & {\delimit}  &{\nonterminal{Exp}} {\terminal{.}} {\nonterminal{Id}}  \\
+ & {\delimit}  &{\nonterminal{Exp}} {\terminal{.}} {\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListExp}} {\terminal{)}}  \\
  & {\delimit}  &{\terminal{(}} {\nonterminal{ClassName}} {\terminal{)}} {\nonterminal{Exp}}  \\
  & {\delimit}  &{\terminal{new}} {\nonterminal{ClassName}} {\terminal{(}} {\nonterminal{ListExp}} {\terminal{)}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Access}} & {\arrow}  &{\terminal{this}}  \\
- & {\delimit}  &{\nonterminal{Exp}}  \\
+{\nonterminal{Var}} & {\arrow}  &{\terminal{this}}  \\
+ & {\delimit}  &{\nonterminal{Id}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}

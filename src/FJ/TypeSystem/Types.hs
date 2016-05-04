@@ -1,5 +1,7 @@
 module FJ.TypeSystem.Types where
 
+import Control.Monad(liftM, ap) 
+
 import FJ.Syntax.Absfj_syntax
 
 type CTEntry = (Id, ClassDecl)
@@ -28,4 +30,14 @@ instance Monad Result where
 				(Ok a) -> f a
 				(Ex e) -> raise e
 
+-- Note: in more recent versions of GHC, every 
+-- monad instance must also be declared as an 
+-- instance of both Functor and Applicative 
+-- type classes. Sure, this is a little boring. 
+ 
+instance Functor Result where
+	 fmap = liftM
 
+instance Applicative Result where 
+	 pure = return
+	 (<*>) = ap

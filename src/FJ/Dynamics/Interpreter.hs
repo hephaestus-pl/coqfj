@@ -10,12 +10,16 @@ Portability :  portable
 
 <module description starting at first column>
 -}
+
 module FJ.Dynamics.Interpreter where
+
+import FJ.Dynamics.Value
+import FJ.Dynamics.Environment
 
 import FJ.Syntax.Absfj_syntax
 import FJ.TypeSystem.Lookup_functions
 import FJ.TypeSystem.Types
-import FJ.Dynamics.Value
+
 
 mZip :: [a] -> [b] -> Result [(a, b)]
 mZip x1 x2 = if length x1 == length x2
@@ -28,21 +32,28 @@ findExp ((a,b):xs) id = if a == id
                 then Ok b
                 else findExp xs id
 
-eval :: ClassTable -> Exp -> Result Value
-eval ct (NewExp cname args) = do 
-    cdecl <- findClass cname ct
-    let fields = classFields cdecl in do
-    l <- mZip (map fieldId fields) args
-    return $ ClassInstance cname l
-eval ct (ExpFieldAccess exp id) =
-    value <- eval ct exp
-    e <- findExp (state value) id
-    eval ct e
-eval ct (ExpMethodInvoc exp id args) = do
-    value <- eval ct exp
-    cdecl <- findClass (vName value) ct
-    let (mfargs, mbody) = mbodyof id cdecl in do
-    l <- mZip mfargs args
-    eval ct mbody -- we need to add the fargs to the env
-eval ct Var 
+eval :: Exp -> ClassTable -> Stack -> Result Value
+eval (NewExp cname args) ct stack = do
+  fields <- fmap classFields $ findClass cname ct
+  env    <- mZip (map fieldId fields) args  
+  return $ ClassInstance cname env
+
+eval (ExpFieldAccess exp id) ct stack = do 
+  value <- eval exp ct stack
+  e <- findExp (state value) id
+  eval e ct stack
+
+eval (ExpMethodInvoc exp id args) ct stack = do
+  value <- eval exp ct stack
+  cdecl <- findClass (vName value) ct
+  let (mfargs, mbody) = mbodyof id cdecl
+  args <- mZip mfargs args
+  let stack' = newBind exp [(n, e) | (FArg c n, e) <- args] stack
+  eval mbody ct stack' 
+
+
+newBind :: Exp -> Env -> Stack -> Stack 
+newBind obj args stack = 
+ let newEnv = (Id "this", obj) : args
+ in push newEnv stack 
                  

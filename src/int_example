@@ -19,8 +19,8 @@ class S extends Int{
     }
 
     Int add(Int rhs){
-        return num.add(new S(rhs))
+        return this.num.add(new S(rhs));
     }
     
 }
-new S(new O()).add(new S(new O()));
+new S(new S(new O())).add(new S(new O()))

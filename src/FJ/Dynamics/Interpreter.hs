@@ -23,20 +23,20 @@ mZip x1 x2 = if length x1 == length x2
                         else raise "lists have different lengths, abort!"
 
 --maybe its a good idea to make it get the Instance itself as argument
-fieldValue :: FieldBindings -> Id -> Result Instance
+fieldValue :: FieldBindings -> Id -> Result Value
 fieldValue [] id = raise $ (show id) ++ " not found"
 fieldValue ((a,b):xs) id = if a == id 
                 then Ok b
                 else fieldValue xs id
 
-popVar :: Env -> Var -> Result Instance
+popVar :: Env -> Var -> Result Value
 popVar [] var = raise $ (show var) ++ " not found in env"
 popVar ((v, val): xs) var = if v == var
                             then Ok val
                             else popVar xs var
 
 
-evalRec :: ClassTable -> Env -> Exp -> Result Instance
+evalRec :: ClassTable -> Env -> Exp -> Result Value
 evalRec  _ env (ExpVar var) = popVar env var
 evalRec ct env (NewExp cname args) = do 
     cdecl <- findClass cname ct

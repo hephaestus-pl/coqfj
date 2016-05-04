@@ -34,6 +34,9 @@ classEntries cdeclList = ClassTable $ map ctEntry cdeclList
 programCT :: Program -> ClassTable
 programCT (CProgram ct _) = (classEntries ct)
 
+programExp :: Program -> Exp
+programExp (CProgram _ exp) = exp
+
 -- perhaps we'll eventually have to refactor this to signature
 -- Id -> ClassName -> ClassTable -> [FieldDecl]
 -- so we can have ClassObject with nil fields

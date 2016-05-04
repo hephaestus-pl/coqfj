@@ -84,6 +84,9 @@ mbodyof mname (CDecl _ _ _ _ mlist) = (formalargs, term) where
 --mbody :: Id -> ClassName -> ClassTable -> ([FormalArg], Exp)
 --mbody mname cname ct = mbodyof mname (findClass cname ct)
 
+fargToVar :: FormalArg -> Var
+fargToVar (FArg _ id) = IdVar id
+
 fargType :: FormalArg -> Type
 fargType (FArg cn _) = CType cn
 
@@ -98,7 +101,6 @@ mtype' m@(MDecl returnType mname _ t) (CDecl cname _ _ _ mlist) =
     if m `elem` mlist
         then fargsToType (methodFormalArgs m) returnType
         else CType ClassObject
-
 
 methodId :: MethodDecl -> Id
 methodId (MDecl _ mname _ _) = mname
@@ -125,16 +127,4 @@ methodType mname cname ct =
     methodDecl mname cdecl >>= \mdecl -> 
     return $ fargsToType (methodFormalArgs mdecl) cname 
  --   case foundMethod of
-
-test_prog = CProgram [CDecl (Id "teste") ClassObject [FDecl ClassObject (Id "a")] (KDecl (Id "teste") [Field ClassObject (Id "a")] [] [Assgnmt (Id "a") (Id "a")]) [], CDecl (Id "teste2") (ClassId $ Id "teste") [] (KDecl (Id "teste2") [] [] []) []] (NewExp (ClassId $ Id "teste") [])
-
-test_prog2 = CProgram [CDecl (Id "A") ClassObject [] (KDecl (Id "A") [] [] []) [],CDecl (Id "B") ClassObject [] (KDecl (Id "B") [] [] []) [],CDecl (Id "Pair") ClassObject [FDecl (ClassId (Id "A")) (Id "fst"),FDecl (ClassId (Id "B")) (Id "snd")] (KDecl (Id "Pair") [Field (ClassId (Id "A")) (Id "fst"),Field (ClassId (Id "B")) (Id "snd")] [] [Assgnmt (Id "fst") (Id "fst"),Assgnmt (Id "snd") (Id "snd")]) [MDecl (ClassId (Id "Pair")) (Id "setfst") [FArg (ClassId (Id "A")) (Id "newfst")] (NewExp (ClassId (Id "Pair")) [ExpVar (Id "newfst"),NewExp (ClassId (Id "B")) []])]] (NewExp (ClassId (Id "Pair")) [NewExp (ClassId (Id "A")) [],NewExp (ClassId (Id "B")) []])
-
-test_progCT = programCT test_prog
-test_prog2CT = programCT test_prog2
-a_class = findClass (ClassId $ Id "A") test_prog2CT
---pair_class = findClass (ClassId $ Id "Pair") test_prog2CT
---setfst_body = methodDecl (Id "setfst") pair_class
-
-setfst_type = methodType (Id "setfst") (ClassId $ Id "Pair") test_prog2CT
 

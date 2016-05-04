@@ -3,15 +3,11 @@ module FJ.Dynamics.Value where
 import FJ.TypeSystem.Types
 import FJ.Syntax.Absfj_syntax
 
-type Env = [(Id, Exp)]
+type FieldBindings = [(Id, Instance)]
 
-data Value  = ClassInstance {
+data Instance = ClassInstance {
 	vName :: ClassName,
-	state :: Env
+	fieldBindings :: FieldBindings
 }deriving(Eq, Show, Ord)
 
-newObj = ClassInstance (ClassId (Id "obj")) []
-
-
-
-
+type Env = [(Var, Instance)]

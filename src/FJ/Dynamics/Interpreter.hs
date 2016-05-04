@@ -22,27 +22,43 @@ mZip x1 x2 = if length x1 == length x2
                         then Ok $ zip x1 x2 
                         else raise "lists have different lengths, abort!"
 
-findExp :: Env -> Id -> Result Exp
-findExp [] id = raise $ (show id) ++ " not found"
-findExp ((a,b):xs) id = if a == id 
+--maybe its a good idea to make it get the Instance itself as argument
+fieldValue :: FieldBindings -> Id -> Result Instance
+fieldValue [] id = raise $ (show id) ++ " not found"
+fieldValue ((a,b):xs) id = if a == id 
                 then Ok b
-                else findExp xs id
+                else fieldValue xs id
 
-eval :: ClassTable -> Exp -> Result Value
-eval ct (NewExp cname args) = do 
+popVar :: Env -> Var -> Result Instance
+popVar [] var = raise $ (show var) ++ " not found in env"
+popVar ((v, val): xs) var = if v == var
+                            then Ok val
+                            else popVar xs var
+
+
+evalRec :: ClassTable -> Env -> Exp -> Result Instance
+evalRec  _ env (ExpVar var) = popVar env var
+evalRec ct env (NewExp cname args) = do 
     cdecl <- findClass cname ct
     let fields = classFields cdecl in do
-    l <- mZip (map fieldId fields) args
+    evalArgs <- mapM (evalRec ct env) args
+    l <- mZip (map fieldId fields) evalArgs
     return $ ClassInstance cname l
-eval ct (ExpFieldAccess exp id) =
-    value <- eval ct exp
-    e <- findExp (state value) id
-    eval ct e
-eval ct (ExpMethodInvoc exp id args) = do
-    value <- eval ct exp
+evalRec ct env (ExpFieldAccess exp id) = do
+    value <- evalRec  ct env exp
+    let newEnv = ((This, value):env) in do
+    e <- fieldValue (fieldBindings value) id
+    return e
+    --evalRec ct newEnv e
+evalRec ct env (ExpMethodInvoc exp id args) = do
+    value <- evalRec ct env exp
     cdecl <- findClass (vName value) ct
     let (mfargs, mbody) = mbodyof id cdecl in do
-    l <- mZip mfargs args
-    eval ct mbody -- we need to add the fargs to the env
-eval ct Var 
-                 
+    let argsEnv = ((This, value):env) in do
+    evalArgs <- mapM (evalRec ct argsEnv) args
+    l <- mZip (map fargToVar mfargs) evalArgs
+    let newEnv = l ++ argsEnv in do
+    evalRec ct newEnv mbody -- we need to add the fargs to the env
+    
+
+eval ct env = evalRec ct [] env

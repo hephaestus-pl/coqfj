@@ -13,47 +13,63 @@ Portability :  portable
 
 module FJ.Dynamics.Interpreter where
 
+import Control.Applicative 
+import Core.CommonTypes
+
 import FJ.Dynamics.Value
 import FJ.Dynamics.Environment
 
 import FJ.Syntax.Absfj_syntax
-import FJ.TypeSystem.Lookup_functions
+import FJ.Syntax.LookupFunctions
 import FJ.TypeSystem.Types
 
 
 mZip :: [a] -> [b] -> Result [(a, b)]
-mZip x1 x2 = if length x1 == length x2
-                        then Ok $ zip x1 x2 
-                        else raise "lists have different lengths, abort!"
+mZip x1 x2 =
+  if length x1 == length x2
+   then Ok $ zip x1 x2
+   else raise "lists have different lengths, abort!"
 
-findExp :: Env -> Id -> Result Exp
+findExp :: Env -> String -> Result Exp
 findExp [] id = raise $ (show id) ++ " not found"
 findExp ((a,b):xs) id = if a == id 
                 then Ok b
                 else findExp xs id
 
 eval :: Exp -> ClassTable -> Stack -> Result Value
-eval (NewExp cname args) ct stack = do
-  fields <- fmap classFields $ findClass cname ct
-  env    <- mZip (map fieldId fields) args  
-  return $ ClassInstance cname env
 
-eval (ExpFieldAccess exp id) ct stack = do 
-  value <- eval exp ct stack
-  e <- findExp (state value) id
-  eval e ct stack
+-- eval *new* expression
+eval (NewExp (ClassId (Id cname)) args) ct stack =
+  find cname (map snd ct) >>= \c ->
+  Ok (classFields c)      >>= \fs ->  
+  mZip (map ref fs) args  >>= \s ->
+  return $ createInstance cname s
+ 
+-- do
+--   fields <- fmap classFields $ find cname (map snd ct) 
+--   env    <- mZip (map ref fields) args  
+--   return $ createInstance cname env
 
-eval (ExpMethodInvoc exp id args) ct stack = do
-  value <- eval exp ct stack
-  cdecl <- findClass (vName value) ct
-  let (mfargs, mbody) = mbodyof id cdecl
-  args <- mZip mfargs args
-  let stack' = newBind exp [(n, e) | (FArg c n, e) <- args] stack
-  eval mbody ct stack' 
+-- eval *field access* expression
+eval (ExpFieldAccess exp (Id f)) ct stack =
+   eval exp ct stack     >>= \obj -> 
+   findExp (state obj) f >>= \e   -> 
+   eval e ct stack
+
+--
+-- eval *method invocation* expression
+--
+eval (ExpMethodInvoc exp (Id methodName) args) ct stack = do
+  obj <- eval exp ct stack
+  classDec <- find (ref obj) (map snd ct)
+  methodDec <- find methodName (classMethods classDec)
+  bind <- newBind exp methodDec args stack
+  eval (methodBody methodDec) ct bind
 
 
-newBind :: Exp -> Env -> Stack -> Stack 
-newBind obj args stack = 
- let newEnv = (Id "this", obj) : args
- in push newEnv stack 
+
+newBind :: Exp -> MethodDecl -> [Exp] -> Stack -> Result Stack 
+newBind obj method args stack = undefined
+ -- let newEnv = (Id "this", obj) : args
+ -- in push newEnv stack 
                  

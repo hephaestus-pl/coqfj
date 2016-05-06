@@ -4,7 +4,7 @@ module FJ.Dynamics.Environment where
 import FJ.TypeSystem.Types
 import FJ.Syntax.Absfj_syntax
 
-type Env = [(Id, Exp)]
+type Env = [(String, Exp)]
 
 type Stack = [Env]
 
@@ -17,7 +17,3 @@ pop (e:es) = (e, es)
 
 top :: Stack -> Env
 top (e:es) = e
-
-
-
-

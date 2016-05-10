@@ -4,7 +4,7 @@ Module      :  Core.Types
 Description :  A module declaring common types necessary for 
                both implementations of FJ and FFJ.
 
-Copyright   :  Daniela & Pedro & Rodrigo
+Copyright   :  Daniella & Pedro & Rodrigo
 
 License     :  <license>
 

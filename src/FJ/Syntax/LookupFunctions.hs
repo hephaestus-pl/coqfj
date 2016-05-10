@@ -49,6 +49,12 @@ instance Referable FieldDecl where
 instance Referable MethodDecl where 
   ref (MDecl _ (Id s) _ _) = s 
 
+instance Referable ClassName where
+  ref (ClassId (Id s)) = s
+
+instance Referable Id where
+  ref (Id s) = s
+
 -- classId :: ClassDecl -> Id
 -- classId (CDecl id _ _ _ _) = id
 

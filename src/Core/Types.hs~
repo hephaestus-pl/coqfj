@@ -1,0 +1,11 @@
+module Core.Types where 
+
+class Referable a where 
+  ref  :: a -> String
+  find :: String -> [a] -> Maybe a
+ 
+  -- default implementation fo
+  find key list = 
+    case filter key $ map ref list of
+      []    -> Nothing
+      (x:_) -> Just x  

@@ -18,4 +18,4 @@ class Pair extends Object{
     }
     
 }
-new Pair(new A(), new B())
+new Pair(new A(), new B()).setfst(new A())

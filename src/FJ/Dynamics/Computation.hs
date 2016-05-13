@@ -26,5 +26,6 @@ computation (ExpMethodInvoc exp method args) ct =
   computation (sub body bind) ct
   
 sub :: Exp -> [(Var, Exp)] -> Exp
-sub = undefined 
+sub (ExpVar This) bind = snd $ head bind 
+sub (ExpVar var) (this:bind) = snd $ head $ filter (\(a, _) -> a == var) bind
 

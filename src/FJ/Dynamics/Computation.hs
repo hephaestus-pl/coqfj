@@ -22,8 +22,9 @@ computation (ExpMethodInvoc exp method args) ct =
   computation exp ct        >>= \obj@(NewExp cname@(ClassId name) _) -> 
   find (ref cname) (map snd ct)    >>= \(CDecl _ _ _ _ methods) ->
   find (ref method) methods >>= \(MDecl _ _ fargs body) ->
-  return ((FArg cname (Id "this"), obj):(zip fargs args)) >>= \bind        ->
+  return ((This, obj):(zip (fargsToVar fargs) args)) >>= \bind        ->
   computation (sub body bind) ct
   
-sub :: Exp -> [(FormalArg, Exp)] -> Exp
+sub :: Exp -> [(Var, Exp)] -> Exp
 sub = undefined 
+

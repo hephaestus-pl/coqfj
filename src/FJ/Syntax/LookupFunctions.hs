@@ -40,6 +40,12 @@ methodFormalArgs (MDecl _ _ args _) = args
 methodBody :: MethodDecl -> Exp
 methodBody (MDecl _ _ _ body) = body
 
+strToVar :: String -> Var
+strToVar str = IdVar (Id str)
+
+fargsToVar :: [FormalArg] -> [Var]
+fargsToVar fargs = map strToVar $ map ref fargs
+
 instance Referable ClassDecl where 
   ref (CDecl (Id s) _ _ _ _) = s
 
@@ -54,6 +60,10 @@ instance Referable ClassName where
 
 instance Referable Id where
   ref (Id s) = s
+
+instance Referable FormalArg where
+  ref (FArg _ (Id s)) = s
+
 
 -- classId :: ClassDecl -> Id
 -- classId (CDecl id _ _ _ _) = id

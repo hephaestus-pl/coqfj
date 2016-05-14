@@ -19,6 +19,37 @@ module FJ.TypeSystem.TypeChecker where
 
 import FJ.TypeSystem.Types
 import FJ.Syntax.Absfj_syntax
-import FJ.Lookup_functions
+import FJ.Syntax.LookupFunctions
+import Core.CommonTypes
+
+
+isSubType :: ClassDecl -> ClassName -> Result ()
+c `isSubType` ClassObject = return ()
+c `isSubType` d = 
+    let superC = superClassOf c in
+    if ref c == ref d then return () -- reflexive
+    else if superC == ClassObject 
+        then raise $ show d ++ "Not super of" ++ show c
+    else superC `isSubType` d 
+
+expType :: Exp -> Gamma -> ClassTable -> Result ExpType
+expType (ExpVar x) gamma _ = do
+    TypeBind (_, t) <- find (ref x) gamma
+    return t
+expType (ExpFieldAccess exp id) gamma ct = do
+    c0 <- expType exp gamma ct
+    CDecl _ _ fields _ _ <- find (ref c0) (map snd ct)
+    FDecl cname _ <- find (ref id) fields
+    return cname 
+expType (ExpNew cname exps) gamma ct = do
+    CDecl _ _ fields _ _ <- find (ref cname) (map snd ct)
+    cFields <- mapM (fieldType) fields
+    expsTypes <- mapM (\e -> expType e gamma ct) exps
+    expsDecls <- mapM (\e -> find (ref e) (map snd ct)) expsTypes
+    --let ok = [(c,d) | c <- expsDecls , d <- cFields , c `isSubType` d] 
+    let ok = zipWith (\c d -> c `isSubType` d) expsDecls cFields 
+    return cname
+    --_ <- zipWith (\c d -> c `isSubType` d) expsDecls cFields
+
 
 

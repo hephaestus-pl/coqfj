@@ -158,8 +158,8 @@ instance Print Exp where
    ExpVar var -> prPrec i 0 (concatD [prt 0 var])
    ExpFieldAccess exp id -> prPrec i 0 (concatD [prt 0 exp , doc (showString ".") , prt 0 id])
    ExpMethodInvoc exp id exps -> prPrec i 0 (concatD [prt 0 exp , doc (showString ".") , prt 0 id , doc (showString "(") , prt 0 exps , doc (showString ")")])
-   CastExp classname exp -> prPrec i 0 (concatD [doc (showString "(") , prt 0 classname , doc (showString ")") , prt 0 exp])
-   NewExp classname exps -> prPrec i 0 (concatD [doc (showString "new") , prt 0 classname , doc (showString "(") , prt 0 exps , doc (showString ")")])
+   ExpCast classname exp -> prPrec i 0 (concatD [doc (showString "(") , prt 0 classname , doc (showString ")") , prt 0 exp])
+   ExpNew id exps -> prPrec i 0 (concatD [doc (showString "new") , prt 0 id , doc (showString "(") , prt 0 exps , doc (showString ")")])
 
   prtList es = case es of
    [] -> (concatD [])
@@ -169,7 +169,7 @@ instance Print Exp where
 instance Print Var where
   prt i e = case e of
    This  -> prPrec i 0 (concatD [doc (showString "this")])
-   IdVar id -> prPrec i 0 (concatD [prt 0 id])
+   VarId id -> prPrec i 0 (concatD [prt 0 id])
 
 
 instance Print ClassName where

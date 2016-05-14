@@ -21,11 +21,11 @@ MDecl . MethodDecl ::= ClassName Id "(" [FormalArg] ")" "{" "return" Exp ";" "}"
 ExpVar . Exp ::= Var ;
 ExpFieldAccess . Exp ::= Exp "." Id ; 
 ExpMethodInvoc . Exp ::= Exp "." Id "(" [Exp] ")" ;
-CastExp . Exp ::= "(" ClassName ")" Exp ;
-NewExp . Exp ::= "new" ClassName "(" [Exp] ")" ;
+ExpCast . Exp ::= "(" ClassName ")" Exp ;
+ExpNew . Exp ::= "new" Id "(" [Exp] ")" ;
 
 This . Var ::= "this" ;
-IdVar . Var ::= Id ; 
+VarId . Var ::= Id ; 
 
 token Id (letter (letter | digit | '_')*) ;
 

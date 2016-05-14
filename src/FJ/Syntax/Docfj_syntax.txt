@@ -51,7 +51,7 @@ All other symbols are terminals.
   |  |  **|**  | //Exp// ``.`` //Id// 
   |  |  **|**  | //Exp// ``.`` //Id// ``(`` //[Exp]// ``)`` 
   |  |  **|**  | ``(`` //ClassName// ``)`` //Exp// 
-  |  |  **|**  | ``new`` //ClassName// ``(`` //[Exp]// ``)`` 
+  |  |  **|**  | ``new`` //Id// ``(`` //[Exp]// ``)`` 
   | //Var// | -> | ``this`` 
   |  |  **|**  | //Id// 
   | //ClassName// | -> | ``Object`` 

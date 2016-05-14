@@ -98,13 +98,13 @@ Exp :: { Exp }
 Exp : Var { ExpVar $1 } 
   | Exp '.' Id { ExpFieldAccess $1 $3 }
   | Exp '.' Id '(' ListExp ')' { ExpMethodInvoc $1 $3 $5 }
-  | '(' ClassName ')' Exp { CastExp $2 $4 }
-  | 'new' ClassName '(' ListExp ')' { NewExp $2 $4 }
+  | '(' ClassName ')' Exp { ExpCast $2 $4 }
+  | 'new' Id '(' ListExp ')' { ExpNew $2 $4 }
 
 
 Var :: { Var }
 Var : 'this' { This } 
-  | Id { IdVar $1 }
+  | Id { VarId $1 }
 
 
 ClassName :: { ClassName }

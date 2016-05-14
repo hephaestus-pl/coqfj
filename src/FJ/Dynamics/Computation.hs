@@ -2,17 +2,16 @@ module FJ.Dynamics.Computation where
 
 import FJ.Syntax.Absfj_syntax 
 import FJ.TypeSystem.Types
-
+import FJ.TypeSystem.TypeChecker
 import FJ.Syntax.LookupFunctions
-
 import Core.CommonTypes
 
 computation :: Exp -> ClassTable -> Result Exp
 
-computation obj@(NewExp name args) ct = return obj
+computation obj@(ExpNew name args) ct = return obj
 
 computation (ExpFieldAccess exp field) ct = 
-  computation exp ct >>= \(NewExp (ClassId (Id name)) args) -> 
+  computation exp ct >>= \(ExpNew (Id name) args) -> 
   find name (map snd ct) >>= \(CDecl _ _ flds _ _) ->
   let vars = map fieldToVar flds in 
   let bind = map bindTuple $ zip vars args in
@@ -21,7 +20,7 @@ computation (ExpFieldAccess exp field) ct =
   computation e ct 
 
 computation (ExpMethodInvoc exp method args) ct =
-  computation exp ct        >>= \obj@(NewExp cname@(ClassId name) _) -> 
+  computation exp ct        >>= \obj@(ExpNew cname _) -> 
   find (ref cname) (map snd ct)    >>= \(CDecl _ _ _ _ methods) ->
   find (ref method) methods >>= \(MDecl _ _ fargs body) ->
   let bind = (Bind (This, obj):(map bindTuple $ zip (map fargToVar fargs) args)) in
@@ -39,11 +38,11 @@ subst (ExpMethodInvoc exp id exps) bind = do
     substExp <- subst exp bind
     substExps <- mapM (\e -> (subst e bind)) exps
     return $ ExpMethodInvoc substExp id substExps
-subst (CastExp cname exp) bind = do
+subst (ExpCast cname exp) bind = do
     substExp <- subst exp bind
-    return $ CastExp cname substExp
-subst (NewExp cname exps) bind = do
+    return $ ExpCast cname substExp
+subst (ExpNew cname exps) bind = do
     substExps <- mapM (\e -> (subst e bind)) exps
-    return $ NewExp cname substExps
+    return $ ExpNew cname substExps
 
     

@@ -44,13 +44,13 @@ data Exp =
    ExpVar Var
  | ExpFieldAccess Exp Id
  | ExpMethodInvoc Exp Id [Exp]
- | CastExp ClassName Exp
- | NewExp ClassName [Exp]
+ | ExpCast ClassName Exp
+ | ExpNew Id [Exp]
   deriving (Eq,Ord,Show)
 
 data Var =
    This
- | IdVar Id
+ | VarId Id
   deriving (Eq,Ord,Show)
 
 data ClassName =

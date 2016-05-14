@@ -64,14 +64,14 @@ transExp x = case x of
   ExpVar var  -> failure x
   ExpFieldAccess exp id  -> failure x
   ExpMethodInvoc exp id exps  -> failure x
-  CastExp classname exp  -> failure x
-  NewExp classname exps  -> failure x
+  ExpCast classname exp  -> failure x
+  ExpNew id exps  -> failure x
 
 
 transVar :: Var -> Result
 transVar x = case x of
   This  -> failure x
-  IdVar id  -> failure x
+  VarId id  -> failure x
 
 
 transClassName :: ClassName -> Result

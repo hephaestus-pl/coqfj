@@ -23,14 +23,16 @@ import FJ.Syntax.LookupFunctions
 import Core.CommonTypes
 
 
-isSubType :: ClassDecl -> ClassName -> Result ()
-c `isSubType` ClassObject = return ()
-c `isSubType` d = 
-    let superC = superClassOf c in
+(<:) :: ClassName -> ClassName -> ClassTable-> Result ()
+(c <: ClassObject) _ = return ()
+(c <: d) ct = do
+    superC <- findSuper c ct 
     if ref c == ref d then return () -- reflexive
     else if superC == ClassObject 
         then raise $ show d ++ "Not super of" ++ show c
-    else superC `isSubType` d 
+    else do
+        superC <: d $ ct
+
 
 expType :: Exp -> Gamma -> ClassTable -> Result ExpType
 expType (ExpVar x) gamma _ = do
@@ -43,12 +45,11 @@ expType (ExpFieldAccess exp id) gamma ct = do
     return cname 
 expType (ExpNew cname exps) gamma ct = do
     CDecl _ _ fields _ _ <- find (ref cname) (map snd ct)
-    cFields <- mapM (fieldType) fields
+    let cFields = map (fieldType) fields
     expsTypes <- mapM (\e -> expType e gamma ct) exps
-    expsDecls <- mapM (\e -> find (ref e) (map snd ct)) expsTypes
     --let ok = [(c,d) | c <- expsDecls , d <- cFields , c `isSubType` d] 
-    let ok = zipWith (\c d -> c `isSubType` d) expsDecls cFields 
-    return cname
+    let ok = zipWith (\c d -> (c <: d) ct) expsTypes cFields 
+    return (ClassId cname)
     --_ <- zipWith (\c d -> c `isSubType` d) expsDecls cFields
 
 

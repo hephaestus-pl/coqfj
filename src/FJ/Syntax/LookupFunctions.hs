@@ -28,8 +28,17 @@ programCT (CProgram ct _) = createClassTable ct
 programExp :: Program -> Exp
 programExp (CProgram _ exp) = exp
 
+className :: ClassDecl -> Id
+className (CDecl id _ _ _ _) = id
+
+className2 :: ClassDecl -> ClassName
+className2 (CDecl id _ _ _ _) = ClassId id
+
 createClassTable :: [ClassDecl] -> ClassTable
 createClassTable css = [((Id . ref) c, c) | c <- css]
+
+findSuper :: ClassName -> ClassTable -> Result ClassName
+findSuper cname ct = find (ref cname) (map className2 $ map snd ct)
 
 superClassOf :: ClassDecl -> ClassName
 superClassOf (CDecl _ s _ _ _ ) = s

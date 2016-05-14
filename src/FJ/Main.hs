@@ -7,9 +7,10 @@ import FJ.Syntax.LookupFunctions
 import FJ.TypeSystem.TypeChecker
 
 var_type  = expType (ExpVar $ VarId (Id "x")) [TypeBind (VarId (Id "x"), ClassObject)] []
-field_type  = expType (ExpFieldAccess (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) (Id "fst")) []example_ct
+field_type  = expType (ExpFieldAccess (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) (Id "fst")) [] example_ct
+new_type = expType (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "A")) [])]) [] example_ct 
 
-cast_ex = computation (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) example_ct 
+new_ex = computation (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) example_ct 
 method_invoc_ex = computation (ExpMethodInvoc (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) (Id "setfst") [ExpNew ( (Id "A")) []]) example_ct 
 field_acess_ex = computation (ExpFieldAccess (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) (Id "fst")) example_ct 
 add_ex = computation (programExp int_prog) int_ct 

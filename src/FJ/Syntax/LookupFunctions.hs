@@ -22,6 +22,12 @@ import Core.CommonTypes
 import FJ.TypeSystem.Types
 import FJ.Syntax.Absfj_syntax
 
+programCT :: Program -> ClassTable
+programCT (CProgram ct _) = createClassTable ct
+
+programExp :: Program -> Exp
+programExp (CProgram _ exp) = exp
+
 createClassTable :: [ClassDecl] -> ClassTable
 createClassTable css = [((Id . ref) c, c) | c <- css]
 
@@ -40,11 +46,14 @@ methodFormalArgs (MDecl _ _ args _) = args
 methodBody :: MethodDecl -> Exp
 methodBody (MDecl _ _ _ body) = body
 
-strToVar :: String -> Var
-strToVar str = IdVar (Id str)
+fargToVar :: FormalArg -> Var
+fargToVar (FArg _ id)  = IdVar id
 
-fargsToVar :: [FormalArg] -> [Var]
-fargsToVar fargs = map strToVar $ map ref fargs
+fieldToVar :: FieldDecl -> Var
+fieldToVar (FDecl _ id) = IdVar id
+
+bindTuple :: (Var, Exp) -> Bind
+bindTuple a = Bind a
 
 instance Referable ClassDecl where 
   ref (CDecl (Id s) _ _ _ _) = s
@@ -63,6 +72,13 @@ instance Referable Id where
 
 instance Referable FormalArg where
   ref (FArg _ (Id s)) = s
+
+instance Referable Var where
+  ref This = "this"
+  ref (IdVar (Id s)) = s
+
+instance Referable Bind where
+  ref (Bind (arg, _)) = ref arg
 
 -- test_prog = CProgram [CDecl (Id "teste") ClassObject [FDecl ClassObject (Id "a")] (KDecl (Id "teste") [Field ClassObject (Id "a")] [] [Assgnmt (Id "a") (Id "a")]) [], CDecl (Id "teste2") (ClassId $ Id "teste") [] (KDecl (Id "teste2") [] [] []) []] (NewExp (ClassId $ Id "teste") [])
 

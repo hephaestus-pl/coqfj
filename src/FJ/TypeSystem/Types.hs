@@ -12,3 +12,4 @@ data Type =
   | Type :~>: Type 
   deriving (Eq,Ord,Show)
 
+newtype Bind = Bind (Var, Exp)

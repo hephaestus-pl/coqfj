@@ -28,7 +28,7 @@ class Referable a where
   find key list = -- defaul implementation
     case [x | x <- list, key == (ref x)] of
       []    -> raise $ "there is no such a key " ++ key ++ " in the list."
-      (x:_) -> Ok x  
+      (x:_) -> return x  
 
 data Result a = Ok a
 	| Ex Exception

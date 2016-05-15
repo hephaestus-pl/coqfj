@@ -48,7 +48,7 @@ expType (ExpNew cname exps) gamma ct = do
     let cFields = map (fieldType) fields
     expsTypes <- mapM (\e -> expType e gamma ct) exps
     --let ok = [(c,d) | c <- expsDecls , d <- cFields , c `isSubType` d] 
-    zipWithM (\c d -> (c <: d) ct) expsTypes cFields 
+    zipWithM_ (\c d -> (c <: d) ct) expsTypes cFields 
     return (ClassId cname)
     --_ <- zipWith (\c d -> c `isSubType` d) expsDecls cFields
 

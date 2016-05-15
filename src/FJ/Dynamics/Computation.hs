@@ -14,7 +14,7 @@ computation (ExpFieldAccess exp field) ct = do
   (ExpNew name args) <- computation exp ct
   (CDecl _ _ flds _ _) <- find name ct
   let vars = map fieldToVar flds 
-  let bind = map bindTuple $ zip vars args
+  let bind = map Bind $ zip vars args
   (Bind (_, e)) <- find (ref field) bind
   --(head [exp | ((FDecl _ f), exp) <- bind, f == field]) >>= \e ->
   computation e ct 
@@ -23,7 +23,7 @@ computation (ExpMethodInvoc exp method args) ct = do
     obj@(ExpNew cname _) <- computation exp ct 
     (CDecl _ _ _ _ methods) <- find (ref cname) ct
     (MDecl _ _ fargs body) <- find (ref method) methods 
-    let bind = (Bind (This, obj):(map bindTuple $ zip (map fargToVar fargs) args))
+    let bind = (Bind (This, obj):(map Bind $ zip (map fargToVar fargs) args))
     substExp <- subst body bind 
     computation substExp ct
   

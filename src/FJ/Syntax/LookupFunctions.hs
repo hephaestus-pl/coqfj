@@ -60,9 +60,16 @@ fargToVar (FArg _ id)  = VarId id
 fieldToVar :: FieldDecl -> Var
 fieldToVar (FDecl _ id) = VarId id
 
-bindTuple :: (Var, Exp) -> Bind
-bindTuple a = Bind a
+fargsToType :: [FormalArg] -> ClassName -> Type
+fargsToType [] cn = CType cn
+fargsToType (FArg farType _ :xs) cd = CType farType :~>: fargsToType xs cd
 
+mType :: Id -> ClassName -> ClassTable -> Result Type
+mType mname cname ct = do
+    cdecl <- findClass cname ct
+    mdecl <- methodDecl mname cdecl
+    return $ fargsToType (methodFormalArgs mdecl) cname 
+ 
 instance Referable ClassDecl where 
   ref (CDecl id _ _ _ _) = id
   -- we override the find implementation to add the class object to the list of class declarations
@@ -95,6 +102,12 @@ instance Referable TypeBind where
 
 instance Referable Bind where
   ref (Bind (arg, _)) = ref arg
+
+
+
+
+
+--   case foundMethod of
 
 -- test_prog = CProgram [CDecl (Id "teste") ClassObject [FDecl ClassObject (Id "a")] (KDecl (Id "teste") [Field ClassObject (Id "a")] [] [Assgnmt (Id "a") (Id "a")]) [], CDecl (Id "teste2") (ClassId $ Id "teste") [] (KDecl (Id "teste2") [] [] []) []] (ExpNew (ClassId $ Id "teste") [])
 

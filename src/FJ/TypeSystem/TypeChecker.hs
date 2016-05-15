@@ -21,6 +21,7 @@ import FJ.TypeSystem.Types
 import FJ.Syntax.Absfj_syntax
 import FJ.Syntax.LookupFunctions
 import Core.CommonTypes
+import Control.Monad
 
 
 (<:) :: ClassName -> ClassName -> ClassTable-> Result ()
@@ -29,10 +30,9 @@ import Core.CommonTypes
     superC <- findSuper c ct 
     if ref c == ref d then return () -- reflexive
     else if superC == ClassObject 
-        then raise $ show d ++ "Not super of" ++ show c
+        then raise $ show d ++ " Not super of " ++ show c
     else do
         superC <: d $ ct
-
 
 expType :: Exp -> Gamma -> ClassTable -> Result ExpType
 expType (ExpVar x) gamma _ = do
@@ -48,7 +48,7 @@ expType (ExpNew cname exps) gamma ct = do
     let cFields = map (fieldType) fields
     expsTypes <- mapM (\e -> expType e gamma ct) exps
     --let ok = [(c,d) | c <- expsDecls , d <- cFields , c `isSubType` d] 
-    let ok = zipWith (\c d -> (c <: d) ct) expsTypes cFields 
+    zipWithM (\c d -> (c <: d) ct) expsTypes cFields 
     return (ClassId cname)
     --_ <- zipWith (\c d -> c `isSubType` d) expsDecls cFields
 

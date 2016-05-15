@@ -38,7 +38,9 @@ createClassTable :: [ClassDecl] -> ClassTable
 createClassTable css = [((Id . ref) c, c) | c <- css]
 
 findSuper :: ClassName -> ClassTable -> Result ClassName
-findSuper cname ct = find (ref cname) (map className2 $ map snd ct)
+findSuper cname ct = do
+    cdecl <- find (ref cname) (map snd ct)
+    return (superClassOf cdecl) 
 
 superClassOf :: ClassDecl -> ClassName
 superClassOf (CDecl _ s _ _ _ ) = s

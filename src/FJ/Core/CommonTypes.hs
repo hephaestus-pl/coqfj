@@ -15,19 +15,20 @@ Portability :  portable
 <module description starting at first column>
 -}
 
-module Core.CommonTypes where 
+module FJ.Core.CommonTypes where 
 
 
 import Control.Monad(liftM, ap) 
 import Control.Applicative
+import FJ.Syntax.Absfj_syntax
 
 class Referable a where 
-  ref  :: a -> String
-  find :: String -> [a] -> Result a
+  ref  :: a -> Id
+  find :: Id -> [a] -> Result a
  
   find key list = -- defaul implementation
     case [x | x <- list, key == (ref x)] of
-      []    -> raise $ "there is no such a key " ++ key ++ " in the list."
+      []    -> raise $ "there is no such a key " ++ show key ++ " in the list."
       (x:_) -> return x  
 
 data Result a = Ok a

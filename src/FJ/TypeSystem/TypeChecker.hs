@@ -20,7 +20,7 @@ module FJ.TypeSystem.TypeChecker where
 import FJ.TypeSystem.Types
 import FJ.Syntax.Absfj_syntax
 import FJ.Syntax.LookupFunctions
-import Core.CommonTypes
+import FJ.Core.CommonTypes
 import Control.Monad
 
 
@@ -34,20 +34,25 @@ import Control.Monad
     else do
         superC <: d $ ct
 
+--the comments is because there is no such thing in the paper
+--we should check those by the end
 expType :: Exp -> Gamma -> ClassTable -> Result ExpType
-expType (ExpVar x) gamma _ = do
+expType (ExpVar x) gamma ct = do
     TypeBind (_, t) <- find (ref x) gamma
+    -- find (ref t) ct -- checks wheter the variable in the binding is well defined at the ct
     return t
 expType (ExpFieldAccess exp id) gamma ct = do
     c0 <- expType exp gamma ct
-    CDecl _ _ fields _ _ <- find (ref c0) (map snd ct)
+    CDecl _ _ fields _ _ <- find (ref c0) ct
     FDecl cname _ <- find (ref id) fields
     return cname 
 expType (ExpNew cname exps) gamma ct = do
-    CDecl _ _ fields _ _ <- find (ref cname) (map snd ct)
+    CDecl _ _ fields _ _ <- find (ref cname) ct
     let cFields = map (fieldType) fields
     expsTypes <- mapM (\e -> expType e gamma ct) exps
-    zipWithM_ (\c d -> (c <: d) ct) expsTypes cFields 
+    -- mapM_ (\e -> find (ref e) ct) expsTypes-- checks whether each variable passed as argument has a type defined in the CT 
+    -- mapM_ (\d -> find (ref d) ct) cFields    -- checks whether each variable passed as argument has a type defined in the CT 
+    zipWithM_ (\c d -> (c <: d) ct) expsTypes cFields -- checks whether each variable passed as argument has the correct type
     return (ClassId cname)
 
 

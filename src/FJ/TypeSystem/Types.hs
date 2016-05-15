@@ -2,10 +2,7 @@ module FJ.TypeSystem.Types where
 
 import FJ.Syntax.Absfj_syntax
 
-type CTEntry = (Id, ClassDecl)
-
-type ClassTable = [CTEntry]
---  deriving (Eq,Ord,Show)
+type ClassTable = [ClassDecl]
 
 data Type = 
     CType ExpType
@@ -15,6 +12,7 @@ data Type =
 type ExpType = ClassName
 
 newtype Bind = Bind (Var, Exp)
+
 type Gamma = [TypeBind] 
 newtype TypeBind = TypeBind (Var, ExpType)
 

@@ -6,7 +6,7 @@ import FJ.TypeSystem.Types
 import FJ.Syntax.LookupFunctions
 import FJ.TypeSystem.TypeChecker
 
-var_type  = expType (ExpVar $ VarId (Id "x")) [TypeBind (VarId (Id "x"), ClassObject)] []
+var_type  = expType (ExpVar $ VarId (Id "x")) [TypeBind (VarId (Id "x"), ClassId (Id "B"))] example_ct
 field_type  = expType (ExpFieldAccess (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) (Id "fst")) [] example_ct
 new_type = expType (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) [] example_ct 
 
@@ -15,7 +15,7 @@ method_invoc_ex = computation (ExpMethodInvoc (ExpNew ( (Id "Pair")) [(ExpNew ( 
 field_acess_ex = computation (ExpFieldAccess (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) (Id "fst")) example_ct 
 add_ex = computation (programExp int_prog) int_ct 
 
-example_ct = [(Id "A", CDecl (Id "A") ClassObject [] (KDecl (Id "A") [] [] []) []), (Id "B", CDecl (Id "B") ClassObject [] (KDecl (Id "B") [] [] []) []), (Id "Pair", CDecl (Id "Pair") ClassObject [FDecl (ClassId (Id "A")) (Id "fst"),FDecl (ClassId (Id "B")) (Id "snd")] (KDecl (Id "Pair") [Field (ClassId (Id "A")) (Id "fst"),Field (ClassId (Id "B")) (Id "snd")] [] [Assgnmt (Id "fst") (Id "fst"),Assgnmt (Id "snd") (Id "snd")]) [MDecl (ClassId (Id "Pair")) (Id "setfst") [FArg (ClassId (Id "A")) (Id "newfst")] (ExpNew ( (Id "Pair")) [ExpVar $ VarId (Id "newfst"), ExpFieldAccess (ExpVar This) (Id "snd")])])]
+example_ct = [(CDecl (Id "A") ClassObject [] (KDecl (Id "A") [] [] []) []), (CDecl (Id "B") ClassObject [] (KDecl (Id "B") [] [] []) []), (CDecl (Id "Pair") ClassObject [FDecl (ClassId (Id "A")) (Id "fst"),FDecl (ClassId (Id "B")) (Id "snd")] (KDecl (Id "Pair") [Field (ClassId (Id "A")) (Id "fst"),Field (ClassId (Id "B")) (Id "snd")] [] [Assgnmt (Id "fst") (Id "fst"),Assgnmt (Id "snd") (Id "snd")]) [MDecl (ClassId (Id "Pair")) (Id "setfst") [FArg (ClassId (Id "A")) (Id "newfst")] (ExpNew ( (Id "Pair")) [ExpVar $ VarId (Id "newfst"), ExpFieldAccess (ExpVar This) (Id "snd")])])]
 
 test_prog = CProgram [CDecl (Id "teste") ClassObject [FDecl ClassObject (Id "a")] (KDecl (Id "teste") [Field ClassObject (Id "a")] [] [Assgnmt (Id "a") (Id "a")]) [], CDecl (Id "teste2") (ClassId $ Id "teste") [] (KDecl (Id "teste2") [] [] []) []] (ExpNew ( Id "teste") [])
 

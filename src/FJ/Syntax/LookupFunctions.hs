@@ -17,13 +17,13 @@ method_body  to retrieve the method body of a class given its Name, ClassName an
 
 module FJ.Syntax.LookupFunctions where
 
-import Core.CommonTypes 
+import FJ.Core.CommonTypes 
 
 import FJ.TypeSystem.Types
 import FJ.Syntax.Absfj_syntax
 
 programCT :: Program -> ClassTable
-programCT (CProgram ct _) = createClassTable ct
+programCT (CProgram ct _) = ct
 
 programExp :: Program -> Exp
 programExp (CProgram _ exp) = exp
@@ -31,15 +31,9 @@ programExp (CProgram _ exp) = exp
 className :: ClassDecl -> Id
 className (CDecl id _ _ _ _) = id
 
-className2 :: ClassDecl -> ClassName
-className2 (CDecl id _ _ _ _) = ClassId id
-
-createClassTable :: [ClassDecl] -> ClassTable
-createClassTable css = [((Id . ref) c, c) | c <- css]
-
 findSuper :: ClassName -> ClassTable -> Result ClassName
 findSuper cname ct = do
-    cdecl <- find (ref cname) (map snd ct)
+    cdecl <- find (ref cname) ct
     return (superClassOf cdecl) 
 
 superClassOf :: ClassDecl -> ClassName
@@ -70,31 +64,31 @@ bindTuple :: (Var, Exp) -> Bind
 bindTuple a = Bind a
 
 instance Referable ClassDecl where 
-  ref (CDecl (Id s) _ _ _ _) = s
+  ref (CDecl id _ _ _ _) = id
   -- we override the find implementation to add the class object to the list of class declarations
   find key list = let objKons = KDecl (Id "Object") [] [] [] in
     case [x | x <- (CDecl (Id "Object") ClassObject [] objKons []):list, key == (ref x)] of
-      []    -> raise $ "there is no such a key " ++ key ++ " in the list."
+      []    -> raise $ "there is no such a key " ++ show key ++ " in the list."
       (x:_) -> return x  
 
 instance Referable FieldDecl where 
-  ref (FDecl _ (Id s)) = s
+  ref (FDecl _ id) = id
 
 instance Referable MethodDecl where 
-  ref (MDecl _ (Id s) _ _) = s 
+  ref (MDecl _ id _ _) = id
 
 instance Referable ClassName where
-  ref (ClassId (Id s)) = s
+  ref (ClassId id) = id
 
 instance Referable Id where
-  ref (Id s) = s
+  ref id = id
 
 instance Referable FormalArg where
-  ref (FArg _ (Id s)) = s
+  ref (FArg _ id) = id
 
 instance Referable Var where
-  ref This = "this"
-  ref (VarId (Id s)) = s
+  ref This = Id "this"
+  ref (VarId id) = id
 
 instance Referable TypeBind where
   ref (TypeBind (arg, _)) = ref arg

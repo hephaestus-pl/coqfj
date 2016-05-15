@@ -64,8 +64,8 @@ fargsToType :: [FormalArg] -> ClassName -> Type
 fargsToType [] cn = CType cn
 fargsToType (FArg farType _ :xs) cd = CType farType :~>: fargsToType xs cd
 
-mType :: Id -> ClassName -> ClassTable -> Result Type
-mType mname cname ct = do
+mtype :: Id -> ClassName -> ClassTable -> Result Type
+mtype mname cname ct = do
     cdecl <- findClass cname ct
     mdecl <- methodDecl mname cdecl
     return $ fargsToType (methodFormalArgs mdecl) cname 

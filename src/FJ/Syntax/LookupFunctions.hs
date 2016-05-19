@@ -64,9 +64,25 @@ fargsToType :: [FormalArg] -> ClassName -> Type
 fargsToType [] cn = CType cn
 fargsToType (FArg farType _ :xs) cd = CType farType :~>: fargsToType xs cd
 
-mtype :: Id -> ClassName -> ClassTable -> Result Type
-mtype mname cname ct = do
-    cdecl <- findClass cname ct
+methodDecl :: Id -> ClassDecl -> Result MethodDecl
+methodDecl mname (CDecl _ _ _ _ mdecls) =
+  case filter (\m -> (ref m) == mname) mdecls of
+      [] -> raise $ "Couldn't find method with name " ++ show mname
+      x:xs -> Ok x
+
+returnType :: Type -> ExpType
+returnType (CType t) = t
+returnType (_ :~>: t) = returnType t
+
+argTypes :: Type -> List ClassName
+argTypes tp@(CType t) = tp
+argTypes (t1 :~>: CType t) = t1
+argTypes (t1 :~>: t2) = t1 : (argTypes t2)
+
+
+mType :: Id -> ClassName -> ClassTable -> Result Type
+mType mname cname ct = do
+    cdecl <- find (ref cname) ct
     mdecl <- methodDecl mname cdecl
     return $ fargsToType (methodFormalArgs mdecl) cname 
  

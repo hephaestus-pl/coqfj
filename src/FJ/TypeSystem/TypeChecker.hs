@@ -54,6 +54,14 @@ expType (ExpNew cname exps) gamma ct = do
     -- mapM_ (\d -> find (ref d) ct) cFields    -- checks whether each variable passed as argument has a type defined in the CT 
     zipWithM_ (\c d -> (c <: d) ct) expsTypes cFields -- checks whether each variable passed as argument has the correct type
     return (ClassId cname)
+expType (ExpMethodInvoc exp id exps) gamma ct = do
+    c0 <- expType exp gamma ct
+    mtype <- mType id c0 ct
+    expsTypes <- mapM (\e -> expType e gamma ct) exps
+    let argtypes = argTypes mtype
+    zipWithM_ (\c d -> (c <: d) ct) expsTypes argtypes
+    return $ returnType mtype
+    
 
 
 

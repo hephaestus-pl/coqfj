@@ -12,6 +12,7 @@ new_type = expType (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "B")) []), (ExpNew ( (I
 
 new_ex = computation (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) example_ct 
 method_invoc_ex = computation (ExpMethodInvoc (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) (Id "setfst") [ExpNew ( (Id "A")) []]) example_ct 
+method_type = expType (ExpMethodInvoc (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) (Id "setfst") [ExpNew ( (Id "B")) []]) [] example_ct 
 field_acess_ex = computation (ExpFieldAccess (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) (Id "fst")) example_ct 
 add_ex = computation (programExp int_prog) int_ct 
 

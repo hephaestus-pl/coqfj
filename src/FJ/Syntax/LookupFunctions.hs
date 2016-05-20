@@ -74,11 +74,14 @@ returnType :: Type -> ExpType
 returnType (CType t) = t
 returnType (_ :~>: t) = returnType t
 
-argTypes :: Type -> List ClassName
+argTypes :: Type -> Type
 argTypes tp@(CType t) = tp
 argTypes (t1 :~>: CType t) = t1
-argTypes (t1 :~>: t2) = t1 : (argTypes t2)
+argTypes (t1 :~>: t2) = argTypes t1 :~>: argTypes t2
 
+typesToList :: Type -> [ClassName]
+typesToList (CType t) = [t]
+typesToList (t1 :~>: t2) = typesToList t1 ++ typesToList t2
 
 mType :: Id -> ClassName -> ClassTable -> Result Type
 mType mname cname ct = do

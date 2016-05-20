@@ -58,7 +58,7 @@ expType (ExpMethodInvoc exp id exps) gamma ct = do
     c0 <- expType exp gamma ct
     mtype <- mType id c0 ct
     expsTypes <- mapM (\e -> expType e gamma ct) exps
-    let argtypes = argTypes mtype
+    let argtypes = typesToList $ argTypes mtype
     zipWithM_ (\c d -> (c <: d) ct) expsTypes argtypes
     return $ returnType mtype
     

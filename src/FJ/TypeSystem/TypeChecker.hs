@@ -28,39 +28,53 @@ import Control.Monad
 (c <: ClassObject) _ = return ()
 (c <: d) ct = do
     superC <- findSuper c ct 
-    if ref c == ref d then return () -- reflexive
+    if ref c == ref d then return () 
     else if superC == ClassObject 
-        then raise $ show d ++ " Not super of " ++ show c
+        then raise $ show d ++ " Not super of " ++ show c -- The only way a program get suck is if it cannot perform a downcast
     else do
         superC <: d $ ct
 
+expType :: Exp -> ClassTable -> Result ExpType
+expType e = expType' e []
+
 --the comments is because there is no such thing in the paper
 --we should check those by the end
-expType :: Exp -> Gamma -> ClassTable -> Result ExpType
-expType (ExpVar x) gamma ct = do
+expType' :: Exp -> Gamma -> ClassTable -> Result ExpType
+expType' (ExpVar x) gamma ct = do
     TypeBind (_, t) <- find (ref x) gamma
     -- find (ref t) ct -- checks wheter the variable in the binding is well defined at the ct
     return t
-expType (ExpFieldAccess exp id) gamma ct = do
-    c0 <- expType exp gamma ct
+
+expType' (ExpFieldAccess exp id) gamma ct = do
+    c0 <- expType' exp gamma ct
     CDecl _ _ fields _ _ <- find (ref c0) ct
     FDecl cname _ <- find (ref id) fields
     return cname 
-expType (ExpNew cname exps) gamma ct = do
+
+expType' (ExpNew cname exps) gamma ct = do
     CDecl _ _ fields _ _ <- find (ref cname) ct
     let cFields = map (fieldType) fields
-    expsTypes <- mapM (\e -> expType e gamma ct) exps
+    expsTypes <- mapM (\e -> expType' e gamma ct) exps
     -- mapM_ (\e -> find (ref e) ct) expsTypes-- checks whether each variable passed as argument has a type defined in the CT 
     -- mapM_ (\d -> find (ref d) ct) cFields    -- checks whether each variable passed as argument has a type defined in the CT 
     zipWithM_ (\c d -> (c <: d) ct) expsTypes cFields -- checks whether each variable passed as argument has the correct type
-    return (ClassId cname)
-expType (ExpMethodInvoc exp id exps) gamma ct = do
-    c0 <- expType exp gamma ct
+    return $ ClassId cname
+
+expType' (ExpMethodInvoc exp id exps) gamma ct = do
+    c0 <- expType' exp gamma ct
     mtype <- mType id c0 ct
-    expsTypes <- mapM (\e -> expType e gamma ct) exps
+    expsTypes <- mapM (\e -> expType' e gamma ct) exps
     let argtypes = typesToList $ argTypes mtype
     zipWithM_ (\c d -> (c <: d) ct) expsTypes argtypes
     return $ returnType mtype
+
+expType' (ExpCast cname exp) gamma ct = do
+    d <- expType' exp gamma ct
+    CDecl _ c _ _ _ <- find (ref cname) ct
+    _ <- (c <: d) ct
+    return $ cname
+
+
     
 
 

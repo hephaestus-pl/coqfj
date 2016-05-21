@@ -8,7 +8,11 @@ import FJ.Core.CommonTypes
 
 computation :: Exp -> ClassTable -> Result Exp
 
-computation obj@(ExpNew name args) ct = return obj
+computation obj@(ExpNew _ _) ct = return obj
+computation obj@(ExpCast cname exp) ct = do
+    e <- computation obj ct
+    return $ ExpCast cname e
+--cast binds less tightly
 
 computation (ExpFieldAccess exp field) ct = do
   (ExpNew name args) <- computation exp ct

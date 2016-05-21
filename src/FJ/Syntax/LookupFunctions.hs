@@ -83,6 +83,15 @@ typesToList :: Type -> [ClassName]
 typesToList (CType t) = [t]
 typesToList (t1 :~>: t2) = typesToList t1 ++ typesToList t2
 
+fargType :: FormalArg -> ExpType
+fargType (FArg t _) = t
+
+fDeclType :: FieldDecl -> ExpType
+fDeclType (FDecl t _) = t
+
+argTypesL :: Type -> [ClassName]
+argTypesL = typesToList . argTypes
+
 mType :: Id -> ClassName -> ClassTable -> Result Type
 mType mname cname ct = do
     cdecl <- find (ref cname) ct

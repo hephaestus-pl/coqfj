@@ -8,26 +8,33 @@ import FJ.Core.CommonTypes
 
 computation :: Exp -> ClassTable -> Result Exp
 
-computation obj@(ExpNew _ _) ct = return obj
+computation obj@(ExpNew _ _) ct = do
+    _ <- expType obj [] ct
+    return obj
+
 computation obj@(ExpCast cname exp) ct = do
+    _ <- expType obj [] ct
     e <- computation obj ct
     return $ ExpCast cname e
 --cast binds less tightly
 
-computation (ExpFieldAccess exp field) ct = do
-  (ExpNew name args) <- computation exp ct
-  (CDecl _ _ flds _ _) <- find name ct
-  let vars = map fieldToVar flds 
-  let bind = map Bind $ zip vars args
-  (Bind (_, e)) <- find (ref field) bind
-  --(head [exp | ((FDecl _ f), exp) <- bind, f == field]) >>= \e ->
-  computation e ct 
+computation t@(ExpFieldAccess exp field) ct = do
+    (ExpNew name args) <- computation exp ct
+    (CDecl _ c flds _ _) <- find name ct
+    let vars = map fieldToVar flds 
+    let bind = map Bind $ zip vars args
+    let gamma = (TypeBind (This, c):(map TypeBind $ zip (map (VarId . ref) flds)  (map fDeclType flds)))
+    _ <- expType t gamma ct
+    (Bind (_, e)) <- find (ref field) bind
+    computation e ct 
 
-computation (ExpMethodInvoc exp method args) ct = do
+computation t@(ExpMethodInvoc exp method args) ct = do
     obj@(ExpNew cname _) <- computation exp ct 
-    (CDecl _ _ _ _ methods) <- find (ref cname) ct
+    (CDecl _ c  _ _ methods) <- find (ref cname) ct
     (MDecl _ _ fargs body) <- find (ref method) methods 
     let bind = (Bind (This, obj):(map Bind $ zip (map fargToVar fargs) args))
+    let gamma = (TypeBind (This, c):(map TypeBind $ zip (map fargToVar fargs)  (map fargType fargs)))
+    _ <- expType t gamma ct
     substExp <- subst body bind 
     computation substExp ct
   

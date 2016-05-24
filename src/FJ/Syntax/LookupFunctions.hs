@@ -67,7 +67,7 @@ fargsToType (FArg farType _ :xs) cd = CType farType :~>: fargsToType xs cd
 methodDecl :: Id -> ClassDecl -> Result MethodDecl
 methodDecl mname (CDecl _ _ _ _ mdecls) =
   case filter (\m -> (ref m) == mname) mdecls of
-      [] -> raise $ "Couldn't find method with name " ++ show mname
+      [] -> raise $ "Couldn't find method with name " ++ show mname 
       x:xs -> Ok x
 
 returnType :: Type -> ExpType
@@ -83,8 +83,8 @@ typesToList :: Type -> [ClassName]
 typesToList (CType t) = [t]
 typesToList (t1 :~>: t2) = typesToList t1 ++ typesToList t2
 
-fargType :: FormalArg -> ExpType
-fargType (FArg t _) = t
+--fargType :: FormalArg -> ExpType
+--fargType (FArg t _) = t
 
 fDeclType :: FieldDecl -> ExpType
 fDeclType (FDecl t _) = t

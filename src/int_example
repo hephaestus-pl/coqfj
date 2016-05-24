@@ -1,5 +1,9 @@
 class Int extends Object{
     Int(){super();}
+
+    Int add(Int rhs){
+	return rhs.add(this);
+    }
 }
 
 class O extends Int{

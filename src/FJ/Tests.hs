@@ -13,7 +13,8 @@ tests = TestList
     [TestLabel "Var Type" test1, TestLabel "Field Type" test2
     ,TestLabel "New Type" test3, TestLabel "Method Invoc Type" test4
     ,TestLabel "New Comp" test5, TestLabel "MethodInvoc Comp" test6
-    ,TestLabel "Field Comp" test7, TestLabel "1+2 Comp" test8]
+    ,TestLabel "Field Comp" test7, TestLabel "1+2 Comp" test8
+    ,TestLabel "Add Type" test9]
 
 
 test1 = TestCase (assertEqual "Var Type" (Ok (ClassId (Id "B"))) var_type)
@@ -30,10 +31,13 @@ test6 = TestCase (assertEqual "Method Invoc Comp"
 test7 = TestCase (assertEqual "Field Comp" (Ok (ExpNew (Id "A") [])) field_acess_ex)
 test8 = TestCase (assertEqual "1 + 2 Comp" (Ok (ExpNew (Id "S") [ExpNew (Id "S") [ExpNew (Id "S") [ExpNew (Id "O") []]]]))
     add_ex)
+test9 = TestCase (assertEqual "1 + 2 Type" (Ok (ClassId (Id "S"))) add_type)
+
 var_type  = expType (ExpVar $ VarId (Id "x")) [TypeBind (VarId (Id "x"), ClassId (Id "B"))] []
 field_type  = expType (ExpFieldAccess (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) (Id "fst")) [] example_ct
 new_type = expType (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) [] example_ct 
 method_invoc_type = expType (ExpMethodInvoc (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) (Id "setfst") [ExpNew ( (Id "A")) []]) [] example_ct 
+add_type = expType (programExp int_prog) [] int_ct 
 
 new_ex = computation (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) example_ct 
 method_invoc_ex = computation (ExpMethodInvoc (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) (Id "setfst") [ExpNew ( (Id "A")) []]) example_ct 

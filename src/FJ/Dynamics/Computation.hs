@@ -20,12 +20,10 @@ computation obj@(ExpCast cname exp) ct = do
 
 computation t@(ExpFieldAccess exp field) ct = do
     (ExpNew name args) <- computation exp ct
-    (CDecl _ c flds _ _) <- find name ct
+    flds <- fields name ct
     let vars = map fieldToVar flds 
     let bind = map Bind $ zip vars args
     argTypes <- mapM (\arg -> expType arg [] ct) args
-    let gamma = map TypeBind $ zip vars argTypes
-    _ <- expType t gamma ct
     (Bind (_, e)) <- find (ref field) bind
     computation e ct 
 
@@ -36,8 +34,6 @@ computation t@(ExpMethodInvoc exp method args) ct = do
     let vars = map fargToVar fargs
     let bind = (Bind (This, obj):(map Bind $ zip vars args))
     argTypes <- mapM (\arg -> expType arg [] ct) args 
-    let gamma = (TypeBind (This, c):(map TypeBind $ zip vars argTypes))
-    _ <- expType t gamma ct
     substExp <- subst body bind 
     computation substExp ct
   

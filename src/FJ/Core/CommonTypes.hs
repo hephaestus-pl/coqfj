@@ -21,6 +21,10 @@ module FJ.Core.CommonTypes where
 import Control.Monad(liftM, ap) 
 import Control.Applicative
 import FJ.Syntax.Absfj_syntax
+import FJ.TypeSystem.Types
+
+class HasType a where
+  typing :: a -> ExpType
 
 class Referable a where 
   ref  :: a -> Id

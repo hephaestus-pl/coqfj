@@ -13,7 +13,7 @@ fj:
 	happy -gca FJ/Syntax/Parfj_syntax.y
 	alex -g FJ/Syntax/Lexfj_syntax.x
 	@#(cd FJ/Syntax/; latex Docfj_syntax.tex; dvips Docfj_syntax.dvi -o Docfj_syntax.ps)
-	ghc --make FJ/Syntax/Testfj_syntax.hs -o FJ/Syntax/Testfj_syntax
+	#ghc --make FJ/Syntax/Testfj_syntax.hs -o FJ/Syntax/Testfj_syntax
 	ghc --make FJ/Main.hs -o FJ/Main
 
 cclean_ffj:

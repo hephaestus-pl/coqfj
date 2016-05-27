@@ -12,6 +12,8 @@ import FJ.Syntax.Printfj_syntax
 import FJ.Syntax.Absfj_syntax
 import FJ.Dynamics.Computation
 import FJ.Syntax.LookupFunctions
+import FJ.TypeSystem.TypeChecker
+import qualified FJ.Core.CommonTypes as Common
 
 
 
@@ -38,7 +40,7 @@ run v p s = let ts = myLLexer s in case p ts of
                           putStrLn s
            Ok  tree -> do putStrLn "\nParse Successful!"
                           showTree v tree
-                          compute tree
+                          typeCheck tree
 
 
 
@@ -48,11 +50,19 @@ showTree v tree = do
       putStrV v $ "\n[Abstract Syntax]\n\n" ++ show tree
       putStrV v $ "\n[Linearized tree]\n\n" ++ printTree tree
 
-compute :: Program -> IO ()
+typeCheck :: Program -> IO ()
+typeCheck tree = 
+    let ct = programCT tree in
+    let exp = programExp tree in 
+    case mapM (\cdecl -> classOk cdecl ct) ct of
+        Common.Ex s -> do putStrLn $ "\nProgram ill Typed\n" ++ show s
+        Common.Ok _ -> compute tree
+ 
+compute:: Program -> IO ()
 compute tree = 
     let ct = programCT tree in
     let exp = programExp tree in 
-    putStrLn $ "\n[Computation Result]\n\n" ++ show (computation exp ct)
+   putStrLn $ "\n[Computation Result]\n\n" ++ show (computation exp ct)
    
 main :: IO ()
 main = do args <- getArgs

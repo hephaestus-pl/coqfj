@@ -39,7 +39,6 @@ import Control.Monad
 expType :: Exp -> Gamma -> ClassTable -> Result ExpType
 expType (ExpVar x) gamma ct = do
     TypeBind (_, t) <- find (ref x) gamma
-    -- find (ref t) ct -- checks wheter the variable in the binding is well defined at the ct
     return t
 
 expType (ExpFieldAccess exp id) gamma ct = do
@@ -52,8 +51,6 @@ expType (ExpNew cname exps) gamma ct = do
     CDecl _ _ fields _ _ <- find (ref cname) ct
     let cFields = map (fieldType) fields
     expsTypes <- mapM (\e -> expType e gamma ct) exps
-    -- mapM_ (\e -> find (ref e) ct) expsTypes-- checks whether each variable passed as argument has a type defined in the CT 
-    -- mapM_ (\d -> find (ref d) ct) cFields    -- checks whether each variable passed as argument has a type defined in the CT 
     zipWithM_ (\c d -> (c <: d) ct) expsTypes cFields -- checks whether each variable passed as argument has the correct type
     return $ ClassId cname
 
@@ -71,6 +68,44 @@ expType (ExpCast cname exp) gamma ct = do
     _ <- (c <: d) ct
     return $ cname
 
+mOkIn :: MethodDecl -> ClassName -> ClassTable -> Result ()
+((MDecl c0 m fargs exp) `mOkIn` c) ct = do
+    let gamma = map TypeBind $ (This, c) : zip (map fargToVar fargs) (map fargType fargs)
+    e0 <- expType exp gamma ct
+    _ <- (e0 <: c0) ct
+    CDecl _ d _  _ _ <- find (ref c0) ct
+    case mType m d ct of
+        Ok t2 -> do 
+            t1 <- (mType m c ct)
+            sameTypes t1 t2
+        Ex _ -> return ()
+
+classOk :: ClassDecl -> ClassTable -> Result ()
+classOk (CDecl cId d fdecls kons mdecls) ct =  
+    case kons of 
+    KDecl kId fargs superArgs assnmts -> do
+    dfields <- fields (ref d) ct
+    let superFargsIds = map ref superArgs
+    let superFargs = filter (\x -> (ref x) `elem` superFargsIds) fargs
+    _ <- compareFargFields superFargs dfields
+    mapM_ (\m -> (m `mOkIn` (ClassId cId)) ct) mdecls
+    return ()
+
+compareFargFields :: [FormalArg] -> [FieldDecl] -> Result ()
+compareFargFields [] [] = return () 
+compareFargFields [] _ = raise "SuperClass with not that many fields"
+compareFargFields _ [] = raise "Too Little Fields provided to super"
+compareFargFields ((FArg farType farId):fargs) fields = do
+    (FDecl fType fId) <- find farId fields
+    if farType == fType 
+    then compareFargFields fargs fields
+    else raise $ "Field " ++ show fId ++ " with tpes"
+
+
+sameTypes :: Type -> Type -> Result ()
+sameTypes t1 t2 = 
+    if t1 == t2 then return ()
+    else raise $ "Method override with different types"
 
     
 

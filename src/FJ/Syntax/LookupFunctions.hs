@@ -105,7 +105,12 @@ fields cname ct = do
     superFields <- fields (ref superName) ct
     return $ flds ++ superFields
 
+instance HasType FieldDecl where
+  typing (FDecl t _) = t
  
+instance HasType FormalArg where
+  typing (FArg t _) = t
+
 instance Referable ClassDecl where 
   ref (CDecl id _ _ _ _) = id
   -- we override the find implementation to add the class object to the list of class declarations
@@ -140,6 +145,8 @@ instance Referable TypeBind where
 instance Referable Bind where
   ref (Bind (arg, _)) = ref arg
 
+instance Referable Argument where
+  ref (Arg id) = id
 
 
 --   case foundMethod of

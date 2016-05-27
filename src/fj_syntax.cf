@@ -8,9 +8,8 @@ CDecl . ClassDecl ::= "class" Id "extends" ClassName "{" [FieldDecl] Constructor
 FDecl . FieldDecl ::= ClassName Id ";" ;
 
 -- Constructor Declaration
-KDecl . Constructor ::= Id "(" [FieldParam] ")" "{" "super" "(" [Argument] ")" ";" [Assignment] "}" ;
+KDecl . Constructor ::= Id "(" [FormalArg] ")" "{" "super" "(" [Argument] ")" ";" [Assignment] "}" ;
 
-Field . FieldParam ::= ClassName Id ;
 FArg . FormalArg ::= ClassName Id;
 Arg . Argument ::= Id ;
 Assgnmt . Assignment ::= "this" "." Id "=" Id ";" ;
@@ -35,7 +34,6 @@ ClassId . ClassName ::= Id ;
 separator ClassDecl "" ;
 separator FieldDecl "" ;
 separator MethodDecl "" ;
-separator FieldParam "," ;
 separator FormalArg "," ;
 separator Argument "," ;
 separator Assignment "" ;

@@ -31,12 +31,7 @@ transFieldDecl x = case x of
 
 transConstructor :: Constructor -> Result
 transConstructor x = case x of
-  KDecl id fieldparams arguments assignments  -> failure x
-
-
-transFieldParam :: FieldParam -> Result
-transFieldParam x = case x of
-  Field classname id  -> failure x
+  KDecl id formalargs arguments assignments  -> failure x
 
 
 transFormalArg :: FormalArg -> Result

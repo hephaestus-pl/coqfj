@@ -12,7 +12,6 @@ import FJ.Syntax.ErrM
 %name pClassDecl ClassDecl
 %name pFieldDecl FieldDecl
 %name pConstructor Constructor
-%name pFieldParam FieldParam
 %name pFormalArg FormalArg
 %name pArgument Argument
 %name pAssignment Assignment
@@ -23,7 +22,6 @@ import FJ.Syntax.ErrM
 %name pListClassDecl ListClassDecl
 %name pListFieldDecl ListFieldDecl
 %name pListMethodDecl ListMethodDecl
-%name pListFieldParam ListFieldParam
 %name pListFormalArg ListFormalArg
 %name pListArgument ListArgument
 %name pListAssignment ListAssignment
@@ -71,11 +69,7 @@ FieldDecl : ClassName Id ';' { FDecl $1 $2 }
 
 
 Constructor :: { Constructor }
-Constructor : Id '(' ListFieldParam ')' '{' 'super' '(' ListArgument ')' ';' ListAssignment '}' { KDecl $1 $3 $8 (reverse $11) } 
-
-
-FieldParam :: { FieldParam }
-FieldParam : ClassName Id { Field $1 $2 } 
+Constructor : Id '(' ListFormalArg ')' '{' 'super' '(' ListArgument ')' ';' ListAssignment '}' { KDecl $1 $3 $8 (reverse $11) } 
 
 
 FormalArg :: { FormalArg }
@@ -125,12 +119,6 @@ ListFieldDecl : {- empty -} { [] }
 ListMethodDecl :: { [MethodDecl] }
 ListMethodDecl : {- empty -} { [] } 
   | ListMethodDecl MethodDecl { flip (:) $1 $2 }
-
-
-ListFieldParam :: { [FieldParam] }
-ListFieldParam : {- empty -} { [] } 
-  | FieldParam { (:[]) $1 }
-  | FieldParam ',' ListFieldParam { (:) $1 $3 }
 
 
 ListFormalArg :: { [FormalArg] }

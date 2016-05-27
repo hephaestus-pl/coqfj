@@ -71,11 +71,7 @@ All other symbols are terminals.\\
 \end{tabular}\\
 
 \begin{tabular}{lll}
-{\nonterminal{Constructor}} & {\arrow}  &{\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListFieldParam}} {\terminal{)}} {\terminal{\{}} {\terminal{super}} {\terminal{(}} {\nonterminal{ListArgument}} {\terminal{)}} {\terminal{;}} {\nonterminal{ListAssignment}} {\terminal{\}}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
-{\nonterminal{FieldParam}} & {\arrow}  &{\nonterminal{ClassName}} {\nonterminal{Id}}  \\
+{\nonterminal{Constructor}} & {\arrow}  &{\nonterminal{Id}} {\terminal{(}} {\nonterminal{ListFormalArg}} {\terminal{)}} {\terminal{\{}} {\terminal{super}} {\terminal{(}} {\nonterminal{ListArgument}} {\terminal{)}} {\terminal{;}} {\nonterminal{ListAssignment}} {\terminal{\}}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}
@@ -125,12 +121,6 @@ All other symbols are terminals.\\
 \begin{tabular}{lll}
 {\nonterminal{ListMethodDecl}} & {\arrow}  &{\emptyP} \\
  & {\delimit}  &{\nonterminal{MethodDecl}} {\nonterminal{ListMethodDecl}}  \\
-\end{tabular}\\
-
-\begin{tabular}{lll}
-{\nonterminal{ListFieldParam}} & {\arrow}  &{\emptyP} \\
- & {\delimit}  &{\nonterminal{FieldParam}}  \\
- & {\delimit}  &{\nonterminal{FieldParam}} {\terminal{,}} {\nonterminal{ListFieldParam}}  \\
 \end{tabular}\\
 
 \begin{tabular}{lll}

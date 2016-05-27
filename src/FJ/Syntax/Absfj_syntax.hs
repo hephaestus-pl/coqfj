@@ -17,11 +17,7 @@ data FieldDecl =
   deriving (Eq,Ord,Show)
 
 data Constructor =
-   KDecl Id [FieldParam] [Argument] [Assignment]
-  deriving (Eq,Ord,Show)
-
-data FieldParam =
-   Field ClassName Id
+   KDecl Id [FormalArg] [Argument] [Assignment]
   deriving (Eq,Ord,Show)
 
 data FormalArg =

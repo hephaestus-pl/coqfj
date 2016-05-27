@@ -23,7 +23,6 @@ computation t@(ExpFieldAccess exp field) ct = do
     flds <- fields name ct
     let vars = map fieldToVar flds 
     let bind = map Bind $ zip vars args
-    argTypes <- mapM (\arg -> expType arg [] ct) args
     (Bind (_, e)) <- find (ref field) bind
     computation e ct 
 
@@ -33,7 +32,6 @@ computation t@(ExpMethodInvoc exp method args) ct = do
     (MDecl _ _ fargs body) <- find (ref method) methods 
     let vars = map fargToVar fargs
     let bind = (Bind (This, obj):(map Bind $ zip vars args))
-    argTypes <- mapM (\arg -> expType arg [] ct) args 
     substExp <- subst body bind 
     computation substExp ct
   

@@ -41,8 +41,7 @@ All other symbols are terminals.
   | //Program// | -> | //[ClassDecl]// //Exp// 
   | //ClassDecl// | -> | ``class`` //Id// ``extends`` //ClassName// ``{`` //[FieldDecl]// //Constructor// //[MethodDecl]// ``}`` 
   | //FieldDecl// | -> | //ClassName// //Id// ``;`` 
-  | //Constructor// | -> | //Id// ``(`` //[FieldParam]// ``)`` ``{`` ``super`` ``(`` //[Argument]// ``)`` ``;`` //[Assignment]// ``}`` 
-  | //FieldParam// | -> | //ClassName// //Id// 
+  | //Constructor// | -> | //Id// ``(`` //[FormalArg]// ``)`` ``{`` ``super`` ``(`` //[Argument]// ``)`` ``;`` //[Assignment]// ``}`` 
   | //FormalArg// | -> | //ClassName// //Id// 
   | //Argument// | -> | //Id// 
   | //Assignment// | -> | ``this`` ``.`` //Id// ``=`` //Id// ``;`` 
@@ -62,9 +61,6 @@ All other symbols are terminals.
   |  |  **|**  | //FieldDecl// //[FieldDecl]// 
   | //[MethodDecl]// | -> | **eps**
   |  |  **|**  | //MethodDecl// //[MethodDecl]// 
-  | //[FieldParam]// | -> | **eps**
-  |  |  **|**  | //FieldParam// 
-  |  |  **|**  | //FieldParam// ``,`` //[FieldParam]// 
   | //[FormalArg]// | -> | **eps**
   |  |  **|**  | //FormalArg// 
   |  |  **|**  | //FormalArg// ``,`` //[FormalArg]// 

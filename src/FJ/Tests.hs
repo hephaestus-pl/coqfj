@@ -42,6 +42,8 @@ add_type = expType (programExp int_prog) [] int_ct
 
 m_type = ((MDecl (ClassId (Id "Pair")) (Id "setfst") [FArg (ClassId (Id "A")) (Id "newfst")] (ExpNew ( (Id "Pair")) [ExpVar $ VarId (Id "newfst"), ExpFieldAccess (ExpVar This) (Id "snd")])) `mOkIn` (ClassId $ Id "Pair")) example_ct 
 
+c_type = classOk (CDecl (Id "A") ClassObject [] (KDecl (Id "B") [] [] []) []) example_ct
+
 classPairOk = classOk (CDecl (Id "Pair") ClassObject [FDecl (ClassId (Id "A")) (Id "fst"),FDecl (ClassId (Id "B")) (Id "snd")] (KDecl (Id "Pair") [FArg (ClassId (Id "A")) (Id "fst"),FArg (ClassId (Id "B")) (Id "snd")] [] [Assgnmt (Id "fst") (Id "fst"),Assgnmt (Id "snd") (Id "snd")]) [MDecl (ClassId (Id "Pair")) (Id "setfst") [FArg (ClassId (Id "A")) (Id "newfst")] (ExpNew ( (Id "Pair")) [ExpVar $ VarId (Id "newfst"), ExpFieldAccess (ExpVar This) (Id "snd")])]) example_ct
 
 new_ex = computation (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) example_ct 
@@ -49,7 +51,7 @@ method_invoc_ex = computation (ExpMethodInvoc (ExpNew ( (Id "Pair")) [(ExpNew ( 
 field_acess_ex = computation (ExpFieldAccess (ExpNew ( (Id "Pair")) [(ExpNew ( (Id "A")) []), (ExpNew ( (Id "B")) [])]) (Id "fst")) example_ct 
 add_ex = computation (programExp int_prog) int_ct 
 
-example_ct = [(CDecl (Id "A") ClassObject [] (KDecl (Id "A") [] [] []) []), (CDecl (Id "B") ClassObject [] (KDecl (Id "B") [] [] []) []), (CDecl (Id "Pair") ClassObject [FDecl (ClassId (Id "A")) (Id "fst"),FDecl (ClassId (Id "B")) (Id "snd")] (KDecl (Id "Pair") [FArg (ClassId (Id "A")) (Id "fst"),FArg (ClassId (Id "B")) (Id "snd")] [] [Assgnmt (Id "fst") (Id "fst"),Assgnmt (Id "snd") (Id "snd")]) [MDecl (ClassId (Id "Pair")) (Id "setfst") [FArg (ClassId (Id "A")) (Id "newfst")] (ExpNew ( (Id "Pair")) [ExpVar $ VarId (Id "newfst"), ExpFieldAccess (ExpVar This) (Id "snd")])])]
+example_ct = [(CDecl (Id "A") ClassObject [] (KDecl (Id "B") [] [] []) []), (CDecl (Id "B") ClassObject [] (KDecl (Id "B") [] [] []) []), (CDecl (Id "Pair") ClassObject [FDecl (ClassId (Id "A")) (Id "fst"),FDecl (ClassId (Id "B")) (Id "snd")] (KDecl (Id "Pair") [FArg (ClassId (Id "A")) (Id "fst"),FArg (ClassId (Id "B")) (Id "snd")] [] [Assgnmt (Id "fst") (Id "fst"),Assgnmt (Id "snd") (Id "snd")]) [MDecl (ClassId (Id "Pair")) (Id "setfst") [FArg (ClassId (Id "A")) (Id "newfst")] (ExpNew ( (Id "Pair")) [ExpVar $ VarId (Id "newfst"), ExpFieldAccess (ExpVar This) (Id "snd")])])]
 
 test_prog = CProgram [CDecl (Id "teste") ClassObject [FDecl ClassObject (Id "a")] (KDecl (Id "teste") [FArg ClassObject (Id "a")] [] [Assgnmt (Id "a") (Id "a")]) [], CDecl (Id "teste2") (ClassId $ Id "teste") [] (KDecl (Id "teste2") [] [] []) []] (ExpNew ( Id "teste") [])
 

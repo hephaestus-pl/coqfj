@@ -84,12 +84,12 @@ classOk :: ClassDecl -> ClassTable -> Result ()
 classOk (CDecl cId d fdecls kons mdecls) ct =  
     case kons of 
     KDecl kId fargs superArgs assnmts -> do
+    compareClassId kId cId
     dfields <- fields (ref d) ct
     let superFargsIds = map ref superArgs
     let superFargs = filter (\x -> (ref x) `elem` superFargsIds) fargs
     _ <- compareFargFields superFargs dfields
     mapM_ (\m -> (m `mOkIn` (ClassId cId)) ct) mdecls
-    return ()
 
 compareFargFields :: [FormalArg] -> [FieldDecl] -> Result ()
 compareFargFields [] [] = return () 
@@ -108,6 +108,9 @@ sameTypes t1 t2 =
     else raise $ "Method override with different types"
 
     
-
+compareClassId cId kId = 
+    if cId == kId 
+    then return ()
+    else raise $ "Constructor Name: " ++ show(kId) ++ "does not match class Name: " ++ show (kId) 
 
 

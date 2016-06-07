@@ -22,6 +22,7 @@ import FJ.Syntax.Absfj_syntax
 import FJ.Syntax.LookupFunctions
 import FJ.Core.CommonTypes
 import Control.Monad
+import qualified Data.List as List
 
 
 (<:) :: ClassName -> ClassName -> ClassTable-> Result ()
@@ -85,21 +86,41 @@ classOk (CDecl cId d fdecls kons mdecls) ct =
     case kons of 
     KDecl kId fargs superArgs assnmts -> do
     compareClassId kId cId
+    assignmentsCorrect assnmts fdecls
     dfields <- fields (ref d) ct
-    let superFargsIds = map ref superArgs
-    let superFargs = filter (\x -> (ref x) `elem` superFargsIds) fargs
-    _ <- compareFargFields superFargs dfields
+    let superFargs = take (length dfields) fargs
+    let classFargs = drop (length dfields) fargs
+    compareFargFields superFargs dfields -- all super fields is a constructor argument
+    compareFargFields classFargs fdecls -- all super fields is a constructor argument
     mapM_ (\m -> (m `mOkIn` (ClassId cId)) ct) mdecls
 
-compareFargFields :: [FormalArg] -> [FieldDecl] -> Result ()
+fieldIndex :: FieldDecl -> [FormalArg] -> Result Int
+fieldIndex field fargs = 
+    let fieldId = ref field in
+    let fargsIds = map ref fargs in 
+    case List.elemIndex fieldId fargsIds of
+        Nothing -> raise $ "Fields not correctly listed at constructor"
+        Just n -> return n
+
+assignmentsCorrect :: [Assignment] -> [FieldDecl] -> Result()
+assignmentsCorrect [] _ = return ()
+assignmentsCorrect ((Assgnmt id1 id2):xs) fdecls = do
+    _ <- find id1 fdecls
+    if id1 == id2 
+        then assignmentsCorrect xs fdecls
+        else raise $ "Assigment is incorrect: " ++ show id1 ++ " != " ++ show id2
+
+   
+compareFargFields :: (Instanciable a) => [a] -> [FieldDecl] -> Result ()
 compareFargFields [] [] = return () 
 compareFargFields [] _ = raise "SuperClass with not that many fields"
 compareFargFields _ [] = raise "Too Little Fields provided to super"
-compareFargFields ((FArg farType farId):fargs) fields = do
-    (FDecl fType fId) <- find farId fields
-    if farType == fType 
-    then compareFargFields fargs fields
-    else raise $ "Field " ++ show fId ++ " with tpes"
+compareFargFields (inst:insts) fields =
+    (find (ref inst) fields) >>= \(FDecl fType fId) -> 
+    let otherFields = [x | x <- fields, ref x /= ref fId] in 
+    if (typing inst) == fType 
+    then compareFargFields insts otherFields
+    else raise $ "Field " ++ show fId ++ " with type: " ++ show fType ++ ", not " ++ show (typing inst)
 
 
 sameTypes :: Type -> Type -> Result ()

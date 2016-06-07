@@ -105,48 +105,48 @@ fields cname ct = do
     superFields <- fields (ref superName) ct
     return $ flds ++ superFields
 
-instance HasType FieldDecl where
-  typing (FDecl t _) = t
+instance Instanciable FieldDecl where
+    typing (FDecl t _) = t
  
-instance HasType FormalArg where
-  typing (FArg t _) = t
+instance Instanciable FormalArg where
+    typing (FArg t _) = t
 
 instance Referable ClassDecl where 
-  ref (CDecl id _ _ _ _) = id
-  -- we override the find implementation to add the class object to the list of class declarations
-  find key list = let objKons = KDecl (Id "Object") [] [] [] in
-    case [x | x <- (CDecl (Id "Object") ClassObject [] objKons []):list, key == (ref x)] of
-      []    -> raise $ "there is no such a key " ++ show key ++ " in the list."
-      (x:_) -> return x  
+    ref (CDecl id _ _ _ _) = id
+    -- we override the find implementation to add the class object to the list of class declarations
+    find key list = let objKons = KDecl (Id "Object") [] [] [] in
+        case [x | x <- (CDecl (Id "Object") ClassObject [] objKons []):list, key == (ref x)] of
+        []    -> raise $ "there is no such a key " ++ show key ++ " in the list."
+        (x:_) -> return x  
 
 instance Referable FieldDecl where 
-  ref (FDecl _ id) = id
+    ref (FDecl _ id) = id
 
 instance Referable MethodDecl where 
-  ref (MDecl _ id _ _) = id
+    ref (MDecl _ id _ _) = id
 
 instance Referable ClassName where
-  ref ClassObject = Id "Object"
-  ref (ClassId id) = id
+    ref ClassObject = Id "Object"
+    ref (ClassId id) = id
 
 instance Referable Id where
-  ref id = id
+    ref id = id
 
 instance Referable FormalArg where
-  ref (FArg _ id) = id
+    ref (FArg _ id) = id
 
 instance Referable Var where
-  ref This = Id "this"
-  ref (VarId id) = id
+    ref This = Id "this"
+    ref (VarId id) = id
 
 instance Referable TypeBind where
-  ref (TypeBind (arg, _)) = ref arg
+    ref (TypeBind (arg, _)) = ref arg
 
 instance Referable Bind where
-  ref (Bind (arg, _)) = ref arg
+    ref (Bind (arg, _)) = ref arg
 
 instance Referable Argument where
-  ref (Arg id) = id
+    ref (Arg id) = id
 
 
 --   case foundMethod of

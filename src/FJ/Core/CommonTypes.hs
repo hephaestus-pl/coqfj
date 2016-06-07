@@ -23,8 +23,8 @@ import Control.Applicative
 import FJ.Syntax.Absfj_syntax
 import FJ.TypeSystem.Types
 
-class HasType a where
-  typing :: a -> ExpType
+class (Referable a) => Instanciable a where
+    typing :: a -> ClassName
 
 class Referable a where 
   ref  :: a -> Id

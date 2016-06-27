@@ -1,5 +1,14 @@
+# Vim Files
 *.*.swp
 *.*.swo
+
+# Haskell files
 *.hi
 *.o
 *.bak
+
+# Coq Files
+*.glob
+*.v.d
+*.vo
+*.aux

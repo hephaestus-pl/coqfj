@@ -241,6 +241,11 @@ Fixpoint find {A: Set} (key: id) (d: partial_map) : option A :=
                      else find key d'
   end.
 
+Definition binds {A: Set} x (v: A) d: Prop := find x d = Some v.
+Definition no_binds {A: Set} x d: Prop := find x d = @None A.
+
+Definition is_in {A: Set} id d := exists x: A, find id d = Some x.
+Notation "id '\in' d" := (is_in id d) (at level 20).
 
 Lemma update_eq : forall (A: Set) (d: partial_map) (k: id) (v: A),
   find k (update d k v) = Some v.

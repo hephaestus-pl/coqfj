@@ -68,10 +68,24 @@ Inductive Subtype : id -> ClassName -> Set :=
     C <: D
 where "C '<:' D" := (Subtype C D).
 
+
 Tactic Notation "subtype_cases" tactic(first) ident(c) :=
   first;
   [ Case_aux c "S_Refl" | Case_aux c "S_Trans" 
   | Case_aux c "S_Decl"].
+
+
+(*Definition some_decl (C: ClassName) := exists D fs K mds, CDecl C D fs K mds.*)
+
+Inductive sane_ct (CT: @partial_map ClassDecl) :=
+  | okDecl : forall C D fs K mds, 
+            find C CT = Some (CDecl C D fs K mds) ->
+            sane_ct CT
+  | nobj : find Object CT = None ->
+          sane_ct CT ->
+  | 
+            binds C (CDecl C D fs K mds) CT.
+  
   
 (* Auxiliaries *)
 

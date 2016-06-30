@@ -106,25 +106,36 @@ Inductive m_type (m: id) (C: ClassName) (B: ClassName) (ts: [ClassName]):=
 
 Hint Constructors m_type.
 
+Lemma ex: forall C D fs K m mds Cs C0 fargs e,
+          binds C (CDecl C D fs K mds) CT ->
+          mtype( m, D)= Cs ~> C0 ->
+          ~ In (MDecl Cs m fargs e) mds.
+Proof with eauto.
+  intros.
+  generalize dependent fargs.
+  generalize dependent e.
+  generalize dependent fs.
+  generalize dependent K.
+  generalize dependent mds.
+  induction H0.
+  intros.
+  intro.
+  subst.
+  eauto.  
+
 Lemma A11: forall m D C Cs C0,
           C <: D ->
           mtype(m,D) = Cs ~> C0 ->
           mtype(m,C) = Cs ~> C0.
-Proof.
+Proof with eauto.
   intros m D C Cs C0 H.
-  subtype_cases (induction H) Case; auto.
+  subtype_cases (induction H) Case...
   Case "S_Decl".
     intros.
-    inversion H. subst.
-    eapply mty_ok; eauto.
-    intro. (*we need to assume that the CT is consistent*)
-    contradiction.
-    constructor.
-    inversion b.
-    inversion H1.
+    eapply mty_no_override... (*we need to assume that the CT is consistent*)
+    intro.
     
 
-    
 
 
   

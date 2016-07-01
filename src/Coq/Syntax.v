@@ -55,28 +55,43 @@ Definition extends (C D : ClassName) :=
   | cname => find cname CT
   end.
 *)
+Definition isDecl (C : ClassName) := exists D fs K mds, find C CT = Some (CDecl C D fs K mds).
+Hint Unfold isDecl.
 Reserved Notation "C '<:' D " (at level 40).
 
-Inductive Subtype : id -> ClassName -> Set :=
-  | S_Refl: forall C: ClassName, C <: C
+Inductive Subtype : id -> ClassName -> Prop :=
+  | S_Refl: forall C: ClassName, isDecl C -> C <: C
   | S_Trans: forall (C D E: ClassName), 
+    isDecl C -> isDecl D -> isDecl E ->
     C <: D -> 
     D <: E -> 
     C <: E
-  | S_Decl: forall C D fs K mds , 
-    binds C (CDecl C D fs K mds) CT -> 
+  | S_Decl: forall C D fs K mds, 
+    isDecl D ->
+    find C CT = Some (CDecl C D fs K mds) ->
     C <: D
 where "C '<:' D" := (Subtype C D).
-
-
+Hint Constructors Subtype.
 Tactic Notation "subtype_cases" tactic(first) ident(c) :=
   first;
   [ Case_aux c "S_Refl" | Case_aux c "S_Trans" 
   | Case_aux c "S_Decl"].
 
 
-(*Definition some_decl (C: ClassName) := exists D fs K mds, CDecl C D fs K mds.*)
 
+Lemma subtype_decls : forall C D, 
+                      C <: D ->
+                      isDecl C /\ isDecl D.
+Proof with eauto.
+  intros C D H.
+  split;
+  destruct H;
+  unfold isDecl...
+Qed.
+
+
+
+(* not sure if it is needed when assuming the declaration before subtyping
 Inductive sane_ct (CT: @partial_map ClassDecl) :=
   | okDecl : forall C D fs K mds, 
             find C CT = Some (CDecl C D fs K mds) ->
@@ -85,7 +100,7 @@ Inductive sane_ct (CT: @partial_map ClassDecl) :=
           sane_ct CT ->
   | 
             binds C (CDecl C D fs K mds) CT.
-  
+  *)
   
 (* Auxiliaries *)
 
@@ -104,14 +119,14 @@ Inductive fields : id -> [FieldDecl] -> Prop :=
 Print ty.
 
 Reserved Notation "'mtype(' m ',' D ')' '=' c '~>' c0" (at level 40).
-Inductive m_type (m: id) (C: ClassName) (B: ClassName) (ts: [ClassName]):=
+Inductive m_type (m: id) (C: ClassName) (B: ClassName) (ts: [ClassName]) : Prop:=
   | mty_ok : forall D Fs K Ms e fargs,
-              binds C (CDecl C D Fs K Ms) CT->
+              find C CT = Some (CDecl C D Fs K Ms)->
               List.In (MDecl B m fargs e) Ms ->
               map fargType fargs = ts ->
               mtype(m, C) = B ~> ts
   | mty_no_override: forall D Fs K Ms e fargs,
-              binds C (CDecl C D Fs K Ms) CT->
+              find C CT = Some (CDecl C D Fs K Ms)->
               ~List.In (MDecl B m fargs e) Ms ->
               mtype(m, D) = B ~> ts ->
               mtype(m,C) = B ~> ts
@@ -119,7 +134,7 @@ Inductive m_type (m: id) (C: ClassName) (B: ClassName) (ts: [ClassName]):=
         := (m_type m D c c0).
 
 Hint Constructors m_type.
-
+(*
 Lemma ex: forall C D fs K m mds Cs C0 fargs e,
           binds C (CDecl C D fs K mds) CT ->
           mtype( m, D)= Cs ~> C0 ->
@@ -136,7 +151,7 @@ Proof with eauto.
   intro.
   subst.
   eauto.  
-
+*)
 Lemma A11: forall m D C Cs C0,
           C <: D ->
           mtype(m,D) = Cs ~> C0 ->
@@ -146,13 +161,10 @@ Proof with eauto.
   subtype_cases (induction H) Case...
   Case "S_Decl".
     intros.
-    eapply mty_no_override... (*we need to assume that the CT is consistent*)
-    intro.
-    
-
-
-
-  
+    inversion H1.
+    eapply mty_no_override... intro. 
+(*we need to assume C does not overrides the methods in D in a consistent CT*)
+Admitted.
 
 Lemma A11 : forall C D m, 
     C <: D -> 

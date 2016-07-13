@@ -15,7 +15,6 @@ Require Export Bool.
 Require Export List.
 Require Export Arith.
 Require Export Arith.EqNat.  (* Contains [beq_nat], among other things *)
-Require Import Coq.Logic.Decidable.
 
 (** * From Basics.v *)
 
@@ -278,17 +277,17 @@ Proof with auto.
   rewrite <- beq_id_refl...
 Qed.
 
-Lemma find_deterministic: forall (A: Set) d (k1: id) (v1 v2: A),
-  (*(forall (va vb: A), decidable (va = vb)) ->*)
-  find k1 d = Some v1 ->
-  find k1 d = Some v2 ->
-  v1 = v2.
+Lemma find_deterministic: forall (A: Set) d (k1: id) (x1 x2: option A),
+  find k1 d = x1 ->
+  find k1 d = x2 ->
+  x1 = x2.
 Proof with eauto.
   intros.
-  destruct find in *.
+  destruct x1, x2; 
+  destruct find in *; auto with rewrite.
+  rewrite <- H; auto.
   inversion H.
   inversion H0.
-  rewrite <- H2; auto.
   inversion H.
 Qed.
 

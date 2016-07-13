@@ -15,6 +15,7 @@ Require Export Bool.
 Require Export List.
 Require Export Arith.
 Require Export Arith.EqNat.  (* Contains [beq_nat], among other things *)
+Require Import Coq.Logic.Decidable.
 
 (** * From Basics.v *)
 
@@ -224,6 +225,16 @@ Theorem beq_id_sym: forall i1 i2,
 Proof.
   intros i1 i2. destruct i1. destruct i2. apply beq_nat_sym. Qed.
 
+Theorem eq_id_dec: forall (i1 i2: id),
+  {i1 = i2} + {i1 <> i2}.
+Proof.
+  intros.
+  destruct i1, i2.
+  destruct eq_nat_dec with n n0.
+  left; auto.
+  right; intro.
+  apply n1; inversion H; auto.
+Qed.
 
 Inductive partial_map {A : Set} := 
   | empty : partial_map
@@ -258,13 +269,28 @@ Lemma update_neq : forall (A: Set) (d: partial_map) (m n: id) (o: A),
 Proof.
   intros. unfold update, find. rewrite H; auto.
 Qed.
-(*
-Lemma extend_shadow : forall A (ctxt: partial_map A) t1 t2 x1 x2,
-  extend (extend ctxt x2 t1) x2 t2 x1 = extend ctxt x2 t2 x1.
+
+Lemma update_shadow : forall (A: Set) (d: partial_map) (k1: id) (v1 v2: A),
+  find k1 (record k1 v1 (record k1 v2 d)) = Some v1.
 Proof with auto.
-  intros. unfold extend. destruct (beq_id x2 x1)...
+  intros.
+  simpl.
+  rewrite <- beq_id_refl...
 Qed.
-*)
+
+Lemma find_deterministic: forall (A: Set) d (k1: id) (v1 v2: A),
+  (*(forall (va vb: A), decidable (va = vb)) ->*)
+  find k1 d = Some v1 ->
+  find k1 d = Some v2 ->
+  v1 = v2.
+Proof with eauto.
+  intros.
+  destruct find in *.
+  inversion H.
+  inversion H0.
+  rewrite <- H2; auto.
+  inversion H.
+Qed.
 
 (** * Some useful tactics *)
 

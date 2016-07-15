@@ -40,10 +40,15 @@ Inductive MethodDecl :=
   | MDecl : ClassName -> id -> [FormalArg] -> Exp -> MethodDecl.
 
 Inductive ClassDecl:=
-  | CDecl: id -> ClassName -> [FieldDecl] -> Constructor -> [MethodDecl] -> ClassDecl.
+  | CDecl: id -> ClassName -> [FieldDecl] -> Constructor -> @partial_map MethodDecl -> ClassDecl.
 
 Inductive Program :=
   | CProgram : [ClassDecl] -> Exp -> Program.
+
+Instance CDeclRef : Referable ClassDecl :={
+  ref cdecl := 
+    match cdecl with CDecl id _ _ _ _ => id end
+}.
 
 Parameter CT: @partial_map ClassDecl.
 (*We will assume a global CT to make our definitions easier
@@ -132,13 +137,15 @@ Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:
   | mty_ok : forall D Fs K Ms e fargs,
               (*isDecl D ->*)
               find C CT = Some (CDecl C D Fs K Ms)->
-              List.In (MDecl B m fargs e) Ms ->
+              (*List.In (MDecl B m fargs e) Ms ->*)
+              find m Ms = Some (MDecl B m fargs e) ->
               map fargType fargs = Bs ->
               mtype(m, C) = Bs ~> B
   | mty_no_override: forall D Fs K Ms e fargs,
               (*isDecl D ->*)
               find C CT = Some (CDecl C D Fs K Ms)->
-              ~List.In (MDecl B m fargs e) Ms ->
+              (*~List.In (MDecl B m fargs e) Ms ->*)
+              find m Ms = Some (MDecl B m fargs e) ->
               map fargType fargs = Bs ->
               mtype(m, D) = Bs ~> B ->
               mtype(m, C) = Bs ~> B
@@ -149,12 +156,12 @@ Hint Constructors m_type.
 Tactic Notation "mty_cases" tactic(first) ident(c) :=
   first;
   [ Case_aux c "mty_ok" | Case_aux c "mty_no_override"].
-
+(*
 Lemma mdecl_dec: forall m1 m2: MethodDecl,
   {m1=m2} + {m1 <> m2}.
 Proof.
 Admitted.
-
+*)
 Lemma A11: forall m D C Cs C0,
           C <: D ->
           mtype(m,D) = Cs ~> C0 ->
@@ -165,8 +172,9 @@ Proof with eauto.
   Case "S_Decl".
     intros.
     inversion H0.
-    destruct in_dec with (l:= mds) (a:= MDecl C0 m fargs e). exact mdecl_dec.
-    eapply mty_ok...
+    (*destruct in_dec with (l:= mds) (a:= MDecl C0 m fargs e). exact mdecl_dec.*)
+    destruct find_dec with (A:= MethodDecl) (d:= mds) (k1:= m) (v:= MDecl C0 m fargs e).
+    eapply mty_ok... eexact e0.
     eapply mty_no_override...
     destruct in_dec with (l:= mds) (a:= MDecl C0 m fargs e). exact mdecl_dec.
     eapply mty_ok...

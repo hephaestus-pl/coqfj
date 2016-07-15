@@ -251,6 +251,11 @@ Fixpoint find {A: Set} (key: id) (d: partial_map) : option A :=
                      else find key d'
   end.
 
+Inductive Find {A: Set} : id -> partial_map -> option A -> Prop:=
+  | not_in : forall key, Find key empty None
+  | in_head : forall key v d, Find key (record key v d) (Some v).
+(*  | not_in_head : forall k1 k2 v d, k1 <> k2 -> Find k1 (record k1 v d) (Some v).*)
+
 Definition binds {A: Set} x (v: A) d: Prop := find x d = Some v.
 Definition no_binds {A: Set} x d: Prop := find x d = @None A.
 

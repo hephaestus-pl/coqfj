@@ -301,6 +301,20 @@ Lemma find_dec : forall (A: Set) k1 d (v:option A),
 Proof.
 Admitted.
 
+Class Referable (a: Set) :={
+  ref : a -> id;
+
+  finder: id -> list a -> option a := 
+  let fix f (key: id) (l: list a) :=
+    match l with
+      | [] => None
+      | (x :: xs) => if eq_id_dec key (ref x) 
+                      then Some x
+                      else f key xs
+    end in f
+}.
+
+
 (** * Some useful tactics *)
 
 Tactic Notation "solve_by_inversion_step" tactic(t) :=  

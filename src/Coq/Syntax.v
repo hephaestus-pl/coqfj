@@ -37,7 +37,7 @@ Inductive Exp : Set :=
   | ExpNew : id -> [Exp] -> Exp.
 
 Inductive MethodDecl :=
-  | MDecl : ClassName -> id -> [FormalArg] -> id -> MethodDecl.
+  | MDecl : ClassName -> id -> [FormalArg] -> Exp -> MethodDecl.
 
 Inductive ClassDecl:=
   | CDecl: id -> ClassName -> [FieldDecl] -> Constructor -> [MethodDecl] -> ClassDecl.
@@ -74,9 +74,9 @@ Tactic Notation "subtype_cases" tactic(first) ident(c) :=
   [ Case_aux c "S_Refl" | Case_aux c "S_Trans" 
   | Case_aux c "S_Decl"].
 
+(*
 Hypothesis subtype_decls : forall C D, C <: D -> isDecl C /\ isDecl D.
 
-(*
 Lemma subtype_decls : forall C D, 
                       C <: D ->
                       isDecl C /\ isDecl D.
@@ -154,8 +154,6 @@ Lemma mdecl_dec: forall m1 m2: MethodDecl,
   {m1=m2} + {m1 <> m2}.
 Proof.
 Admitted.
-  
-  
 
 Lemma A11: forall m D C Cs C0,
           C <: D ->
@@ -170,39 +168,11 @@ Proof with eauto.
     destruct in_dec with (l:= mds) (a:= MDecl C0 m fargs e). exact mdecl_dec.
     eapply mty_ok...
     eapply mty_no_override...
-
-
     destruct in_dec with (l:= mds) (a:= MDecl C0 m fargs e). exact mdecl_dec.
     eapply mty_ok...
     eapply mty_no_override...
 Qed.
-(*
 
-  Case "mty_ok".
-    intros.
-    apply subtype_decls in H1; destruct H1.
-    destruct H1 as [C1 H1].
-    destruct H1 as [fs H1].
-    destruct H1 as [K1 H1].
-    destruct H1 as [mds H1].
-    destruct in_dec with (l:= mds) (a:= MDecl B m fargs e). exact mdecl_dec.
-    eapply mty_ok...
-    eapply mty_no_override...
-
-  Case "mty_no_override".
-    apply IHm_type.
-    remember H1 as H1'. clear HeqH1'.
-    apply subtype_decls in H1; destruct H1.
-    apply S_Trans with C0...*)
-Qed.
-
-(*we need to assume C does not overrides the methods in D in a consistent CT*)
-Admitted.
-
-Lemma A11 : forall C D m, 
-    C <: D -> 
-    mtype m D = t -> 
-    mtype m C = t.
 
 Definition Bind := @partial_map Exp.
 

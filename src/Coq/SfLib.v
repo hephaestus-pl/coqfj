@@ -296,6 +296,11 @@ Proof with eauto.
   inversion H.
 Qed.
 
+Lemma find_dec : forall (A: Set) k1 d (v:option A),
+  {find k1 d = Some v} + {find k1 d = None}.
+Proof.
+Admitted.
+
 (** * Some useful tactics *)
 
 Tactic Notation "solve_by_inversion_step" tactic(t) :=  

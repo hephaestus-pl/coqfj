@@ -32,7 +32,7 @@ Inductive FieldDecl :=
 Inductive Exp : Set :=
   | ExpVar : Var -> Exp
   | ExpFieldAccess : Exp -> id -> Exp
-  | ExpMethodInvoc: Exp -> id -> [Exp] -> Exp
+  | ExpMethodInvoc : Exp -> id -> [Exp] -> Exp
   | ExpCast : ClassName -> Exp -> Exp
   | ExpNew : id -> [Exp] -> Exp.
 
@@ -40,14 +40,15 @@ Inductive MethodDecl :=
   | MDecl : ClassName -> id -> [FormalArg] -> Exp -> MethodDecl.
 
 Inductive ClassDecl:=
-  | CDecl: id -> ClassName -> [FieldDecl] -> Constructor -> @partial_map MethodDecl -> ClassDecl.
+  | CDecl: id -> ClassName -> [FieldDecl] -> Constructor -> [MethodDecl] -> ClassDecl.
 
 Inductive Program :=
   | CProgram : [ClassDecl] -> Exp -> Program.
 
 Instance CDeclRef : Referable ClassDecl :={
   ref cdecl := 
-    match cdecl with CDecl id _ _ _ _ => id end
+    match cdecl with 
+   | CDecl id _ _ _ _ => id end
 }.
 
 Parameter CT: @partial_map ClassDecl.
@@ -137,15 +138,15 @@ Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:
   | mty_ok : forall D Fs K Ms e fargs,
               (*isDecl D ->*)
               find C CT = Some (CDecl C D Fs K Ms)->
-              (*List.In (MDecl B m fargs e) Ms ->*)
-              find m Ms = Some (MDecl B m fargs e) ->
+              In (MDecl B m fargs e) Ms ->
+              (*find m Ms = Some (MDecl B m fargs e) ->*)
               map fargType fargs = Bs ->
               mtype(m, C) = Bs ~> B
   | mty_no_override: forall D Fs K Ms e fargs,
               (*isDecl D ->*)
               find C CT = Some (CDecl C D Fs K Ms)->
-              (*~List.In (MDecl B m fargs e) Ms ->*)
-              find m Ms = Some (MDecl B m fargs e) ->
+              ~List.In (MDecl B m fargs e) Ms ->
+              (*find m Ms = Some (MDecl B m fargs e) ->*)
               map fargType fargs = Bs ->
               mtype(m, D) = Bs ~> B ->
               mtype(m, C) = Bs ~> B
@@ -156,12 +157,66 @@ Hint Constructors m_type.
 Tactic Notation "mty_cases" tactic(first) ident(c) :=
   first;
   [ Case_aux c "mty_ok" | Case_aux c "mty_no_override"].
-(*
+
+Lemma arg_dec: forall a1 a2: Argument,
+  {a1 = a2} + {a1 <> a2}.
+Proof.
+  intros; destruct a1, a2.
+  destruct eq_id_dec with (i1 := i) (i2 := i0).
+  rewrite e; left; reflexivity.
+  right; intro.
+  destruct n. inversion H. reflexivity.
+Qed.
+
+Lemma farg_dec: forall f1 f2: FormalArg,
+  {f1 = f2} + {f1 <> f2}.
+Proof.
+  intros; destruct f1, f2.
+  destruct eq_id_dec with (i1 := i) (i2 := i0);
+  destruct eq_id_dec with (i1 := c) (i2 := c0); 
+  try (right; intro; destruct n; inversion H; reflexivity).
+  rewrite e, e0; left; auto.
+Qed.
+
+Lemma assnmt_dec: forall a1 a2: Assignment,
+  {a1 = a2} + {a1 <> a2}.
+Proof.
+  intros; destruct a1, a2.
+  destruct eq_id_dec with (i1 := i) (i2 := i1);
+  destruct eq_id_dec with (i1 := i0) (i2 := i2);
+  try (right; intro H; destruct n; inversion H; auto).   
+  rewrite e, e0; left; auto.
+Qed.
+
+Lemma field_dec: forall f1 f2 : FieldDecl,
+  {f1 = f2} + {f1 <> f2}.
+Proof.
+  intros; destruct f1, f2.
+  destruct eq_id_dec with (i1 := i) (i2 := i0);
+  destruct eq_id_dec with (i1 := c) (i2 := c0); 
+  try (right; intro; destruct n; inversion H; reflexivity).
+  rewrite e, e0; left; auto.
+Qed.
+
+Lemma exp_dec: forall e1 e2 : Exp,
+  {e1 = e2} + {e1 <> e2}.
+Proof.
+  intros; destruct e1, e2.
+Admitted.
+
 Lemma mdecl_dec: forall m1 m2: MethodDecl,
   {m1=m2} + {m1 <> m2}.
 Proof.
-Admitted.
-*)
+  intros.
+  destruct m1, m2.
+  destruct eq_id_dec with (i1 := c) (i2 := c0);
+  destruct exp_dec with (e1:= e) (e2:= e0);
+  destruct eq_id_dec with (i1:= i0) (i2:= i);
+  destruct list_eq_dec with (A:= FormalArg) (l:= l) (l':= l0); try(exact farg_dec); try (right; intro; destruct n; inversion H; reflexivity).
+
+  left; rewrite e1, e2, e3, e4; reflexivity.
+Qed. 
+
 Lemma A11: forall m D C Cs C0,
           C <: D ->
           mtype(m,D) = Cs ~> C0 ->
@@ -172,9 +227,9 @@ Proof with eauto.
   Case "S_Decl".
     intros.
     inversion H0.
-    (*destruct in_dec with (l:= mds) (a:= MDecl C0 m fargs e). exact mdecl_dec.*)
-    destruct find_dec with (A:= MethodDecl) (d:= mds) (k1:= m) (v:= MDecl C0 m fargs e).
-    eapply mty_ok... eexact e0.
+    destruct in_dec with (l:= mds) (a:= MDecl C0 m fargs e). exact mdecl_dec.
+    (*destruct find_dec with (A:= MethodDecl) (d:= mds) (k1:= m) (v:= MDecl C0 m fargs e).*)
+    eapply mty_ok... 
     eapply mty_no_override...
     destruct in_dec with (l:= mds) (a:= MDecl C0 m fargs e). exact mdecl_dec.
     eapply mty_ok...
@@ -183,7 +238,7 @@ Qed.
 
 
 Definition Bind := @partial_map Exp.
-
+(*
 Lemma eq_var_dec : forall (v v': Var), {v = v'} + {v <> v'}.
 Proof.
   intros. destruct v, v'; try eauto.
@@ -201,10 +256,11 @@ Proof.
       right; intro H.
       inversion H. auto.
 Defined.
+*)
 
 Fixpoint subst (e: Exp) (v: Var) (v': Exp) : Exp:=
   match e with
-  | ExpVar var => if eq_var_dec var v then v' else ExpVar var
+  | ExpVar var => if eq_id_dec var v then v' else ExpVar var
   | ExpFieldAccess exp i => ExpFieldAccess (subst exp v v') i
   | ExpMethodInvoc exp i exps => 
       ExpMethodInvoc (subst exp v v') i (map (fun x => subst x v v') exps)
@@ -214,7 +270,7 @@ Fixpoint subst (e: Exp) (v: Var) (v': Exp) : Exp:=
 
 Notation " '[' v ':=' v' ']' e " := (subst e v v') (at level 40).  
 
-Eval compute in ([ (VarId (Id 1)) := ExpFieldAccess (ExpVar This) (Id 2)] ExpVar (VarId (Id 1))).
+Eval compute in ([ (Id 1) := ExpFieldAccess (ExpVar this) (Id 2)] ExpVar (Id 1)).
 
 
 

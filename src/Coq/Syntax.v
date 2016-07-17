@@ -40,7 +40,7 @@ Inductive MethodDecl :=
   | MDecl : ClassName -> id -> [FormalArg] -> Exp -> MethodDecl.
 
 Inductive ClassDecl:=
-  | CDecl: id -> ClassName -> [FieldDecl] -> Constructor -> [MethodDecl] -> ClassDecl.
+  | CDecl: id -> ClassName -> [FieldDecl] -> Constructor -> @partial_map MethodDecl -> ClassDecl.
 
 Inductive Program :=
   | CProgram : [ClassDecl] -> Exp -> Program.
@@ -135,18 +135,20 @@ Print ty.
 
 Reserved Notation "'mtype(' m ',' D ')' '=' c '~>' c0" (at level 40).
 Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:=
-  | mty_ok : forall D Fs K Ms e fargs,
+  | mty_ok : forall D Fs K Ms fargs,
               (*isDecl D ->*)
               find C CT = Some (CDecl C D Fs K Ms)->
-              In (MDecl B m fargs e) Ms ->
-              (*find m Ms = Some (MDecl B m fargs e) ->*)
+              In m (keys Ms) -> 
+              (*In (MDecl B m fargs e) Ms ->
+              find m Ms = Some (MDecl B m fargs e) ->*)
               map fargType fargs = Bs ->
               mtype(m, C) = Bs ~> B
-  | mty_no_override: forall D Fs K Ms e fargs,
+  | mty_no_override: forall D Fs K Ms fargs,
               (*isDecl D ->*)
               find C CT = Some (CDecl C D Fs K Ms)->
-              ~List.In (MDecl B m fargs e) Ms ->
-              (*find m Ms = Some (MDecl B m fargs e) ->*)
+              ~In m (keys Ms) ->
+              (*~List.In (MDecl B m fargs e) Ms ->
+              find m Ms = Some (MDecl B m fargs e) ->*)
               map fargType fargs = Bs ->
               mtype(m, D) = Bs ~> B ->
               mtype(m, C) = Bs ~> B
@@ -226,37 +228,15 @@ Proof with eauto.
   subtype_cases (induction H) Case...
   Case "S_Decl".
     intros.
-    inversion H0.
-    destruct in_dec with (l:= mds) (a:= MDecl C0 m fargs e). exact mdecl_dec.
-    (*destruct find_dec with (A:= MethodDecl) (d:= mds) (k1:= m) (v:= MDecl C0 m fargs e).*)
-    eapply mty_ok... 
-    eapply mty_no_override...
-    destruct in_dec with (l:= mds) (a:= MDecl C0 m fargs e). exact mdecl_dec.
-    eapply mty_ok...
-    eapply mty_no_override...
+    inversion H0; (destruct in_dec with (l:= keys mds) (a:= m);
+      [ exact eq_id_dec 
+      | eapply mty_ok; eauto 
+      | eapply mty_no_override; eauto
+      ]).
 Qed.
 
 
 Definition Bind := @partial_map Exp.
-(*
-Lemma eq_var_dec : forall (v v': Var), {v = v'} + {v <> v'}.
-Proof.
-  intros. destruct v, v'; try eauto.
-  Case "This VarId".
-    right; intro.
-    inversion H.
-  Case "VarId This".
-    right; intro; inversion H.
-  Case "VarId VarId".
-    destruct i, i0.
-    destruct eq_nat_dec with (n:=n) (m:=n0).
-    SCase "n = n0".
-      left; rewrite e; reflexivity.
-    SCase "n <> n0".
-      right; intro H.
-      inversion H. auto.
-Defined.
-*)
 
 Fixpoint subst (e: Exp) (v: Var) (v': Exp) : Exp:=
   match e with

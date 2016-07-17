@@ -16,169 +16,6 @@ Require Export List.
 Require Export Arith.
 Require Export Arith.EqNat.  (* Contains [beq_nat], among other things *)
 
-(** * From Basics.v *)
-
-Definition admit {T: Type} : T.  Admitted.
-
-Require String. Open Scope string_scope.
-
-Ltac move_to_top x :=
-  match reverse goal with
-  | H : _ |- _ => try move x after H
-  end.
-
-Tactic Notation "assert_eq" ident(x) constr(v) :=
-  let H := fresh in
-  assert (x = v) as H by reflexivity;
-  clear H.
-
-Tactic Notation "Case_aux" ident(x) constr(name) :=
-  first [
-    set (x := name); move_to_top x
-  | assert_eq x name; move_to_top x
-  | fail 1 "because we are working on a different case" ].
-
-Tactic Notation "Case" constr(name) := Case_aux Case name.
-Tactic Notation "SCase" constr(name) := Case_aux SCase name.
-Tactic Notation "SSCase" constr(name) := Case_aux SSCase name.
-Tactic Notation "SSSCase" constr(name) := Case_aux SSSCase name.
-Tactic Notation "SSSSCase" constr(name) := Case_aux SSSSCase name.
-Tactic Notation "SSSSSCase" constr(name) := Case_aux SSSSSCase name.
-Tactic Notation "SSSSSSCase" constr(name) := Case_aux SSSSSSCase name.
-Tactic Notation "SSSSSSSCase" constr(name) := Case_aux SSSSSSSCase name.
-
-Fixpoint ble_nat (n m : nat) : bool :=
-  match n with
-  | O => true
-  | S n' =>
-      match m with
-      | O => false
-      | S m' => ble_nat n' m'
-      end
-  end.
-
-Theorem andb_true_elim1 : forall b c,
-  andb b c = true -> b = true.
-Proof.
-  intros b c H.
-  destruct b.
-  Case "b = true".
-    reflexivity.
-  Case "b = false".
-    rewrite <- H. reflexivity.  Qed.
-
-Theorem andb_true_elim2 : forall b c,
-  andb b c = true -> c = true.
-Proof.
-(* An exercise in Basics.v *)
-Admitted.
-
-Theorem beq_nat_sym : forall (n m : nat),
-  beq_nat n m = beq_nat m n.
-(* An exercise in Lists.v *)
-Admitted.
-
-(* From Poly.v *)
-
-Notation "[ ]" := nil.
-Notation "[ x , .. , y ]" := (cons x .. (cons y []) ..).
-Notation "x ++ y" := (app x y) 
-                     (at level 60, right associativity).
-
-(** * From Props.v *)
-
-Inductive ev : nat -> Prop :=
-  | ev_0 : ev O
-  | ev_SS : forall n:nat, ev n -> ev (S (S n)).
-
-(** * From Logic.v *)
-
-Theorem andb_true : forall b c,
-  andb b c = true -> b = true /\ c = true.
-Proof.
-  intros b c H.
-  destruct b.
-    destruct c.
-      apply conj. reflexivity. reflexivity.
-      inversion H.
-    inversion H.  Qed.
-
-Theorem not_eq_beq_false : forall n n' : nat,
-     n <> n' ->
-     beq_nat n n' = false.
-Proof. 
-(* An exercise in Logic.v *)
-Admitted.
-
-Theorem ex_falso_quodlibet : forall (P:Prop),
-  False -> P.
-Proof.
-  intros P contra.
-  inversion contra.  Qed.
-
-Theorem ev_not_ev_S : forall n,
-  ev n -> ~ ev (S n).
-Proof. 
-(* An exercise in Logic.v *)
-Admitted.
-
-Theorem ble_nat_true : forall n m,
-  ble_nat n m = true -> n <= m.
-(* An exercise in Logic.v *)
-Admitted.
-
-Theorem ble_nat_false : forall n m,
-  ble_nat n m = false -> ~(n <= m).
-(* An exercise in Logic.v *)
-Admitted.
-
-Inductive appears_in (n : nat) : list nat -> Prop :=
-| ai_here : forall l, appears_in n (n::l)
-| ai_later : forall m l, appears_in n l -> appears_in n (m::l).
-
-Inductive next_nat (n:nat) : nat -> Prop :=
-  | nn : next_nat n (S n).
-
-Inductive total_relation : nat -> nat -> Prop :=
-  tot : forall n m : nat, total_relation n m.
-
-Inductive empty_relation : nat -> nat -> Prop := .
-
-(** * From Later Files *)
-
-Definition relation (X:Type) := X -> X -> Prop.
-
-Definition deterministic {X: Type} (R: relation X) :=
-  forall x y1 y2 : X, R x y1 -> R x y2 -> y1 = y2. 
-
-Inductive multi (X:Type) (R: relation X) 
-                            : X -> X -> Prop :=
-  | multi_refl  : forall (x : X),
-                 multi X R x x
-  | multi_step : forall (x y z : X),
-                    R x y ->
-                    multi X R y z ->
-                    multi X R x z.
-Implicit Arguments multi [[X]]. 
-
-Tactic Notation "multi_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "multi_refl" | Case_aux c "multi_step" ].
-
-Theorem multi_R : forall (X:Type) (R:relation X) (x y : X),
-       R x y -> multi R x y.
-Proof.
-  intros X R x y r.
-  apply multi_step with y. apply r. apply multi_refl.   Qed.
-
-Theorem multi_trans :
-  forall (X:Type) (R: relation X) (x y z : X),
-      multi R x y  ->
-      multi R y z ->
-      multi R x z.
-Proof.
-  (* FILL IN HERE *) Admitted.
-
 (* Identifiers and polymorphic partial maps. *)
 Inductive id : Type := 
   Id : nat -> id.
@@ -259,16 +96,10 @@ Fixpoint keys {A: Set} (d: @partial_map A) : list id :=
   end.
 
 Inductive findi {A: Set} : id -> (@partial_map A) -> option A -> Prop:=
-  | not_in : forall key, findi key empty None
-  | in_head : forall key v d, findi key (record key v d) (Some v)
-  | not_in_head : forall k1 k2 v d x, 
-    k1 <> k2 -> findi k1 (record k2 v d) x -> findi k1 d x.
-
-Definition binds {A: Set} x (v: A) d: Prop := find x d = Some v.
-Definition no_binds {A: Set} x d: Prop := find x d = @None A.
-
-Definition is_in {A: Set} id d := exists x: A, find id d = Some x.
-Notation "id '\in' d" := (is_in id d) (at level 20).
+  | find_empty : forall key, findi key empty None
+  | find_head : forall key v d, findi key (record key v d) (Some v)
+  | find_step : forall k1 k2 v d x, 
+    k1 <> k2 -> findi k1 d x -> findi k1 (record k2 v d) x.
 
 Lemma update_eq : forall (A: Set) (d: partial_map) (k: id) (v: A),
   find k (update d k v) = Some v.
@@ -304,6 +135,37 @@ Proof with eauto.
   inversion H.
 Qed.
 
+Lemma find_iff_findi: forall (A: Set) d (k1: id) (x1: option A),
+  find k1 d = x1 <-> findi k1 d x1.
+Proof.
+  intros. split.
+  intro H. 
+  induction d.
+    inversion H.
+    simpl. constructor.
+
+    destruct eq_id_dec with (i1:= k1) (i2:= i).
+    rewrite e in H; simpl in H. rewrite <- beq_id_refl in H.
+    inversion H.
+    rewrite e.
+    constructor.
+    
+    unfold find in H.
+    rewrite not_eq_beq_id_false in H; auto.
+    fold (@find A) in H.
+    constructor.
+    auto.
+    apply IHd; auto.
+
+  intro.
+  induction H.
+    auto.
+    simpl. 
+    rewrite <- beq_id_refl. auto.
+    unfold find.
+    rewrite not_eq_beq_id_false; auto.
+Qed.
+
 Lemma find_dec : forall (A: Set) k1 d (v:option A),
   {find k1 d = Some v} + {find k1 d = None}.
 Proof.
@@ -313,7 +175,7 @@ Class Referable (a: Set) :={
   ref : a -> id;
 
   finder: id -> list a -> option a := 
-  let fix f (key: id) (l: list a) :=
+    let fix f (key: id) (l: list a) :=
     match l with
       | [] => None
       | (x :: xs) => if eq_id_dec key (ref x) 
@@ -321,6 +183,37 @@ Class Referable (a: Set) :={
                       else f key xs
     end in f
 }.
+
+(** * From Basics.v *)
+
+Definition admit {T: Type} : T.  Admitted.
+
+Require String. Open Scope string_scope.
+
+Ltac move_to_top x :=
+  match reverse goal with
+  | H : _ |- _ => try move x after H
+  end.
+
+Tactic Notation "assert_eq" ident(x) constr(v) :=
+  let H := fresh in
+  assert (x = v) as H by reflexivity;
+  clear H.
+
+Tactic Notation "Case_aux" ident(x) constr(name) :=
+  first [
+    set (x := name); move_to_top x
+  | assert_eq x name; move_to_top x
+  | fail 1 "because we are working on a different case" ].
+
+Tactic Notation "Case" constr(name) := Case_aux Case name.
+Tactic Notation "SCase" constr(name) := Case_aux SCase name.
+Tactic Notation "SSCase" constr(name) := Case_aux SSCase name.
+Tactic Notation "SSSCase" constr(name) := Case_aux SSSCase name.
+Tactic Notation "SSSSCase" constr(name) := Case_aux SSSSCase name.
+Tactic Notation "SSSSSCase" constr(name) := Case_aux SSSSSCase name.
+Tactic Notation "SSSSSSCase" constr(name) := Case_aux SSSSSSCase name.
+Tactic Notation "SSSSSSSCase" constr(name) := Case_aux SSSSSSSCase name.
 
 
 (** * Some useful tactics *)

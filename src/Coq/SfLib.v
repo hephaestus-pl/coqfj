@@ -15,6 +15,7 @@ Require Export Bool.
 Require Export List.
 Require Export Arith.
 Require Export Arith.EqNat.  (* Contains [beq_nat], among other things *)
+Import ListNotations.
 
 (* Identifiers and polymorphic partial maps. *)
 Inductive id : Type := 
@@ -54,12 +55,12 @@ Proof.
   destruct i1. destruct i2.
   assert (n <> n0).
     intros C. subst. apply H. reflexivity.
-  apply not_eq_beq_false. assumption.  Qed.
+  apply beq_nat_false_iff. assumption.  Qed.
 
 Theorem beq_id_sym: forall i1 i2,
   beq_id i1 i2 = beq_id i2 i1.
 Proof.
-  intros i1 i2. destruct i1. destruct i2. apply beq_nat_sym. Qed.
+  intros i1 i2. destruct i1. destruct i2. apply NPeano.Nat.eqb_sym. Qed.
 
 Theorem eq_id_dec: forall (i1 i2: id),
   {i1 = i2} + {i1 <> i2}.

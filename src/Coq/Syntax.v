@@ -76,7 +76,7 @@ Tactic Notation "subtype_cases" tactic(first) ident(c) :=
 Inductive fields : id -> [FieldDecl] -> Prop :=
  | fields_obj : fields Object nil
  | fields_other : forall C D fs K mds fs', 
-     binds C (CDecl C D fs K mds) CT ->
+     find C CT = Some (CDecl C D fs K mds) ->
      fields D fs' ->
      fields C (fs'++fs).
 
@@ -115,7 +115,6 @@ Fixpoint subst (e: Exp) (v: Var) (v': Exp) : Exp:=
 
 Notation " '[' v ':=' v' ']' e " := (subst e v v') (at level 40).  
 
-Eval compute in ([ (Id 1) := ExpFieldAccess (ExpVar this) (Id 2)] ExpVar (Id 1)).
 
 
 

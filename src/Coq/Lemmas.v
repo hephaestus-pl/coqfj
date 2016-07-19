@@ -1,4 +1,4 @@
-Require Export Syntax.v
+Require Export Syntax.
 
 Lemma arg_dec: forall a1 a2: Argument,
   {a1 = a2} + {a1 <> a2}.
@@ -76,3 +76,4 @@ Proof with eauto.
 Qed.
 
 
+Eval compute in ([ (Id 1) := ExpFieldAccess (ExpVar this) (Id 2)] ExpVar (Id 1)).

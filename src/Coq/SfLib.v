@@ -16,6 +16,7 @@ Require Export List.
 Require Export Arith.
 Require Export Arith.EqNat.  (* Contains [beq_nat], among other things *)
 Import ListNotations.
+Require Import NPeano.
 
 (* Identifiers and polymorphic partial maps. *)
 Inductive id : Type := 

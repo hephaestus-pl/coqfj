@@ -43,7 +43,7 @@ Qed.
 Lemma exp_dec: forall e1 e2 : Exp,
   {e1 = e2} + {e1 <> e2}.
 Proof.
-  intros; destruct e1, e2.
+  intros; destruct e1, e2; try solve [right; intro H; inversion H].
 Admitted.
 
 Lemma mdecl_dec: forall m1 m2: MethodDecl,

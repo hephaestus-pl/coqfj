@@ -40,7 +40,7 @@ Inductive MethodDecl :=
   | MDecl : ClassName -> id -> [FormalArg] -> Exp -> MethodDecl.
 
 Inductive ClassDecl:=
-  | CDecl: id -> ClassName -> [FieldDecl] -> Constructor -> @partial_map MethodDecl -> ClassDecl.
+  | CDecl: id -> ClassName -> [FieldDecl] -> Constructor -> [MethodDecl] -> ClassDecl.
 
 Inductive Program :=
   | CProgram : [ClassDecl] -> Exp -> Program.
@@ -82,14 +82,14 @@ Inductive fields : id -> [FieldDecl] -> Prop :=
 
 Reserved Notation "'mtype(' m ',' D ')' '=' c '~>' c0" (at level 40).
 Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:=
-  | mty_ok : forall D Fs K Ms fargs,
+  | mty_ok : forall D Fs K Ms fargs e,
               find C CT = Some (CDecl C D Fs K Ms)->
-              In m (keys Ms) -> 
+              In (MDecl B m fargs e) Ms ->
               map fargType fargs = Bs ->
               mtype(m, C) = Bs ~> B
-  | mty_no_override: forall D Fs K Ms fargs,
+  | mty_no_override: forall D Fs K Ms fargs e,
               find C CT = Some (CDecl C D Fs K Ms)->
-              ~In m (keys Ms) ->
+              ~In (MDecl B m fargs e) Ms ->
               map fargType fargs = Bs ->
               mtype(m, D) = Bs ~> B ->
               mtype(m, C) = Bs ~> B

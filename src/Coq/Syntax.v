@@ -48,10 +48,10 @@ Inductive Program :=
 Instance CDeclRef : Referable ClassDecl :={
   ref cdecl := 
     match cdecl with 
-   | CDecl id _ _ _ _ => id end
+   | CDecl id _ _ _ _ => id end;
 }.
 
-Parameter CT: @partial_map ClassDecl.
+Parameter CT: [ClassDecl].
 (*We will assume a global CT to make our definitions easier
  *To instance the CT use Hypothesis x: CT = ... *)
 
@@ -97,6 +97,7 @@ Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:
         := (m_type m D c c0).
 
 Hint Constructors m_type.
+
 Tactic Notation "mty_cases" tactic(first) ident(c) :=
   first;
   [ Case_aux c "mty_ok" | Case_aux c "mty_no_override"].

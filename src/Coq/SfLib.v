@@ -83,47 +83,27 @@ Definition update {A: Set} (d : partial_map)
                   (key : id) (value : A) : partial_map :=
            record key value d.
 
-Fixpoint find {A: Set} (key: id) (d: partial_map) : option A :=
-  match d with
-  | empty => None
-  | record k v d' => if beq_id key k
-                     then Some v
-                     else find key d'
-  end.
+Section Ref.
+Class Referable (a: Set) :={
+  ref : a -> id;
+  find: id -> list a -> option a := 
+    let fix f (key: id) (l: list a) :=
+    match l with
+      | [] => None
+      | (x :: xs) => if beq_id key (ref x) 
+                      then Some x
+                      else f key xs
+    end in f
+}.
 
-Fixpoint keys {A: Set} (d: @partial_map A) : list id :=
-  match d with
-  | empty => []
-  | record k _ d' => k :: keys d'
-  end.
+Inductive findi {A: Set} {R: @Referable A} : id -> list A -> A -> Prop:=
+  | find_head : forall x xs, findi (ref x) (x :: xs) (x)
+  | find_step : forall k1 k2 l x, 
+    k1 <> ref k2 -> findi k1 l x -> findi k1 (k2 :: l) x.
 
-Inductive findi {A: Set} : id -> (@partial_map A) -> option A -> Prop:=
-  | find_empty : forall key, findi key empty None
-  | find_head : forall key v d, findi key (record key v d) (Some v)
-  | find_step : forall k1 k2 v d x, 
-    k1 <> k2 -> findi k1 d x -> findi k1 (record k2 v d) x.
 
-Lemma update_eq : forall (A: Set) (d: partial_map) (k: id) (v: A),
-  find k (update d k v) = Some v.
-Proof.
-  intros. unfold update. simpl. rewrite <- beq_id_refl. auto.
-Qed.
 
-Lemma update_neq : forall (A: Set) (d: partial_map) (m n: id) (o: A),
-  beq_id m n = false -> find m (update d n o) = find m d.
-Proof.
-  intros. unfold update, find. rewrite H; auto.
-Qed.
-
-Lemma update_shadow : forall (A: Set) (d: partial_map) (k1: id) (v1 v2: A),
-  find k1 (record k1 v1 (record k1 v2 d)) = Some v1.
-Proof with auto.
-  intros.
-  simpl.
-  rewrite <- beq_id_refl...
-Qed.
-
-Lemma find_deterministic: forall (A: Set) d (k1: id) (x1 x2: option A),
+Lemma find_deterministic: forall (A: Set) (R: @Referable A) d (k1: id) (x1 x2: option A),
   find k1 d = x1 ->
   find k1 d = x2 ->
   x1 = x2.
@@ -137,19 +117,28 @@ Proof with eauto.
   inversion H.
 Qed.
 
-Lemma find_iff_findi: forall (A: Set) d (k1: id) (x1: option A),
-  find k1 d = x1 <-> findi k1 d x1.
+Lemma findi_diff: forall (A: Set) (R: @Referable A) k a v l,
+  k = ref a -> a <> v -> ~findi k (a :: l) v.
+Proof.
+  intros.
+  intro.
+  inversion H1; subst.
+  apply H0; auto.
+  apply H5; auto.
+Qed.
+
+Lemma find_iff_findi: forall (A: Set) (R: @Referable A) d (k1: id) (x1: A),
+  find k1 d = Some x1 <-> findi k1 d x1.
 Proof.
   intros. split.
   intro H. 
   induction d.
     inversion H.
-    simpl. constructor.
 
-    destruct eq_id_dec with (i1:= k1) (i2:= i).
+    destruct eq_id_dec with (i1:= k1) (i2:= ref a).
     rewrite e in H; simpl in H. rewrite <- beq_id_refl in H.
     inversion H.
-    rewrite e.
+    rewrite e. rewrite H1.
     constructor.
     
     unfold find in H.
@@ -161,30 +150,35 @@ Proof.
 
   intro.
   induction H.
-    auto.
     simpl. 
     rewrite <- beq_id_refl. auto.
     unfold find.
     rewrite not_eq_beq_id_false; auto.
 Qed.
 
-Lemma find_dec : forall (A: Set) k1 d (v:option A),
-  {find k1 d = Some v} + {find k1 d = None}.
+Lemma find_iff_findi': forall (A: Set) (R: @Referable A) d (k1: id) (x: A),
+  find k1 d = None <-> ~ findi k1 d x.
 Proof.
+  intros.
+  split.
+  intro.
+  intro.
+  induction H0.
+  simpl in H.
 Admitted.
 
-Class Referable (a: Set) :={
-  ref : a -> id;
 
-  finder: id -> list a -> option a := 
-    let fix f (key: id) (l: list a) :=
-    match l with
-      | [] => None
-      | (x :: xs) => if eq_id_dec key (ref x) 
-                      then Some x
-                      else f key xs
-    end in f
-}.
+Lemma find_dec : forall (A: Set) (R: @Referable A) k1 d (v: A),
+  {find k1 d = Some v} + {find k1 d = None}.
+Proof.
+  intros.
+  induction d.
+  right; auto.
+  
+  destruct IHd.
+Admitted.
+
+End Ref.
 
 (** * From Basics.v *)
 

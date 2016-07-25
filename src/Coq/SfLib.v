@@ -168,7 +168,8 @@ Proof.
 Admitted.
 
 
-Lemma find_dec : forall (A: Set) (R: @Referable A) k1 d (v: A),
+Lemma find_dec : forall (A: Set) (R: Referable A) k1 d (v: A),
+  (forall (a1 a2: A), {a1 = a2} + {a1 <> a2}) ->
   {find k1 d = Some v} + {find k1 d = None}.
 Proof.
   intros.

@@ -20,6 +20,12 @@ Inductive Assignment :=
 Inductive FormalArg :=
   | FArg : ClassName -> id -> FormalArg.
 
+Instance FargRef : Referable FormalArg :={
+  ref cdecl := 
+    match cdecl with 
+   | FArg _ id => id end;
+}.
+
 Definition fargType (f: FormalArg):ClassName := 
   match f with FArg t _ => t end.
 
@@ -38,6 +44,13 @@ Inductive Exp : Set :=
 
 Inductive MethodDecl :=
   | MDecl : ClassName -> id -> [FormalArg] -> Exp -> MethodDecl.
+
+Instance MDeclRef : Referable MethodDecl :={
+  ref mdecl := 
+    match mdecl with 
+   | MDecl _ id _ _ => id end;
+}.
+
 
 Inductive ClassDecl:=
   | CDecl: id -> ClassName -> [FieldDecl] -> Constructor -> [MethodDecl] -> ClassDecl.
@@ -84,25 +97,36 @@ Reserved Notation "'mtype(' m ',' D ')' '=' c '~>' c0" (at level 40).
 Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:=
   | mty_ok : forall D Fs K Ms fargs e,
               find C CT = Some (CDecl C D Fs K Ms)->
-              In (MDecl B m fargs e) Ms ->
+              find m Ms = Some (MDecl B m fargs e) ->
               map fargType fargs = Bs ->
               mtype(m, C) = Bs ~> B
-  | mty_no_override: forall D Fs K Ms fargs e,
+  | mty_no_override: forall D Fs K Ms,
               find C CT = Some (CDecl C D Fs K Ms)->
-              ~In (MDecl B m fargs e) Ms ->
-              map fargType fargs = Bs ->
+              find m Ms = None ->
               mtype(m, D) = Bs ~> B ->
               mtype(m, C) = Bs ~> B
   where "'mtype(' m ',' D ')' '=' c '~>' c0"
         := (m_type m D c c0).
 
-Hint Constructors m_type.
 
-Tactic Notation "mty_cases" tactic(first) ident(c) :=
+Inductive m_body (m: id) (C: ClassName) (xs: [ClassName]) (e: Exp) : Prop:=
+  | mbdy_ok : forall D Fs K Ms fargs B,
+              find C CT = Some (CDecl C D Fs K Ms)->
+              find m Ms = Some (MDecl B m fargs e)->
+              map ref fargs = xs ->
+              m_body m C xs e
+  | mbdy_no_override: forall D Fs K Ms,
+              find C CT = Some (CDecl C D Fs K Ms)->
+              find m Ms = None->
+              m_body m D xs e ->
+              m_body m C xs e.
+Notation "'mbody(' m ',' D ')' '=' xs 'o' e" := (m_body m D xs e) (at level 40).
+
+Hint Constructors m_type m_body fields.
+Tactic Notation "mbdy_cases" tactic(first) ident(c) :=
   first;
-  [ Case_aux c "mty_ok" | Case_aux c "mty_no_override"].
+  [ Case_aux c "mbdy_ok" | Case_aux c "mbdy_no_override"].
 
-Definition Bind := @partial_map Exp.
 
 Fixpoint subst (e: Exp) (v: Var) (v': Exp) : Exp:=
   match e with
@@ -113,9 +137,6 @@ Fixpoint subst (e: Exp) (v: Var) (v': Exp) : Exp:=
   | ExpCast cname exp => ExpCast cname (subst exp v v')
   | ExpNew cname exps => ExpNew cname (map (fun x => subst x v v') exps)
   end.
-
 Notation " '[' v ':=' v' ']' e " := (subst e v v') (at level 40).  
-
-
 
 

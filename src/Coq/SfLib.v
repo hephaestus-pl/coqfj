@@ -135,7 +135,8 @@ Proof.
   induction d.
     inversion H.
 
-    destruct eq_id_dec with (i1:= k1) (i2:= ref a).
+    remember (ref a) as r.
+    destruct eq_id_dec with (i1:= k1) (i2:= r); rewrite Heqr in *; clear Heqr.
     rewrite e in H; simpl in H. rewrite <- beq_id_refl in H.
     inversion H.
     rewrite e. rewrite H1.

@@ -23,7 +23,7 @@ Inductive FormalArg :=
 Instance FargRef : Referable FormalArg :={
   ref cdecl := 
     match cdecl with 
-   | FArg _ id => id end;
+   | FArg _ id => id end
 }.
 
 Definition fargType (f: FormalArg):ClassName := 
@@ -48,7 +48,7 @@ Inductive MethodDecl :=
 Instance MDeclRef : Referable MethodDecl :={
   ref mdecl := 
     match mdecl with 
-   | MDecl _ id _ _ => id end;
+   | MDecl _ id _ _ => id end
 }.
 
 
@@ -61,7 +61,7 @@ Inductive Program :=
 Instance CDeclRef : Referable ClassDecl :={
   ref cdecl := 
     match cdecl with 
-   | CDecl id _ _ _ _ => id end;
+   | CDecl id _ _ _ _ => id end
 }.
 
 Parameter CT: [ClassDecl].

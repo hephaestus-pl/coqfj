@@ -69,7 +69,8 @@ Proof with eauto.
   Case "S_Decl".
     intros.
     inversion H0. 
-  destruct find_dec with (R:= @Referable MethodDecl) (d:= mds) (k1:= m) (v:= MDecl C0 m fargs e);
+    Print MethodDecl.
+  destruct find_dec with (A:= MethodDecl) (R:= Referable MethodDecl) (d:= mds) (k1:= m) (v:= MDecl C0 m fargs e);
       [ exact mdecl_dec | | ] . eapply mty_ok; eauto. eapply e0.
    apply find_iff_findi.
   apply <- find_iff_findi.

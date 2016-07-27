@@ -35,6 +35,15 @@ Inductive Constructor :=
 Inductive FieldDecl :=
   | FDecl : ClassName -> id -> FieldDecl.
 
+Instance FieldRef : Referable FieldDecl :={
+  ref fdecl := 
+    match cdecl with 
+   | FDecl _ id => id end
+}.
+
+Definition fieldType (f: FormalArg): ClassName := 
+  match f with FDecl t _ => t end.
+
 Inductive Exp : Set :=
   | ExpVar : Var -> Exp
   | ExpFieldAccess : Exp -> id -> Exp
@@ -141,4 +150,29 @@ Fixpoint subst (e: Exp) (v: Var) (v': Exp) : Exp:=
   end.
 Notation " '[' v ':=' v' ']' e " := (subst e v v') (at level 40).  
 
+Reserved Notation "Gamma '|-' x ':' C" (at level 40).
+Inductive ExprTyping (Gamma: partial_map ClassName) (e: Var) (C: ClassName): Prop:=
+  | T_Var :   Gamma |- e : C
+  | T_Field: forall,
+                Gamma |- e0 : C0 ->
+                fields C0 fs ->
+                Cs = map fieldType fs ->
+                fis = map ref fs ->
+                nth_ok n fs ->
+                C = nth n Cs ->
+                fi = nth n fis ->
+                Gamma |- 
 
+
+  | T_Invk : forall e0 C0 Ds m es,
+                Gamma |- e0 : C0 ->
+                mtype(m, C0) = Ds ~> C ->
+                Gamma |- es : Cs ->
+                Cs <: Ds ->
+                Gamma |- ExpMethodInvoc e0 m es : C
+  | T_New :   forall Ds fs es,
+                fields C fs ->
+                Ds = map fieldType fs ->
+                Gamma |- es : Cs ->
+                Cs <: Ds ->
+                Gamma |- ExpNew C es : C

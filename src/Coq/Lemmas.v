@@ -67,18 +67,13 @@ Proof with eauto.
   intros m D C Cs C0 H.
   subtype_cases (induction H) Case...
   Case "S_Decl".
-    intros.
-    inversion H0. 
-    Print MethodDecl.
-  destruct find_dec with (A:= MethodDecl) (R:= Referable MethodDecl) (d:= mds) (k1:= m) (v:= MDecl C0 m fargs e);
-      [ exact mdecl_dec | | ] . eapply mty_ok; eauto. eapply e0.
-   apply find_iff_findi.
-  apply <- find_iff_findi.
-unfold find.
-rewrite e0.
+    intro H0.
+    inversion H0;
+    (destruct in_dec with (A:= MethodDecl) (a := MDecl C0 m fargs e) (l:= mds);
+      [ exact mdecl_dec
       | eapply mty_ok; eauto 
       | eapply mty_no_override; eauto
-      ]).
+    ]).
 Qed.
 
 

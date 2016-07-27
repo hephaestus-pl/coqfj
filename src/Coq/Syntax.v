@@ -97,12 +97,13 @@ Reserved Notation "'mtype(' m ',' D ')' '=' c '~>' c0" (at level 40).
 Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:=
   | mty_ok : forall D Fs K Ms fargs e,
               find C CT = Some (CDecl C D Fs K Ms)->
-              find m Ms = Some (MDecl B m fargs e) ->
+              In (MDecl B m fargs e) Ms ->
               map fargType fargs = Bs ->
               mtype(m, C) = Bs ~> B
-  | mty_no_override: forall D Fs K Ms,
+  | mty_no_override: forall D Fs K Ms fargs e,
               find C CT = Some (CDecl C D Fs K Ms)->
-              find m Ms = None ->
+              ~In (MDecl B m fargs e) Ms->
+              map fargType fargs = Bs ->
               mtype(m, D) = Bs ~> B ->
               mtype(m, C) = Bs ~> B
   where "'mtype(' m ',' D ')' '=' c '~>' c0"
@@ -112,12 +113,13 @@ Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:
 Inductive m_body (m: id) (C: ClassName) (xs: [ClassName]) (e: Exp) : Prop:=
   | mbdy_ok : forall D Fs K Ms fargs B,
               find C CT = Some (CDecl C D Fs K Ms)->
-              find m Ms = Some (MDecl B m fargs e)->
+              In (MDecl B m fargs e) Ms ->
               map ref fargs = xs ->
               m_body m C xs e
-  | mbdy_no_override: forall D Fs K Ms,
+  | mbdy_no_override: forall D Fs K Ms fargs B,
               find C CT = Some (CDecl C D Fs K Ms)->
-              find m Ms = None->
+              ~In (MDecl B m fargs e) Ms->
+              map ref fargs = xs ->
               m_body m D xs e ->
               m_body m C xs e.
 Notation "'mbody(' m ',' D ')' '=' xs 'o' e" := (m_body m D xs e) (at level 40).

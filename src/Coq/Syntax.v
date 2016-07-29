@@ -151,14 +151,12 @@ Fixpoint subst (e: Exp) (v: Var) (v': Exp) : Exp:=
   end.
 Notation " '[' v ':=' v' ']' e " := (subst e v v') (at level 40).
 
-Reserved Notation "Gamma '|-' x ':' C" (at level 40, x at next level).
-Print Forall'.
-
 
 Inductive Warning (s: string) : Prop :=
   | w_str : Warning s.
 Notation stupid_warning := (Warning "stupid warning").
 
+Reserved Notation "Gamma '|-' x ':' C" (at level 40, x at next level).
 Inductive ExpTyping (Gamma: partial_map ClassName) : Exp -> ClassName -> Prop:=
   | T_Var : forall x C, Gamma x = Some C -> 
                 Gamma |- ExpVar x : C

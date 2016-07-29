@@ -1,5 +1,6 @@
 Require Export List.
 Require Export SfLib.
+Require Export String.
 
 Notation "'[' X ']'" := (list X) (at level 40).
 (* We will use Notation to make automation easier
@@ -37,11 +38,11 @@ Inductive FieldDecl :=
 
 Instance FieldRef : Referable FieldDecl :={
   ref fdecl := 
-    match cdecl with 
+    match fdecl with 
    | FDecl _ id => id end
 }.
 
-Definition fieldType (f: FormalArg): ClassName := 
+Definition fieldType (f: FieldDecl): ClassName := 
   match f with FDecl t _ => t end.
 
 Inductive Exp : Set :=
@@ -148,31 +149,51 @@ Fixpoint subst (e: Exp) (v: Var) (v': Exp) : Exp:=
   | ExpCast cname exp => ExpCast cname (subst exp v v')
   | ExpNew cname exps => ExpNew cname (map (fun x => subst x v v') exps)
   end.
-Notation " '[' v ':=' v' ']' e " := (subst e v v') (at level 40).  
+Notation " '[' v ':=' v' ']' e " := (subst e v v') (at level 40).
 
-Reserved Notation "Gamma '|-' x ':' C" (at level 40).
-Inductive ExprTyping (Gamma: partial_map ClassName) (e: Var) (C: ClassName): Prop:=
-  | T_Var :   Gamma |- e : C
-  | T_Field: forall,
+Reserved Notation "Gamma '|-' x ':' C" (at level 40, x at next level).
+Print Forall'.
+
+
+Inductive Warning (s: string) : Prop :=
+  | w_str : Warning s.
+Notation stupid_warning := (Warning "stupid warning").
+
+Inductive ExpTyping (Gamma: partial_map ClassName) : Exp -> ClassName -> Prop:=
+  | T_Var : forall x C, Gamma x = Some C -> 
+                Gamma |- ExpVar x : C
+  | T_Field: forall e0 C0 fs i Fi Ci fi,
                 Gamma |- e0 : C0 ->
                 fields C0 fs ->
-                Cs = map fieldType fs ->
-                fis = map ref fs ->
-                nth_ok n fs ->
-                C = nth n Cs ->
-                fi = nth n fis ->
-                Gamma |- 
-
-
-  | T_Invk : forall e0 C0 Ds m es,
+                Some Fi = nth_error fs i ->
+                Ci = fieldType Fi ->
+                fi = ref Fi ->
+                Gamma |- ExpFieldAccess e0 fi : Ci
+  | T_Invk : forall e0 C Cs C0 Ds m es,
                 Gamma |- e0 : C0 ->
                 mtype(m, C0) = Ds ~> C ->
-                Gamma |- es : Cs ->
-                Cs <: Ds ->
+                Forall' (fun e' C' => Gamma |- e' : C') es Cs ->
+                Forall' (fun C' D' => C' <: D') Cs Ds ->
                 Gamma |- ExpMethodInvoc e0 m es : C
-  | T_New :   forall Ds fs es,
+  | T_New : forall C Ds Cs fs es,
                 fields C fs ->
                 Ds = map fieldType fs ->
-                Gamma |- es : Cs ->
-                Cs <: Ds ->
+                Forall' (fun e' C' => Gamma |- e' : C') es Cs ->
+                Forall' (fun C' D' => C' <: D') Cs Ds ->
                 Gamma |- ExpNew C es : C
+  | T_UCast : forall e0 D C,
+                Gamma |- e0 : D ->
+                D <: C ->
+                Gamma |- ExpCast C e0 : C
+  | T_DCast : forall e0 C D,
+                Gamma |- e0 : D ->
+                C <: D ->
+                C <> D ->
+                Gamma |- ExpCast C e0 : C
+  | T_SCast : forall e0 D C,
+                Gamma |- e0 : D ->
+                D <: C ->
+                C <: D ->
+                stupid_warning ->
+                Gamma |- ExpCast C e0 : C
+  where " Gamma '|-' e ':' C " := (ExpTyping Gamma e C).

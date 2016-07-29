@@ -223,6 +223,36 @@ Admitted.
 
 End Ref.
 
+(** Forall for two-fold relations **)
+
+
+  Section Two_predicate.
+  Generalizable All Variables.
+
+    Inductive Forall' {A B: Set} (P: A -> B -> Prop ): list A -> list B -> Prop :=
+      | Forall_nil : Forall' P nil nil
+      | Forall_cons : forall x y l l', P x y -> Forall' P l l' -> Forall' P (x::l) (y::l').
+
+    Hint Constructors Forall'.
+
+    Lemma Forall'_forall (A B: Set) P (l:list A)(l': list B):
+      Forall' P l l' <-> (forall x y, In x l -> In y l' -> P x y).
+    Admitted.
+(*
+    Lemma Forall_inv : forall (a:A) l, Forall (a :: l) -> P a.
+
+    Lemma Forall_rect : forall (Q : list A -> Type),
+      Q [] -> (forall b l, P b -> Q (b :: l)) -> forall l, Forall l -> Q l.
+
+    Lemma Forall_dec :
+      (forall x:A, {P x} + { ~ P x }) ->
+      forall l:list A, {Forall l} + {~ Forall l}.
+*)
+Arguments Forall': default implicits.
+
+  End Two_predicate.
+Print Forall'.
+
 (** * From Basics.v *)
 
 Definition admit {T: Type} : T.  Admitted.

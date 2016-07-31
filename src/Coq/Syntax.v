@@ -204,6 +204,35 @@ Inductive Computation : Exp -> Exp -> Prop :=
             Some fi = nth_error fs i ->
             Some ei = nth_error es i -> 
             ExpFieldAccess (ExpNew C es) fi ~> ei
+  | R_Invk : forall C m xs ds es e0,
+            mbody(m, C) = xs o e0 ->
+            ExpMethodInvoc (ExpNew C es) m ds ~>
+            fold_left 
+              (fun ex u => match u with (d, x) => [x := d] ex end) 
+              (combine ds xs)
+              ([this := ExpNew C es] e0) 
+  | R_Cast : forall C D es,
+            C <: D ->
+            ExpCast D (ExpNew C es) ~> ExpNew C es
+  | RC_Field : forall e0 e0' f,
+            e0 ~> e0' ->
+            ExpFieldAccess e0 f ~> ExpFieldAccess e0' f
+  | RC_Invk_Recv : forall e0 e0' m es,
+            e0 ~> e0' ->
+            ExpMethodInvoc e0 m es ~> ExpMethodInvoc e0' m es
+  | RC_Invk_Arg : forall e0 ei' m es es' ei,
+            ei ~> ei' ->
+            In ei es ->
+            In ei es' ->
+            ExpMethodInvoc e0 m es ~> ExpMethodInvoc e0 m es'
+  | RC_New_Arg : forall C ei' es es' ei,
+            ei ~> ei' ->
+            In ei es ->
+            In ei es' ->
+            ExpNew C es ~> ExpNew C es'
+  | RC_Cast : forall C e0 e0',
+            e0 ~> e0' ->
+            ExpCast C e0 ~> ExpCast C e0'
   where "e '~>' e1" := (Computation e e1).
 
 

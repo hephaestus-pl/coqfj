@@ -195,3 +195,15 @@ Inductive ExpTyping (Gamma: partial_map ClassName) : Exp -> ClassName -> Prop:=
                 stupid_warning ->
                 Gamma |- ExpCast C e0 : C
   where " Gamma '|-' e ':' C " := (ExpTyping Gamma e C).
+
+Reserved Notation "e '~>' e1" (at level 40).
+Inductive Computation : Exp -> Exp -> Prop :=
+  | R_Field : forall C Fs fs es fi ei i,
+            fields C (Fs) ->
+            fs = map ref Fs ->
+            Some fi = nth_error fs i ->
+            Some ei = nth_error es i -> 
+            ExpFieldAccess (ExpNew C es) fi ~> ei
+  where "e '~>' e1" := (Computation e e1).
+
+

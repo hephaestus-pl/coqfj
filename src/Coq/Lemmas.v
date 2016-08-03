@@ -76,5 +76,21 @@ Proof with eauto.
     ]).
 Qed.
 
+Lemma weakening: forall Gamma e x C D,
+  Gamma |- e : C ->
+  update_tail Gamma x D |- e : C.
+Proof with eauto.
+  intros.
+  typing_cases (induction H) Case...
+  Case "T_Var".
+    apply T_Var.
+    destruct eq_id_dec with x x0. subst.
+    apply update_tail_not_shadow; assumption.
+    rewrite <- H.
+    apply update_tail_neq; auto.
+    apply update_tail_not_shadow. auto.
+    rewrite <- e; rewrite e0; apply update_eq.
+    rewrite <- H; apply update_neq; assumption.
+    subst.
 
 Eval compute in ([ (Id 1) := ExpFieldAccess (ExpVar this) (Id 2)] ExpVar (Id 1)).

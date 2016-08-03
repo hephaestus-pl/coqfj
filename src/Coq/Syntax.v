@@ -196,6 +196,14 @@ Inductive ExpTyping (Gamma: partial_map ClassName) : Exp -> ClassName -> Prop:=
                 Gamma |- ExpCast C e0 : C
   where " Gamma '|-' e ':' C " := (ExpTyping Gamma e C).
 
+Tactic Notation "typing_cases" tactic(first) ident(c) :=
+  first;
+  [ Case_aux c "T_Var" | Case_aux c "T_Field" 
+  | Case_aux c "T_Invk" | Case_aux c "T_New"
+  | Case_aux c "T_UCast" | Case_aux c "T_DCast" 
+  | Case_aux c "T_SCast"].
+
+
 Reserved Notation "e '~>' e1" (at level 40).
 Inductive Computation : Exp -> Exp -> Prop :=
   | R_Field : forall C Fs fs es fi ei i,
@@ -235,4 +243,10 @@ Inductive Computation : Exp -> Exp -> Prop :=
             ExpCast C e0 ~> ExpCast C e0'
   where "e '~>' e1" := (Computation e e1).
 
+Tactic Notation "computation_cases" tactic(first) ident(c) :=
+  first;
+  [ Case_aux c "R_Field" | Case_aux c "R_Invk" 
+  | Case_aux c "R_Cast" | Case_aux c "RC_Field"
+  | Case_aux c "RC_Invk_Recv" | Case_aux c "RC_Invk_Arg" 
+  | Case_aux c "RC_New_Arg" | Case_aux c "RC_Cast"].
 

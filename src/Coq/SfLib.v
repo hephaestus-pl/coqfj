@@ -84,12 +84,33 @@ Definition update {A:Set} (m : partial_map A)
 (x : id) (v : A) :=
 fun x' => if beq_id x x' then (Some v) else m x'.
 
+Print fold_left.
+
+
+Definition update_tail {A:Set} (m : partial_map A) (x : id) (v : A) :=
+fun x' => 
+    match m x' with
+     | None => if beq_id x x' then Some v else None
+     | otherwise => m x'
+    end.
+(*
+if m x' = None 
+
+beq_id x x' then (Some v) else m x'.
+fold_left (fun m u => match u with (x', v') => update empty x' v' end)  [(x, v)] m.
+
+
+Definition update_tail {A:Set} (m : partial_map A) (x : id) (v : A) :=
+fold_left (fun m u => match u with (x', v') => update empty x' v' end)  [(x, v)] m.
+*)
+
 Lemma update_eq : forall A (m: partial_map A) x v,
 (update m x v) x = Some v.
 Proof.
 intros. unfold update. rewrite <- beq_id_refl with (i:= x).
 reflexivity.
 Qed.
+
 
 Theorem update_neq : forall (X:Set) v x1 x2
 (m : partial_map X),
@@ -101,10 +122,30 @@ unfold update. rewrite not_eq_beq_id_false. reflexivity.
 apply H. Qed.
 
 Lemma update_shadow : forall A (m: partial_map A) v1 v2 x,
-update (update m x v1) x v2 = update m x v2.
+(update (update m x v1) x v2) x = Some v2.
 Proof.
-intros A m v1 v2 x1. unfold update.
-Admitted.
+intros A m v1 v2 x.
+unfold update.
+rewrite <- beq_id_refl; auto.
+Qed.
+
+Lemma update_tail_not_shadow : forall A (m: partial_map A) v1 v2 x,
+m x = Some v1 ->
+(update_tail m x v2) x = Some v1.
+Proof.
+intros A m v1 v2 x1 H. unfold update_tail.
+rewrite H; auto.
+Qed.
+
+Lemma update_tail_neq : forall A (m: partial_map A) v x x0,
+x <> x0 ->
+(update_tail m x v) x0 = m x0.
+Proof.
+intros A m v x1 x2 H. unfold update_tail.
+case (m x2). auto.
+rewrite not_eq_beq_id_false; auto.
+
+Qed.
 
 Theorem update_same : forall X v x (m : partial_map X),
 m x = Some v -> 

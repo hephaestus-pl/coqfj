@@ -279,11 +279,15 @@ End Ref.
     Lemma Forall'_forall (A B: Set) P (l:list A)(l': list B):
       Forall' P l l' <-> (forall x y, In x l -> In y l' -> P x y).
     Admitted.
+
+    Lemma Forall'_rect : forall (A B: Set) (P: A -> B -> Prop) (Q : list A -> list B -> Prop),
+      Q [] [] -> (forall a b l l', P a b -> Q (a :: l) (b :: l')) -> forall l l', Forall' P l l' -> Q l l'.
+    Admitted.
+
 (*
     Lemma Forall_inv : forall (a:A) l, Forall (a :: l) -> P a.
 
-    Lemma Forall_rect : forall (Q : list A -> Type),
-      Q [] -> (forall b l, P b -> Q (b :: l)) -> forall l, Forall l -> Q l.
+    
 
     Lemma Forall_dec :
       (forall x:A, {P x} + { ~ P x }) ->

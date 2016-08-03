@@ -203,6 +203,53 @@ Tactic Notation "typing_cases" tactic(first) ident(c) :=
   | Case_aux c "T_UCast" | Case_aux c "T_DCast" 
   | Case_aux c "T_SCast"].
 
+Print ExpTyping_ind.
+
+Definition ExpTyping_ind' := 
+  fun (Gamma : partial_map ClassName) (P : Exp -> ClassName -> Prop)
+  (f : forall (x : id) (C : ClassName), Gamma x = Some C -> P (ExpVar x) C)
+  (f0 : forall (e0 : Exp) (C0 : ClassName) (fs : [FieldDecl]) (i : nat) (Fi : FieldDecl)
+          (Ci : ClassName) (fi : id),
+        Gamma |- e0 : C0 ->
+        P e0 C0 ->
+        fields C0 fs ->
+        Some Fi = nth_error fs i -> Ci = fieldType Fi -> fi = ref Fi -> P (ExpFieldAccess e0 fi) Ci)
+  (f1 : forall (e0 : Exp) (C : ClassName) (Cs : [ClassName]) (C0 : ClassName) (Ds : [ClassName]) 
+          (m : id) (es : [Exp]),
+        Gamma |- e0 : C0 ->
+        P e0 C0 ->
+        mtype( m, C0)= Ds ~> C ->
+        Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es Cs ->
+        Forall' (fun (C' : id) (D' : ClassName) => C' <: D') Cs Ds -> 
+        Forall' (fun e c => P e c) es Cs ->
+        P (ExpMethodInvoc e0 m es) C)
+  (f2 : forall (C : id) (Ds Cs : [ClassName]) (fs : [FieldDecl]) (es : [Exp]),
+        fields C fs ->
+        Ds = map fieldType fs ->
+        Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es Cs ->
+        Forall' (fun (C' : id) (D' : ClassName) => C' <: D') Cs Ds -> P (ExpNew C es) C)
+  (f3 : forall (e0 : Exp) (D C : ClassName), Gamma |- e0 : D -> P e0 D -> D <: C -> P (ExpCast C e0) C)
+  (f4 : forall (e0 : Exp) (C : id) (D : ClassName),
+        Gamma |- e0 : D -> P e0 D -> C <: D -> C <> D -> P (ExpCast C e0) C)
+  (f5 : forall (e0 : Exp) (D C : ClassName),
+        Gamma |- e0 : D -> P e0 D -> D <: C -> C <: D -> stupid_warning -> P (ExpCast C e0) C) =>
+fix F (e : Exp) (c : ClassName) (e0 : Gamma |- e : c) {struct e0} : P e c :=
+  match e0 in (_ |- e1 : c0) return (P e1 c0) with
+  | T_Var _ x C e1 => f x C e1
+  | T_Field _ e1 C0 fs i Fi Ci fi e2 f6 e3 e4 e5 => f0 e1 C0 fs i Fi Ci fi e2 (F e1 C0 e2) f6 e3 e4 e5
+  | T_Invk _ e1 C Cs C0 Ds m es e2 m0 f6 f7 => f1 e1 C Cs C0 Ds m es e2 (F e1 C0 e2) m0 f6 f7 (F' es Cs)
+  | T_New _ C Ds Cs fs es f6 e1 f7 f8 => f2 C Ds Cs fs es f6 e1 f7 f8
+  | T_UCast _ e1 D C e2 s => f3 e1 D C e2 (F e1 D e2) s
+  | T_DCast _ e1 C D e2 s n => f4 e1 C D e2 (F e1 D e2) s n
+  | T_SCast _ e1 D C e2 s s0 w => f5 e1 D C e2 (F e1 D e2) s s0 w
+  end
+  where F' := fix FF (es: [Exp]) (Cs: [ClassName]) :=
+  match es, Cs with
+  | nil, nil := Forall_nil P
+  | (cons x ees), (cons c cs) := Forall_cons P x c ees cs
+  | otherwise := False.
+
+Check ExpTyping_ind'.
 
 Reserved Notation "e '~>' e1" (at level 40).
 Inductive Computation : Exp -> Exp -> Prop :=

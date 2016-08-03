@@ -103,7 +103,7 @@ Inductive fields : id -> [FieldDecl] -> Prop :=
      fields D fs' ->
      fields C (fs'++fs).
 
-Reserved Notation "'mtype(' m ',' D ')' '=' c '~>' c0" (at level 40).
+Reserved Notation "'mtype(' m ',' D ')' '=' c '~>' c0" (at level 40, c at next level).
 Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:=
   | mty_ok : forall D Fs K Ms fargs e,
               find C CT = Some (CDecl C D Fs K Ms)->
@@ -156,7 +156,7 @@ Inductive Warning (s: string) : Prop :=
   | w_str : Warning s.
 Notation stupid_warning := (Warning "stupid warning").
 
-Reserved Notation "Gamma '|-' x ':' C" (at level 40, x at next level).
+Reserved Notation "Gamma '|-' x ':' C" (at level 60, x at next level).
 Inductive ExpTyping (Gamma: partial_map ClassName) : Exp -> ClassName -> Prop:=
   | T_Var : forall x C, Gamma x = Some C -> 
                 Gamma |- ExpVar x : C

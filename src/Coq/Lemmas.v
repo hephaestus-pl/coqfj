@@ -81,16 +81,12 @@ Lemma weakening: forall Gamma e x C D,
   update_tail Gamma x D |- e : C.
 Proof with eauto.
   intros.
-  typing_cases (induction H) Case; econstructor...
+  typing_cases (induction H using ExpTyping_ind') Case; econstructor...
   Case "T_Var".
     destruct eq_id_dec with x x0. subst.
     apply update_tail_not_shadow; assumption.
     rewrite <- H.
     apply update_tail_neq; auto.
-  Case "T_Invk".
-    admit.
-  Case "T_New".
-    admit.
   Case "T_DCast".
     admit.
 Qed.

@@ -275,7 +275,7 @@ End Ref.
       | Forall_cons : forall x y l l', P x y -> Forall' P l l' -> Forall' P (x::l) (y::l').
 
     Hint Constructors Forall'.
-
+Print Forall'.
     Lemma Forall'_forall (A B: Set) P (l:list A)(l': list B):
       Forall' P l l' <-> (forall x y, In x l -> In y l' -> P x y).
     Admitted.
@@ -284,6 +284,10 @@ End Ref.
       Q [] [] -> (forall a b l l', P a b -> Q (a :: l) (b :: l')) -> forall l l', Forall' P l l' -> Q l l'.
     Admitted.
 
+    Lemma Forall_inv : forall  {A B: Set}(P: A -> B -> Prop) x y xs ys,
+      Forall' P (x::xs) (y::ys) -> P x y.
+    Admitted.
+Print Forall_inv.
 (*
     Lemma Forall_inv : forall (a:A) l, Forall (a :: l) -> P a.
 

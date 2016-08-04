@@ -203,7 +203,6 @@ Tactic Notation "typing_cases" tactic(first) ident(c) :=
   | Case_aux c "T_UCast" | Case_aux c "T_DCast" 
   | Case_aux c "T_SCast"].
 
-Print ExpTyping_ind.
 
 Definition ExpTyping_ind' := 
   fun (Gamma : partial_map ClassName) (P : Exp -> ClassName -> Prop)
@@ -221,13 +220,15 @@ Definition ExpTyping_ind' :=
         mtype( m, C0)= Ds ~> C ->
         Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es Cs ->
         Forall' (fun (C' : id) (D' : ClassName) => C' <: D') Cs Ds -> 
-        Forall' (fun e c => P e c) es Cs ->
+        Forall' (fun (e' : Exp) (C' : ClassName) => P e' C') es Cs ->
         P (ExpMethodInvoc e0 m es) C)
   (f2 : forall (C : id) (Ds Cs : [ClassName]) (fs : [FieldDecl]) (es : [Exp]),
         fields C fs ->
         Ds = map fieldType fs ->
         Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es Cs ->
-        Forall' (fun (C' : id) (D' : ClassName) => C' <: D') Cs Ds -> P (ExpNew C es) C)
+        Forall' (fun (C' : id) (D' : ClassName) => C' <: D') Cs Ds -> 
+        Forall' (fun (e' : Exp) (C' : ClassName) => P e' C') es Cs ->
+        P (ExpNew C es) C)
   (f3 : forall (e0 : Exp) (D C : ClassName), Gamma |- e0 : D -> P e0 D -> D <: C -> P (ExpCast C e0) C)
   (f4 : forall (e0 : Exp) (C : id) (D : ClassName),
         Gamma |- e0 : D -> P e0 D -> C <: D -> C <> D -> P (ExpCast C e0) C)
@@ -237,17 +238,26 @@ fix F (e : Exp) (c : ClassName) (e0 : Gamma |- e : c) {struct e0} : P e c :=
   match e0 in (_ |- e1 : c0) return (P e1 c0) with
   | T_Var _ x C e1 => f x C e1
   | T_Field _ e1 C0 fs i Fi Ci fi e2 f6 e3 e4 e5 => f0 e1 C0 fs i Fi Ci fi e2 (F e1 C0 e2) f6 e3 e4 e5
-  | T_Invk _ e1 C Cs C0 Ds m es e2 m0 f6 f7 => f1 e1 C Cs C0 Ds m es e2 (F e1 C0 e2) m0 f6 f7 (F' es Cs)
+  | T_Invk _ e1 C Cs C0 Ds m es e2 m0 f6 f7 => f1 e1 C Cs C0 Ds m es e2 (F e1 C0 e2) m0 f6 f7 
+          ((fix list_Forall_ind (es' : [Exp]) (Cs' : [ClassName]) 
+            (map : Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es' Cs'): 
+               Forall' (fun e' C' => P e' C') es' Cs' :=
+            match map with
+            | Forall_nil _ => Forall_nil P
+            | Forall_cons _ ex cx ees css H1 H2 => Forall_cons P ex cx ees css (F ex cx H1) (list_Forall_ind ees css H2)
+          end) es Cs f6)
   | T_New _ C Ds Cs fs es f6 e1 f7 f8 => f2 C Ds Cs fs es f6 e1 f7 f8
+          ((fix list_Forall_ind (es' : [Exp]) (Cs' : [ClassName]) 
+            (map : Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es' Cs'): 
+               Forall' (fun e' C' => P e' C') es' Cs' :=
+            match map with
+            | Forall_nil _ => Forall_nil P
+            | Forall_cons _ ex cx ees css H1 H2 => Forall_cons P ex cx ees css (F ex cx H1) (list_Forall_ind ees css H2)
+          end) es Cs f7)
   | T_UCast _ e1 D C e2 s => f3 e1 D C e2 (F e1 D e2) s
   | T_DCast _ e1 C D e2 s n => f4 e1 C D e2 (F e1 D e2) s n
   | T_SCast _ e1 D C e2 s s0 w => f5 e1 D C e2 (F e1 D e2) s s0 w
-  end
-  where F' := fix FF (es: [Exp]) (Cs: [ClassName]) :=
-  match es, Cs with
-  | nil, nil := Forall_nil P
-  | (cons x ees), (cons c cs) := Forall_cons P x c ees cs
-  | otherwise := False.
+  end.
 
 Check ExpTyping_ind'.
 

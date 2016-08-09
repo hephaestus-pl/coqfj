@@ -157,7 +157,7 @@ Inductive Warning (s: string) : Prop :=
 Notation stupid_warning := (Warning "stupid warning").
 
 Reserved Notation "Gamma '|-' x ':' C" (at level 60, x at next level).
-Inductive ExpTyping (Gamma: partial_map ClassName) : Exp -> ClassName -> Prop:=
+Inductive ExpTyping (Gamma: partial_map ClassName) : Exp -> ClassName -> Prop :=
   | T_Var : forall x C, Gamma x = Some C -> 
                 Gamma |- ExpVar x : C
   | T_Field: forall e0 C0 fs i Fi Ci fi,
@@ -262,7 +262,7 @@ fix F (e : Exp) (c : ClassName) (e0 : Gamma |- e : c) {struct e0} : P e c :=
 Check ExpTyping_ind'.
 
 Reserved Notation "e '~>' e1" (at level 40).
-Inductive Computation : Exp -> Exp -> Prop :=
+Inductive Computation : Exp -> Exp -> Set :=
   | R_Field : forall C Fs fs es fi ei i,
             fields C (Fs) ->
             fs = map ref Fs ->
@@ -307,3 +307,4 @@ Tactic Notation "computation_cases" tactic(first) ident(c) :=
   | Case_aux c "RC_Invk_Recv" | Case_aux c "RC_Invk_Arg" 
   | Case_aux c "RC_New_Arg" | Case_aux c "RC_Cast"].
 
+Print Computation_ind.

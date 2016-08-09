@@ -76,6 +76,7 @@ Proof with eauto.
     ]).
 Qed.
 
+
 Lemma weakening: forall Gamma e x C D,
   Gamma |- e : C ->
   update_tail Gamma x D |- e : C.
@@ -89,5 +90,27 @@ Proof with eauto.
     rewrite <- H.
     apply update_tail_neq; auto.
 Qed.
+
+(* Inversion Lemmas *)
+Lemma ExpField_inversion: forall Gamma e0 Ci fi, 
+    Gamma |- ExpFieldAccess e0 fi : Ci ->
+    exists C0 fs Fi i, Gamma |- e0 : C0 /\
+    fields C0 fs /\
+    Some Fi = nth_error fs i /\
+    Ci = fieldType Fi /\
+    fi = ref Fi.
+Proof.
+Admitted.
+
+Theorem subject_reduction : forall Gamma e e' C,
+  Gamma |- e : C ->
+  e ~> e' ->
+  { C' : ClassName | C' <: C -> Gamma |- e' : C'}.
+Proof.
+  intros.
+  computation_cases (induction H0) Case.
+  Case "R_Field".
+    apply ExpField_inversion in H. 
+    inversion H.
 
 Eval compute in ([ (Id 1) := ExpFieldAccess (ExpVar this) (Id 2)] ExpVar (Id 1)).

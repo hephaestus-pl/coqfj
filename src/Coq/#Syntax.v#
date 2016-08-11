@@ -45,7 +45,7 @@ Instance FieldRef : Referable FieldDecl :={
 Definition fieldType (f: FieldDecl): ClassName := 
   match f with FDecl t _ => t end.
 
-Inductive Exp : Type :=
+Inductive Exp : Set :=
   | ExpVar : Var -> Exp
   | ExpFieldAccess : Exp -> id -> Exp
   | ExpMethodInvoc : Exp -> id -> [Exp] -> Exp
@@ -149,15 +149,15 @@ Fixpoint subst (e: Exp) (v: Var) (v': Exp) : Exp:=
   | ExpCast cname exp => ExpCast cname (subst exp v v')
   | ExpNew cname exps => ExpNew cname (map (fun x => subst x v v') exps)
   end.
-Notation " '[' v ':=' v' ']' e " := (subst e v v') (at level 40).
+Notation " '[' v ':=' v' ']' e " := (subst e v v') (at level 40, v' at next level).
 
 
 Inductive Warning (s: string) : Prop :=
   | w_str : Warning s.
 Notation stupid_warning := (Warning "stupid warning").
 
-Reserved Notation "Gamma '|-' x ':' C" (at level 60, x at next level).
-Inductive ExpTyping (Gamma: partial_map ClassName) : Exp -> ClassName -> Prop :=
+Reserved Notation "Gamma '|-' x ':' C" (at level 40, x at next level).
+Inductive ExpTyping (Gamma: partial_map ClassName) : Exp -> ClassName -> Prop:=
   | T_Var : forall x C, Gamma x = Some C -> 
                 Gamma |- ExpVar x : C
   | T_Field: forall e0 C0 fs i Fi Ci fi,
@@ -196,70 +196,7 @@ Inductive ExpTyping (Gamma: partial_map ClassName) : Exp -> ClassName -> Prop :=
                 Gamma |- ExpCast C e0 : C
   where " Gamma '|-' e ':' C " := (ExpTyping Gamma e C).
 
-Tactic Notation "typing_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "T_Var" | Case_aux c "T_Field" 
-  | Case_aux c "T_Invk" | Case_aux c "T_New"
-  | Case_aux c "T_UCast" | Case_aux c "T_DCast" 
-  | Case_aux c "T_SCast"].
-
-
-Definition ExpTyping_ind' := 
-  fun (Gamma : partial_map ClassName) (P : Exp -> ClassName -> Prop)
-  (f : forall (x : id) (C : ClassName), Gamma x = Some C -> P (ExpVar x) C)
-  (f0 : forall (e0 : Exp) (C0 : ClassName) (fs : [FieldDecl]) (i : nat) (Fi : FieldDecl)
-          (Ci : ClassName) (fi : id),
-        Gamma |- e0 : C0 ->
-        P e0 C0 ->
-        fields C0 fs ->
-        Some Fi = nth_error fs i -> Ci = fieldType Fi -> fi = ref Fi -> P (ExpFieldAccess e0 fi) Ci)
-  (f1 : forall (e0 : Exp) (C : ClassName) (Cs : [ClassName]) (C0 : ClassName) (Ds : [ClassName]) 
-          (m : id) (es : [Exp]),
-        Gamma |- e0 : C0 ->
-        P e0 C0 ->
-        mtype( m, C0)= Ds ~> C ->
-        Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es Cs ->
-        Forall' (fun (C' : id) (D' : ClassName) => C' <: D') Cs Ds -> 
-        Forall' (fun (e' : Exp) (C' : ClassName) => P e' C') es Cs ->
-        P (ExpMethodInvoc e0 m es) C)
-  (f2 : forall (C : id) (Ds Cs : [ClassName]) (fs : [FieldDecl]) (es : [Exp]),
-        fields C fs ->
-        Ds = map fieldType fs ->
-        Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es Cs ->
-        Forall' (fun (C' : id) (D' : ClassName) => C' <: D') Cs Ds -> 
-        Forall' (fun (e' : Exp) (C' : ClassName) => P e' C') es Cs ->
-        P (ExpNew C es) C)
-  (f3 : forall (e0 : Exp) (D C : ClassName), Gamma |- e0 : D -> P e0 D -> D <: C -> P (ExpCast C e0) C)
-  (f4 : forall (e0 : Exp) (C : id) (D : ClassName),
-        Gamma |- e0 : D -> P e0 D -> C <: D -> C <> D -> P (ExpCast C e0) C)
-  (f5 : forall (e0 : Exp) (D C : ClassName),
-        Gamma |- e0 : D -> P e0 D -> D <: C -> C <: D -> stupid_warning -> P (ExpCast C e0) C) =>
-fix F (e : Exp) (c : ClassName) (e0 : Gamma |- e : c) {struct e0} : P e c :=
-  match e0 in (_ |- e1 : c0) return (P e1 c0) with
-  | T_Var x C e1 => f x C e1
-  | T_Field e1 C0 fs i Fi Ci fi e2 f6 e3 e4 e5 => f0 e1 C0 fs i Fi Ci fi e2 (F e1 C0 e2) f6 e3 e4 e5
-  | T_Invk e1 C Cs C0 Ds m es e2 m0 f6 f7 => f1 e1 C Cs C0 Ds m es e2 (F e1 C0 e2) m0 f6 f7 
-          ((fix list_Forall_ind (es' : [Exp]) (Cs' : [ClassName]) 
-            (map : Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es' Cs'): 
-               Forall' (fun e' C' => P e' C') es' Cs' :=
-            match map with
-            | Forall_nil => Forall_nil P
-            | Forall_cons ex cx ees css H1 H2 => Forall_cons P ex cx ees css (F ex cx H1) (list_Forall_ind ees css H2)
-          end) es Cs f6)
-  | T_New C Ds Cs fs es f6 e1 f7 f8 => f2 C Ds Cs fs es f6 e1 f7 f8
-          ((fix list_Forall_ind (es' : [Exp]) (Cs' : [ClassName]) 
-            (map : Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es' Cs'): 
-               Forall' (fun e' C' => P e' C') es' Cs' :=
-            match map with
-            | Forall_nil => Forall_nil P
-            | Forall_cons ex cx ees css H1 H2 => Forall_cons P ex cx ees css (F ex cx H1) (list_Forall_ind ees css H2)
-          end) es Cs f7)
-  | T_UCast e1 D C e2 s => f3 e1 D C e2 (F e1 D e2) s
-  | T_DCast e1 C D e2 s n => f4 e1 C D e2 (F e1 D e2) s n
-  | T_SCast e1 D C e2 s s0 w => f5 e1 D C e2 (F e1 D e2) s s0 w
-  end.
-
-Reserved Notation "e '~>' e1" (at level 40).
+Reserved Notation "e '~>' e1" (at level 60).
 Inductive Computation : Exp -> Exp -> Prop :=
   | R_Field : forall C Fs fs es fi ei i,
             fields C (Fs) ->
@@ -286,7 +223,7 @@ Inductive Computation : Exp -> Exp -> Prop :=
   | RC_Invk_Arg : forall e0 ei' m es es' ei,
             ei ~> ei' ->
             In ei es ->
-            In ei es' ->
+            In ei' es' ->
             ExpMethodInvoc e0 m es ~> ExpMethodInvoc e0 m es'
   | RC_New_Arg : forall C ei' es es' ei,
             ei ~> ei' ->
@@ -298,10 +235,4 @@ Inductive Computation : Exp -> Exp -> Prop :=
             ExpCast C e0 ~> ExpCast C e0'
   where "e '~>' e1" := (Computation e e1).
 
-Tactic Notation "computation_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "R_Field" | Case_aux c "R_Invk" 
-  | Case_aux c "R_Cast" | Case_aux c "RC_Field"
-  | Case_aux c "RC_Invk_Recv" | Case_aux c "RC_Invk_Arg" 
-  | Case_aux c "RC_New_Arg" | Case_aux c "RC_Cast"].
 

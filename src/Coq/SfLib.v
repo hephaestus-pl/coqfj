@@ -76,18 +76,18 @@ Qed.
 
 Section PartialMap.
 
-Definition partial_map (A:Set) := id -> (option A).
+Definition partial_map (A:Type) := id -> (option A).
 
-Definition empty {A:Set} : partial_map A := fun _ => None.
+Definition empty {A:Type} : partial_map A := fun _ => None.
 
-Definition update {A:Set} (m : partial_map A)
+Definition update {A:Type} (m : partial_map A)
 (x : id) (v : A) :=
 fun x' => if beq_id x x' then (Some v) else m x'.
 
 Print fold_left.
 
 
-Definition update_tail {A:Set} (m : partial_map A) (x : id) (v : A) :=
+Definition update_tail {A:Type} (m : partial_map A) (x : id) (v : A) :=
 fun x' => 
     match m x' with
      | None => if beq_id x x' then Some v else None
@@ -100,7 +100,7 @@ beq_id x x' then (Some v) else m x'.
 fold_left (fun m u => match u with (x', v') => update empty x' v' end)  [(x, v)] m.
 
 
-Definition update_tail {A:Set} (m : partial_map A) (x : id) (v : A) :=
+Definition update_tail {A:Type} (m : partial_map A) (x : id) (v : A) :=
 fold_left (fun m u => match u with (x', v') => update empty x' v' end)  [(x, v)] m.
 *)
 
@@ -112,7 +112,7 @@ reflexivity.
 Qed.
 
 
-Theorem update_neq : forall (X:Set) v x1 x2
+Theorem update_neq : forall (X:Type) v x1 x2
 (m : partial_map X),
 x2 <> x1 -> 
 (update m x2 v) x1 = m x1.
@@ -154,7 +154,7 @@ Proof.
   intros X v x m H. unfold update. rewrite <- H.
 Admitted.
 
-Theorem update_permute : forall (X:Set) v1 v2 x1 x2
+Theorem update_permute : forall (X:Type) v1 v2 x1 x2
 (m : partial_map X),
 x2 <> x1 -> 
 (update (update m x2 v2) x1 v1)
@@ -166,7 +166,7 @@ Admitted.
 End PartialMap.
 Section Ref.
 
-Class Referable (a: Set) :={
+Class Referable (a: Type) :={
 ref : a -> id;
 find: id -> list a -> option a := 
 let fix f (key: id) (l: list a) :=
@@ -178,14 +178,14 @@ match l with
 end in f
 }.
 
-Inductive findi {A: Set} {R: @Referable A} : id -> list A -> A -> Prop:=
+Inductive findi {A: Type} {R: @Referable A} : id -> list A -> A -> Prop:=
 | find_head : forall x xs, findi (ref x) (x :: xs) (x)
 | find_step : forall k1 k2 l x, 
   k1 <> ref k2 -> findi k1 l x -> findi k1 (k2 :: l) x.
 
 
 
-Lemma find_deterministic: forall (A: Set) (R: @Referable A) d (k1: id) (x1 x2: option A),
+Lemma find_deterministic: forall (A: Type) (R: @Referable A) d (k1: id) (x1 x2: option A),
 find k1 d = x1 ->
 find k1 d = x2 ->
 x1 = x2.
@@ -199,7 +199,7 @@ inversion H0.
 inversion H.
 Qed.
 
-Lemma findi_diff: forall (A: Set) (R: @Referable A) k a v l,
+Lemma findi_diff: forall (A: Type) (R: @Referable A) k a v l,
 k = ref a -> a <> v -> ~findi k (a :: l) v.
 Proof.
 intros.
@@ -209,7 +209,7 @@ apply H0; auto.
 apply H5; auto.
 Qed.
 
-Lemma find_iff_findi: forall (A: Set) (R: @Referable A) d (k1: id) (x1: A),
+Lemma find_iff_findi: forall (A: Type) (R: @Referable A) d (k1: id) (x1: A),
 find k1 d = Some x1 <-> findi k1 d x1.
 Proof.
 intros. split.
@@ -239,7 +239,7 @@ induction H.
   rewrite not_eq_beq_id_false; auto.
 Qed.
 
-Lemma find_iff_findi': forall (A: Set) (R: @Referable A) d (k1: id) (x: A),
+Lemma find_iff_findi': forall (A: Type) (R: @Referable A) d (k1: id) (x: A),
 find k1 d = None <-> ~ findi k1 d x.
 Proof.
 intros.
@@ -251,7 +251,7 @@ simpl in H.
 Admitted.
 
 
-Lemma find_dec : forall (A: Set) (R: Referable A) k1 d (v: A),
+Lemma find_dec : forall (A: Type) (R: Referable A) k1 d (v: A),
 (forall (a1 a2: A), {a1 = a2} + {a1 <> a2}) ->
 {find k1 d = Some v} + {find k1 d = None}.
 Proof.
@@ -270,21 +270,21 @@ End Ref.
   Section Two_predicate.
   Generalizable All Variables.
 
-    Inductive Forall' {A B: Set} (P: A -> B -> Prop ): list A -> list B -> Prop :=
+    Inductive Forall' {A B: Type} (P: A -> B -> Prop ): list A -> list B -> Prop :=
       | Forall_nil : Forall' P nil nil
       | Forall_cons : forall x y l l', P x y -> Forall' P l l' -> Forall' P (x::l) (y::l').
 
     Hint Constructors Forall'.
 Print Forall'.
-    Lemma Forall'_forall (A B: Set) P (l:list A)(l': list B):
+    Lemma Forall'_forall (A B: Type) P (l:list A)(l': list B):
       Forall' P l l' <-> (forall x y, In x l -> In y l' -> P x y).
     Admitted.
 
-    Lemma Forall'_rect : forall (A B: Set) (P: A -> B -> Prop) (Q : list A -> list B -> Prop),
+    Lemma Forall'_rect : forall (A B: Type) (P: A -> B -> Prop) (Q : list A -> list B -> Prop),
       Q [] [] -> (forall a b l l', P a b -> Q (a :: l) (b :: l')) -> forall l l', Forall' P l l' -> Q l l'.
     Admitted.
 
-    Lemma Forall_inv : forall  {A B: Set}(P: A -> B -> Prop) x y xs ys,
+    Lemma Forall_inv : forall  {A B: Type}(P: A -> B -> Prop) x y xs ys,
       Forall' P (x::xs) (y::ys) -> P x y.
     Admitted.
 Print Forall_inv.

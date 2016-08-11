@@ -89,6 +89,7 @@ Proof with eauto.
     apply update_tail_not_shadow; assumption.
     rewrite <- H.
     apply update_tail_neq; auto.
+  apply T_DCast with (D:= D0)...
 Qed.
 
 (* Inversion Lemmas *)
@@ -102,14 +103,26 @@ Lemma ExpField_inversion: forall Gamma e0 Ci fi,
 Proof.
 Admitted.
 
+Lemma nth_error_In : forall (A: Set) l n (x: A), nth_error l n = Some x -> In x l.
+Admitted.
+
 Theorem subject_reduction : forall Gamma e e' C,
   Gamma |- e : C ->
   e ~> e' ->
-  { C' : ClassName | C' <: C -> Gamma |- e' : C'}.
+  exists C', C' <: C -> Gamma |- e' : C'.
 Proof.
   intros.
   computation_cases (induction H0) Case.
   Case "R_Field".
+    subst.
+    inversion H. subst.
+    rename C1 into D0.
+    inversion H6. subst.
+    symmetry in H7.
+    apply nth_error_In in H7. 
+    inversion H7. subst.
+    inversion H7.
+
     apply ExpField_inversion in H. 
     inversion H.
 

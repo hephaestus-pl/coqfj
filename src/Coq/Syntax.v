@@ -236,27 +236,27 @@ Definition ExpTyping_ind' :=
         Gamma |- e0 : D -> P e0 D -> D <: C -> C <: D -> stupid_warning -> P (ExpCast C e0) C) =>
 fix F (e : Exp) (c : ClassName) (e0 : Gamma |- e : c) {struct e0} : P e c :=
   match e0 in (_ |- e1 : c0) return (P e1 c0) with
-  | T_Var x C e1 => f x C e1
-  | T_Field e1 C0 fs i Fi Ci fi e2 f6 e3 e4 e5 => f0 e1 C0 fs i Fi Ci fi e2 (F e1 C0 e2) f6 e3 e4 e5
-  | T_Invk e1 C Cs C0 Ds m es e2 m0 f6 f7 => f1 e1 C Cs C0 Ds m es e2 (F e1 C0 e2) m0 f6 f7 
+  | T_Var _ x C e1 => f x C e1
+  | T_Field _ e1 C0 fs i Fi Ci fi e2 f6 e3 e4 e5 => f0 e1 C0 fs i Fi Ci fi e2 (F e1 C0 e2) f6 e3 e4 e5
+  | T_Invk _ e1 C Cs C0 Ds m es e2 m0 f6 f7 => f1 e1 C Cs C0 Ds m es e2 (F e1 C0 e2) m0 f6 f7 
           ((fix list_Forall_ind (es' : [Exp]) (Cs' : [ClassName]) 
             (map : Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es' Cs'): 
                Forall' (fun e' C' => P e' C') es' Cs' :=
             match map with
-            | Forall_nil => Forall_nil P
-            | Forall_cons ex cx ees css H1 H2 => Forall_cons P ex cx ees css (F ex cx H1) (list_Forall_ind ees css H2)
+            | Forall_nil _ => Forall_nil P
+            | Forall_cons _ ex cx ees css H1 H2 => Forall_cons P ex cx ees css (F ex cx H1) (list_Forall_ind ees css H2)
           end) es Cs f6)
-  | T_New C Ds Cs fs es f6 e1 f7 f8 => f2 C Ds Cs fs es f6 e1 f7 f8
+  | T_New _ C Ds Cs fs es f6 e1 f7 f8 => f2 C Ds Cs fs es f6 e1 f7 f8
           ((fix list_Forall_ind (es' : [Exp]) (Cs' : [ClassName]) 
             (map : Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es' Cs'): 
                Forall' (fun e' C' => P e' C') es' Cs' :=
             match map with
-            | Forall_nil => Forall_nil P
-            | Forall_cons ex cx ees css H1 H2 => Forall_cons P ex cx ees css (F ex cx H1) (list_Forall_ind ees css H2)
+            | Forall_nil _ => Forall_nil P
+            | Forall_cons _ ex cx ees css H1 H2 => Forall_cons P ex cx ees css (F ex cx H1) (list_Forall_ind ees css H2)
           end) es Cs f7)
-  | T_UCast e1 D C e2 s => f3 e1 D C e2 (F e1 D e2) s
-  | T_DCast e1 C D e2 s n => f4 e1 C D e2 (F e1 D e2) s n
-  | T_SCast e1 D C e2 s s0 w => f5 e1 D C e2 (F e1 D e2) s s0 w
+  | T_UCast _ e1 D C e2 s => f3 e1 D C e2 (F e1 D e2) s
+  | T_DCast _ e1 C D e2 s n => f4 e1 C D e2 (F e1 D e2) s n
+  | T_SCast _ e1 D C e2 s s0 w => f5 e1 D C e2 (F e1 D e2) s s0 w
   end.
 
 Reserved Notation "e '~>' e1" (at level 40).

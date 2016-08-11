@@ -89,7 +89,6 @@ Proof with eauto.
     apply update_tail_not_shadow; assumption.
     rewrite <- H.
     apply update_tail_neq; auto.
-  apply T_DCast with (D:= D0)...
 Qed.
 
 (* Inversion Lemmas *)
@@ -103,8 +102,6 @@ Lemma ExpField_inversion: forall Gamma e0 Ci fi,
 Proof.
 Admitted.
 
-Lemma nth_error_In : forall (A: Set) l n (x: A), nth_error l n = Some x -> In x l.
-Admitted.
 
 Theorem subject_reduction : forall Gamma e e' C,
   Gamma |- e : C ->

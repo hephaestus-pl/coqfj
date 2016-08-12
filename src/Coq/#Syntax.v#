@@ -61,7 +61,6 @@ Instance MDeclRef : Referable MethodDecl :={
    | MDecl _ id _ _ => id end
 }.
 
-
 Inductive ClassDecl:=
   | CDecl: id -> ClassName -> [FieldDecl] -> Constructor -> [MethodDecl] -> ClassDecl.
 
@@ -77,7 +76,7 @@ Instance CDeclRef : Referable ClassDecl :={
 Parameter CT: [ClassDecl].
 (*We will assume a global CT to make our definitions easier
  *To instance the CT use Hypothesis x: CT = ... *)
-Axiom sane_CT: find Object CT = None.
+Hypothesis Sane_CT: find Object CT = None.
 
 Reserved Notation "C '<:' D " (at level 40).
 Inductive Subtype : id -> ClassName -> Prop :=

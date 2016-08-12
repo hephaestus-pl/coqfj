@@ -102,6 +102,37 @@ Lemma ExpField_inversion: forall Gamma e0 Ci fi,
 Proof.
 Admitted.
 
+(* With what we have now it is impossible to prove this *)
+Lemma fields_obj_nil: forall f,
+  fields Object f -> f = nil.
+Proof.
+  intros.
+  remember Object.
+  induction H; auto.
+  rewrite Heqc in H.
+  rewrite sane_CT in H.
+  inversion H.
+Qed.
+
+Lemma fields_det: forall C f1 f2,
+  fields C f1 ->
+  fields C f2 ->
+  f1 = f2.
+Proof.
+  intros.
+  generalize dependent f1.
+  fields_cases (induction H0) Case; intros.
+  Case "F_Obj".
+    apply fields_obj_nil; auto.
+  Case "F_Decl".
+    inversion H1.
+    subst.
+    rewrite sane_CT in H. inversion H.
+    subst.
+    rewrite H in H2.
+    inversion H2. subst.
+    rewrite IHfields with fs'0; auto.
+Qed.
 
 Theorem subject_reduction : forall Gamma e e' C,
   Gamma |- e : C ->
@@ -114,7 +145,10 @@ Proof.
     subst.
     inversion H. subst.
     rename C1 into D0.
-    inversion H6. subst.
+    inversion H5. subst.
+    assert (fs0 = fs) by (apply fields_det with D0; auto).
+    rewrite H1 in H12.
+    replace H12 with (Forall' (fun (C' : id) (D' : ClassName) => C' <: D') Cs (map fieldType fs0))
     symmetry in H7.
     apply nth_error_In in H7. 
     inversion H7. subst.

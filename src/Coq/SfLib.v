@@ -267,7 +267,7 @@ End Ref.
 (** Forall for two-fold relations **)
 
 
-  Section Two_predicate.
+Section Two_predicate.
   Generalizable All Variables.
 
     Inductive Forall' {A B: Type} (P: A -> B -> Prop ): list A -> list B -> Prop :=
@@ -275,7 +275,7 @@ End Ref.
       | Forall_cons : forall x y l l', P x y -> Forall' P l l' -> Forall' P (x::l) (y::l').
 
     Hint Constructors Forall'.
-Print Forall'.
+
     Lemma Forall'_forall (A B: Type) P (l:list A)(l': list B):
       Forall' P l l' <-> (forall x y, In x l -> In y l' -> P x y).
     Admitted.
@@ -287,16 +287,11 @@ Print Forall'.
     Lemma Forall_inv : forall  {A B: Type}(P: A -> B -> Prop) x y xs ys,
       Forall' P (x::xs) (y::ys) -> P x y.
     Admitted.
-Print Forall_inv.
-(*
-    Lemma Forall_inv : forall (a:A) l, Forall (a :: l) -> P a.
 
-    
+    Lemma Forall_len: forall {A B: Type}(P: A -> B -> Prop) xs ys,
+      Forall' P xs ys -> length xs = length ys.
+    Admitted.
 
-    Lemma Forall_dec :
-      (forall x:A, {P x} + { ~ P x }) ->
-      forall l:list A, {Forall l} + {~ Forall l}.
-*)
 Arguments Forall': default implicits.
 
   End Two_predicate.

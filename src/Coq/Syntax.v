@@ -174,14 +174,14 @@ Inductive ExpTyping (Gamma: partial_map ClassName) : Exp -> ClassName -> Prop :=
   | T_Invk : forall e0 C Cs C0 Ds m es,
                 Gamma |- e0 : C0 ->
                 mtype(m, C0) = Ds ~> C ->
-                Forall' (fun e' C' => Gamma |- e' : C') es Cs ->
-                Forall' (fun C' D' => C' <: D') Cs Ds ->
+                Forall' (ExpTyping Gamma) es Cs ->
+                Forall' Subtype Cs Ds ->
                 Gamma |- ExpMethodInvoc e0 m es : C
   | T_New : forall C Ds Cs fs es,
                 fields C fs ->
                 Ds = map fieldType fs ->
-                Forall' (fun e' C' => Gamma |- e' : C') es Cs ->
-                Forall' (fun C' D' => C' <: D') Cs Ds ->
+                Forall' (ExpTyping Gamma) es Cs ->
+                Forall' Subtype Cs Ds ->
                 Gamma |- ExpNew C es : C
   | T_UCast : forall e0 D C,
                 Gamma |- e0 : D ->
@@ -222,16 +222,16 @@ Definition ExpTyping_ind' :=
         Gamma |- e0 : C0 ->
         P e0 C0 ->
         mtype( m, C0)= Ds ~> C ->
-        Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es Cs ->
-        Forall' (fun (C' : id) (D' : ClassName) => C' <: D') Cs Ds -> 
-        Forall' (fun (e' : Exp) (C' : ClassName) => P e' C') es Cs ->
+        Forall' (ExpTyping Gamma) es Cs ->
+        Forall' Subtype Cs Ds -> 
+        Forall' P es Cs ->
         P (ExpMethodInvoc e0 m es) C)
   (f2 : forall (C : id) (Ds Cs : [ClassName]) (fs : [FieldDecl]) (es : [Exp]),
         fields C fs ->
         Ds = map fieldType fs ->
-        Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es Cs ->
-        Forall' (fun (C' : id) (D' : ClassName) => C' <: D') Cs Ds -> 
-        Forall' (fun (e' : Exp) (C' : ClassName) => P e' C') es Cs ->
+        Forall' (ExpTyping Gamma) es Cs ->
+        Forall' Subtype Cs Ds -> 
+        Forall' P es Cs ->
         P (ExpNew C es) C)
   (f3 : forall (e0 : Exp) (D C : ClassName), Gamma |- e0 : D -> P e0 D -> D <: C -> P (ExpCast C e0) C)
   (f4 : forall (e0 : Exp) (C : id) (D : ClassName),
@@ -244,7 +244,7 @@ fix F (e : Exp) (c : ClassName) (e0 : Gamma |- e : c) {struct e0} : P e c :=
   | T_Field _ e1 C0 fs i Fi Ci fi e2 f6 e3 e4 e5 => f0 e1 C0 fs i Fi Ci fi e2 (F e1 C0 e2) f6 e3 e4 e5
   | T_Invk _ e1 C Cs C0 Ds m es e2 m0 f6 f7 => f1 e1 C Cs C0 Ds m es e2 (F e1 C0 e2) m0 f6 f7 
           ((fix list_Forall_ind (es' : [Exp]) (Cs' : [ClassName]) 
-            (map : Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es' Cs'): 
+            (map : Forall' (ExpTyping Gamma) es' Cs'): 
                Forall' (fun e' C' => P e' C') es' Cs' :=
             match map with
             | Forall_nil _ => Forall_nil P
@@ -252,7 +252,7 @@ fix F (e : Exp) (c : ClassName) (e0 : Gamma |- e : c) {struct e0} : P e c :=
           end) es Cs f6)
   | T_New _ C Ds Cs fs es f6 e1 f7 f8 => f2 C Ds Cs fs es f6 e1 f7 f8
           ((fix list_Forall_ind (es' : [Exp]) (Cs' : [ClassName]) 
-            (map : Forall' (fun (e' : Exp) (C' : ClassName) => Gamma |- e' : C') es' Cs'): 
+            (map : Forall' (ExpTyping Gamma) es' Cs'): 
                Forall' (fun e' C' => P e' C') es' Cs' :=
             match map with
             | Forall_nil _ => Forall_nil P

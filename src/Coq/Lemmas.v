@@ -1,4 +1,5 @@
 Require Export Syntax.
+Require Import Decidable.
 
 Lemma arg_dec: forall a1 a2: Argument,
   {a1 = a2} + {a1 <> a2}.
@@ -102,7 +103,6 @@ Lemma ExpField_inversion: forall Gamma e0 Ci fi,
 Proof.
 Admitted.
 
-(* With what we have now it is impossible to prove this *)
 Lemma fields_obj_nil: forall f,
   fields Object f -> f = nil.
 Proof.
@@ -113,6 +113,13 @@ Proof.
   rewrite sane_CT in H.
   inversion H.
 Qed.
+
+Lemma nth_error_Some' : forall {A: Type} (l: list A) n,
+(forall (a1 a2: A), {a1 = a2} + {a1 <> a2}) ->
+n < List.length l ->
+exists x, nth_error l n = Some x.
+Proof.
+Admitted.
 
 Lemma fields_det: forall C f1 f2,
   fields C f1 ->
@@ -138,7 +145,7 @@ Theorem subject_reduction : forall Gamma e e' C,
   Gamma |- e : C ->
   e ~> e' ->
   exists C', C' <: C -> Gamma |- e' : C'.
-Proof.
+Proof with eauto.
   intros.
   computation_cases (induction H0) Case.
   Case "R_Field".
@@ -146,15 +153,23 @@ Proof.
     inversion H. subst.
     rename C1 into D0.
     inversion H5. subst.
-    assert (fs0 = fs) by (apply fields_det with D0; auto).
-    rewrite H1 in H12.
-    replace H12 with (Forall' (fun (C' : id) (D' : ClassName) => C' <: D') Cs (map fieldType fs0))
-    symmetry in H7.
-    apply nth_error_In in H7. 
-    inversion H7. subst.
-    inversion H7.
-
-    apply ExpField_inversion in H. 
-    inversion H.
+    rewrite (fields_det D0 fs0 fs) in H12 by auto.
+    rewrite (fields_det D0 Fs fs) in H2 by auto.
+    clear H0 H8 Fs fs0.
+    rename Fi into fi.
+    assert (List.length es = List.length Cs) by (apply (Forall_len _ _ _ H10)).
+    remember (List.length Cs) as n.
+    assert (nth_error es i <> None). intro. (rewrite H1 in H3). inversion H3.
+    apply -> (nth_error_Some) in H1. subst. rewrite H0 in H1.
+    assert (exists Ci, nth_error Cs i = Some Ci). 
+    apply nth_error_Some'. apply eq_id_dec. assumption.
+    destruct H4 as [Ci].
+    exists Ci.
+    intro.
+    assert (In ei es -> In Ci Cs -> Gamma |- ei : Ci). apply Forall'_forall. exact H10.
+    apply H9;
+    apply nth_error_In with i; auto.
+  Case "R_Invk".
+Admitted.
 
 Eval compute in ([ (Id 1) := ExpFieldAccess (ExpVar this) (Id 2)] ExpVar (Id 1)).

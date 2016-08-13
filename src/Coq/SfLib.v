@@ -153,9 +153,9 @@ Proof.
 intros A m v x1 x2 H. unfold update_tail.
 case (m x2). auto.
 rewrite not_eq_beq_id_false; auto.
-
 Qed.
 
+(*
 Theorem update_same : forall X v x (m : partial_map X),
 m x = Some v -> 
 update m x v = m.
@@ -171,6 +171,7 @@ x2 <> x1 ->
 Proof.
 intros X v1 v2 x1 x2 m. unfold update.
 Admitted.
+*)
 
 End PartialMap.
 Section Ref.
@@ -248,18 +249,7 @@ Proof.
   rewrite not_eq_beq_id_false; auto.
 Qed.
 
-Lemma find_iff_findi': forall (A: Type) (R: @Referable A) d (k1: id) (x: A),
-find k1 d = None <-> ~ findi k1 d x.
-Proof.
-  intros.
-  split.
-  intro.
-  intro.
-  induction H0.
-  simpl in H.
-Admitted.
-
-
+(*
 Lemma find_dec : forall (A: Type) (R: Referable A) k1 d (v: A),
 (forall (a1 a2: A), {a1 = a2} + {a1 <> a2}) ->
 {find k1 d = Some v} + {find k1 d = None}.
@@ -267,9 +257,9 @@ Proof.
   intros.
   induction d.
   right; auto.
-
   destruct IHd.
 Admitted.
+*)
 
 End Ref.
 
@@ -302,6 +292,7 @@ Proof.
   apply IHForall' with n; auto.
 Qed.
 
+(*
 Lemma Forall'_rect : forall (Q : list A -> list B -> Prop),
   Q [] [] -> (forall a b l l', P a b -> Q (a :: l) (b :: l')) -> forall l l', Forall' l l' -> Q l l'.
 Admitted.
@@ -309,10 +300,17 @@ Admitted.
 Lemma Forall'_inv : forall x y xs ys,
   Forall' (x::xs) (y::ys) -> P x y.
 Admitted.
+*)
 
 Lemma Forall'_len: forall xs ys,
   Forall' xs ys -> length xs = length ys.
-Admitted.
+Proof.
+  intros.
+  induction H. auto.
+  simpl. rewrite IHForall'; auto.
+Qed.
+
+
 End Two_predicate.
 Arguments Forall': default implicits.
 

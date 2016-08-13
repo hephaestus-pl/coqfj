@@ -91,17 +91,6 @@ Proof with eauto.
     apply update_tail_neq; auto.
 Qed.
 
-(* Inversion Lemmas *)
-Lemma ExpField_inversion: forall Gamma e0 Ci fi, 
-    Gamma |- ExpFieldAccess e0 fi : Ci ->
-    exists C0 fs Fi i, Gamma |- e0 : C0 /\
-    fields C0 fs /\
-    Some Fi = nth_error fs i /\
-    Ci = fieldType Fi /\
-    fi = ref Fi.
-Proof.
-Admitted.
-
 Lemma fields_obj_nil: forall f,
   fields Object f -> f = nil.
 Proof.
@@ -149,15 +138,14 @@ Proof with eauto.
     rewrite (fields_det D0 Fs fs) in H2 by auto.
     clear H0 H8 Fs fs0.
     rename Fi into fi.
-    assert (List.length es = List.length Cs) by (apply (Forall_len _ _ _ _ _ H10)).
-    remember (List.length Cs) as n.
-    assert (nth_error es i <> None). intro. (rewrite H1 in H3). inversion H3.
-    apply -> (nth_error_Some) in H1. subst. rewrite H0 in H1.
+    assert (nth_error es i <> None). intro. rewrite H0 in H3. inversion H3.
+    assert (List.length es = List.length Cs) by (apply (Forall'_len _ _ _ _ _ H10)).
+    apply -> (nth_error_Some) in H0. rewrite H1 in H0.
     assert (exists Ci, nth_error Cs i = Some Ci). 
     apply nth_error_Some'. assumption.
     destruct H4 as [Ci].
     exists Ci.
-    intro. Check Forall'_forall.
+    intro. 
     apply (Forall'_forall _ _ (ExpTyping Gamma) es Cs i ei Ci); auto.
   Case "R_Invk".
 Admitted.

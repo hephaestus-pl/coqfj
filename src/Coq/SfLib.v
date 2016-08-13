@@ -74,18 +74,37 @@ Proof.
   apply n1; inversion H; auto.
 Qed.
 
+Lemma none_ex_Some: forall {A: Type} x,
+  x <> @None A ->
+  exists x', x = Some x'.
+Proof.
+  intros. induction x.
+  exists a; auto.
+  exfalso; auto.
+Qed.
+
+Lemma nth_error_nil : forall {A: Type} n,
+  nth_error [] n = @None A.
+Proof.
+  intros; induction n; auto.
+Qed.
+
+Lemma nth_error_Some' : forall {A: Type} (l: list A)  n,
+  n < List.length l ->
+  exists x, nth_error l n = Some x.
+Proof.
+  intros.
+  apply <- nth_error_Some in H.
+  apply none_ex_Some; auto.
+Qed.
+
 Section PartialMap.
 
 Definition partial_map (A:Type) := id -> (option A).
-
 Definition empty {A:Type} : partial_map A := fun _ => None.
-
 Definition update {A:Type} (m : partial_map A)
 (x : id) (v : A) :=
 fun x' => if beq_id x x' then (Some v) else m x'.
-
-Print fold_left.
-
 
 Definition update_tail {A:Type} (m : partial_map A) (x : id) (v : A) :=
 fun x' => 
@@ -93,16 +112,6 @@ fun x' =>
      | None => if beq_id x x' then Some v else None
      | otherwise => m x'
     end.
-(*
-if m x' = None 
-
-beq_id x x' then (Some v) else m x'.
-fold_left (fun m u => match u with (x', v') => update empty x' v' end)  [(x, v)] m.
-
-
-Definition update_tail {A:Type} (m : partial_map A) (x : id) (v : A) :=
-fold_left (fun m u => match u with (x', v') => update empty x' v' end)  [(x, v)] m.
-*)
 
 Lemma update_eq : forall A (m: partial_map A) x v,
 (update m x v) x = Some v.
@@ -124,9 +133,9 @@ apply H. Qed.
 Lemma update_shadow : forall A (m: partial_map A) v1 v2 x,
 (update (update m x v1) x v2) x = Some v2.
 Proof.
-intros A m v1 v2 x.
-unfold update.
-rewrite <- beq_id_refl; auto.
+  intros A m v1 v2 x.
+  unfold update.
+  rewrite <- beq_id_refl; auto.
 Qed.
 
 Lemma update_tail_not_shadow : forall A (m: partial_map A) v1 v2 x,
@@ -190,31 +199,31 @@ find k1 d = x1 ->
 find k1 d = x2 ->
 x1 = x2.
 Proof with eauto.
-intros.
-destruct x1, x2; 
-destruct (@find A) in *; auto with rewrite.
-rewrite <- H; auto.
-inversion H.
-inversion H0.
-inversion H.
+  intros.
+  destruct x1, x2; 
+  destruct (@find A) in *; auto with rewrite.
+  rewrite <- H; auto.
+  inversion H.
+  inversion H0.
+  inversion H.
 Qed.
 
 Lemma findi_diff: forall (A: Type) (R: @Referable A) k a v l,
 k = ref a -> a <> v -> ~findi k (a :: l) v.
 Proof.
-intros.
-intro.
-inversion H1; subst.
-apply H0; auto.
-apply H5; auto.
+  intros.
+  intro.
+  inversion H1; subst.
+  apply H0; auto.
+  apply H5; auto.
 Qed.
 
 Lemma find_iff_findi: forall (A: Type) (R: @Referable A) d (k1: id) (x1: A),
 find k1 d = Some x1 <-> findi k1 d x1.
 Proof.
-intros. split.
-intro H. 
-induction d.
+  intros. split.
+  intro H. 
+  induction d.
   inversion H.
 
   remember (ref a) as r.
@@ -231,8 +240,8 @@ induction d.
   auto.
   apply IHd; auto.
 
-intro.
-induction H.
+  intro.
+  induction H.
   simpl. 
   rewrite <- beq_id_refl. auto.
   unfold find.
@@ -242,12 +251,12 @@ Qed.
 Lemma find_iff_findi': forall (A: Type) (R: @Referable A) d (k1: id) (x: A),
 find k1 d = None <-> ~ findi k1 d x.
 Proof.
-intros.
-split.
-intro.
-intro.
-induction H0.
-simpl in H.
+  intros.
+  split.
+  intro.
+  intro.
+  induction H0.
+  simpl in H.
 Admitted.
 
 
@@ -255,11 +264,11 @@ Lemma find_dec : forall (A: Type) (R: Referable A) k1 d (v: A),
 (forall (a1 a2: A), {a1 = a2} + {a1 <> a2}) ->
 {find k1 d = Some v} + {find k1 d = None}.
 Proof.
-intros.
-induction d.
-right; auto.
+  intros.
+  induction d.
+  right; auto.
 
-destruct IHd.
+  destruct IHd.
 Admitted.
 
 End Ref.
@@ -268,34 +277,44 @@ End Ref.
 
 
 Section Two_predicate.
-  Generalizable All Variables.
 
-    Inductive Forall' {A B: Type} (P: A -> B -> Prop ): list A -> list B -> Prop :=
-      | Forall_nil : Forall' P nil nil
-      | Forall_cons : forall x y l l', P x y -> Forall' P l l' -> Forall' P (x::l) (y::l').
+  Variables A B: Type.
+  Variable P: A -> B -> Prop.
+Inductive Forall': list A -> list B -> Prop :=
+  | Forall'_nil : Forall' nil nil
+  | Forall'_cons : forall x y l l', P x y -> Forall' l l' -> Forall' (x::l) (y::l').
 
-    Hint Constructors Forall'.
+Hint Constructors Forall'.
 
-    Lemma Forall'_forall (A B: Type) P (l:list A)(l': list B):
-      Forall' P l l' <-> (forall x y, In x l -> In y l' -> P x y).
-    Admitted.
+Lemma Forall'_forall (l:list A)(l': list B): forall n x y,
+  Forall' l l' -> 
+    nth_error l  n = Some x ->
+    nth_error l' n = Some y -> P x y.
+Proof.
+  intros n x y H.
+  generalize dependent n.
+  induction H.
+  intros.
+  rewrite nth_error_nil in H. inversion H.
+  
+  intros.
+  case n in *; simpl in H1, H2. inversion H1. inversion H2. rewrite <- H4, <- H5; auto.
+  apply IHForall' with n; auto.
+Qed.
 
-    Lemma Forall'_rect : forall (A B: Type) (P: A -> B -> Prop) (Q : list A -> list B -> Prop),
-      Q [] [] -> (forall a b l l', P a b -> Q (a :: l) (b :: l')) -> forall l l', Forall' P l l' -> Q l l'.
-    Admitted.
+Lemma Forall'_rect : forall (Q : list A -> list B -> Prop),
+  Q [] [] -> (forall a b l l', P a b -> Q (a :: l) (b :: l')) -> forall l l', Forall' l l' -> Q l l'.
+Admitted.
 
-    Lemma Forall_inv : forall  {A B: Type}(P: A -> B -> Prop) x y xs ys,
-      Forall' P (x::xs) (y::ys) -> P x y.
-    Admitted.
+Lemma Forall'_inv : forall x y xs ys,
+  Forall' (x::xs) (y::ys) -> P x y.
+Admitted.
 
-    Lemma Forall_len: forall {A B: Type}(P: A -> B -> Prop) xs ys,
-      Forall' P xs ys -> length xs = length ys.
-    Admitted.
-
+Lemma Forall'_len: forall xs ys,
+  Forall' xs ys -> length xs = length ys.
+Admitted.
+End Two_predicate.
 Arguments Forall': default implicits.
-
-  End Two_predicate.
-Print Forall'.
 
 (** * From Basics.v *)
 

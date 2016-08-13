@@ -207,7 +207,6 @@ Tactic Notation "typing_cases" tactic(first) ident(c) :=
   | Case_aux c "T_UCast" | Case_aux c "T_DCast" 
   | Case_aux c "T_SCast"].
 
-
 Definition ExpTyping_ind' := 
   fun (Gamma : partial_map ClassName) (P : Exp -> ClassName -> Prop)
   (f : forall (x : id) (C : ClassName), Gamma x = Some C -> P (ExpVar x) C)
@@ -245,18 +244,18 @@ fix F (e : Exp) (c : ClassName) (e0 : Gamma |- e : c) {struct e0} : P e c :=
   | T_Invk _ e1 C Cs C0 Ds m es e2 m0 f6 f7 => f1 e1 C Cs C0 Ds m es e2 (F e1 C0 e2) m0 f6 f7 
           ((fix list_Forall_ind (es' : [Exp]) (Cs' : [ClassName]) 
             (map : Forall' (ExpTyping Gamma) es' Cs'): 
-               Forall' (fun e' C' => P e' C') es' Cs' :=
+               Forall' P es' Cs' :=
             match map with
-            | Forall_nil _ => Forall_nil P
-            | Forall_cons _ ex cx ees css H1 H2 => Forall_cons P ex cx ees css (F ex cx H1) (list_Forall_ind ees css H2)
+            | Forall'_nil _ _ _ => Forall'_nil Exp ClassName P
+            | Forall'_cons _ _ _ ex cx ees css H1 H2 => Forall'_cons Exp ClassName P ex cx ees css (F ex cx H1) (list_Forall_ind ees css H2)
           end) es Cs f6)
   | T_New _ C Ds Cs fs es f6 e1 f7 f8 => f2 C Ds Cs fs es f6 e1 f7 f8
           ((fix list_Forall_ind (es' : [Exp]) (Cs' : [ClassName]) 
             (map : Forall' (ExpTyping Gamma) es' Cs'): 
-               Forall' (fun e' C' => P e' C') es' Cs' :=
+               Forall' P es' Cs' :=
             match map with
-            | Forall_nil _ => Forall_nil P
-            | Forall_cons _ ex cx ees css H1 H2 => Forall_cons P ex cx ees css (F ex cx H1) (list_Forall_ind ees css H2)
+            | Forall'_nil _ _ _ => Forall'_nil Exp ClassName P
+            | Forall'_cons _ _ _ ex cx ees css H1 H2 => Forall'_cons Exp ClassName P ex cx ees css (F ex cx H1) (list_Forall_ind ees css H2)
           end) es Cs f7)
   | T_UCast _ e1 D C e2 s => f3 e1 D C e2 (F e1 D e2) s
   | T_DCast _ e1 C D e2 s n => f4 e1 C D e2 (F e1 D e2) s n
@@ -268,8 +267,8 @@ Inductive Computation : Exp -> Exp -> Prop :=
   | R_Field : forall C Fs fs es fi ei i,
             fields C (Fs) ->
             fs = map ref Fs ->
-            Some fi = nth_error fs i ->
-            Some ei = nth_error es i -> 
+            nth_error fs i = Some fi ->
+            nth_error es i = Some ei-> 
             ExpFieldAccess (ExpNew C es) fi ~> ei
   | R_Invk : forall C m xs ds es e0,
             mbody(m, C) = xs o e0 ->

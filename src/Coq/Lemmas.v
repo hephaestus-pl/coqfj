@@ -1,5 +1,4 @@
 Require Export Syntax.
-Require Import Decidable.
 
 Lemma arg_dec: forall a1 a2: Argument,
   {a1 = a2} + {a1 <> a2}.
@@ -114,13 +113,6 @@ Proof.
   inversion H.
 Qed.
 
-Lemma nth_error_Some' : forall {A: Type} (l: list A) n,
-(forall (a1 a2: A), {a1 = a2} + {a1 <> a2}) ->
-n < List.length l ->
-exists x, nth_error l n = Some x.
-Proof.
-Admitted.
-
 Lemma fields_det: forall C f1 f2,
   fields C f1 ->
   fields C f2 ->
@@ -157,18 +149,16 @@ Proof with eauto.
     rewrite (fields_det D0 Fs fs) in H2 by auto.
     clear H0 H8 Fs fs0.
     rename Fi into fi.
-    assert (List.length es = List.length Cs) by (apply (Forall_len _ _ _ H10)).
+    assert (List.length es = List.length Cs) by (apply (Forall_len _ _ _ _ _ H10)).
     remember (List.length Cs) as n.
     assert (nth_error es i <> None). intro. (rewrite H1 in H3). inversion H3.
     apply -> (nth_error_Some) in H1. subst. rewrite H0 in H1.
     assert (exists Ci, nth_error Cs i = Some Ci). 
-    apply nth_error_Some'. apply eq_id_dec. assumption.
+    apply nth_error_Some'. assumption.
     destruct H4 as [Ci].
     exists Ci.
-    intro.
-    assert (In ei es -> In Ci Cs -> Gamma |- ei : Ci). apply Forall'_forall. exact H10.
-    apply H9;
-    apply nth_error_In with i; auto.
+    intro. Check Forall'_forall.
+    apply (Forall'_forall _ _ (ExpTyping Gamma) es Cs i ei Ci); auto.
   Case "R_Invk".
 Admitted.
 

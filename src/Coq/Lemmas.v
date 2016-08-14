@@ -121,6 +121,19 @@ Proof.
     inversion H2. subst.
     rewrite IHfields with fs'0; auto.
 Qed.
+Print fold_left.
+Lemma term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As Bs e,
+  fold_left (fun G u => match u with (x, b) => update_tail G x b end) (combine xs Bs) Gamma |- e : D ->
+  Forall' (ExpTyping Gamma) ds As ->
+  Forall' Subtype As Bs ->
+  exists C, C <:D -> Gamma |- (fold_left (fun ex u => match u with (x,d) => [x := d] ex end) (combine xs ds) e ) : C.
+Proof.
+  intros.
+  typing_cases (induction H using ExpTyping_ind') Case.
+  Case "T_Var".
+    exists C. intro. simpl.
+    simpl in H.
+  induction H.
 
 Theorem subject_reduction : forall Gamma e e' C,
   Gamma |- e : C ->

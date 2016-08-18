@@ -153,8 +153,18 @@ Fixpoint subst (e: Exp) (v: Var) (v': Exp) : Exp:=
   | ExpCast cname exp => ExpCast cname (subst exp v v')
   | ExpNew cname exps => ExpNew cname (map (fun x => subst x v v') exps)
   end.
-Notation " '[' v ':=' v' ']' e " := (subst e v v') (at level 40).
+Bind Scope subst_scope with subst.
+Open Scope subst_scope.
+Notation " '[' v ':=' v' ']' e " := (subst e v v') (at level 25, v' at next level, v at next level): subst_scope.
 
+Fixpoint subst_list (e: Exp) (v: [Var]) (v': [Exp]) : Exp :=
+  match v, v' with
+  | (vx::vs), (vx'::vs') => subst_list (subst e vx vx') vs vs'
+  | _ , _ => e
+  end.
+Bind Scope substl_scope with subst_list.
+Open Scope substl_scope.
+Notation " '[' v '::=' v' ']' e " := (subst_list e v v') (at level 30): substl_scope.
 
 Inductive Warning (s: string) : Prop :=
   | w_str : Warning s.
@@ -206,6 +216,51 @@ Tactic Notation "typing_cases" tactic(first) ident(c) :=
   | Case_aux c "T_Invk" | Case_aux c "T_New"
   | Case_aux c "T_UCast" | Case_aux c "T_DCast" 
   | Case_aux c "T_SCast"].
+
+
+Reserved Notation "e '~>' e1" (at level 40).
+Inductive Computation : Exp -> Exp -> Prop :=
+  | R_Field : forall C Fs fs es fi ei i,
+            fields C (Fs) ->
+            fs = map ref Fs ->
+            nth_error fs i = Some fi ->
+            nth_error es i = Some ei-> 
+            ExpFieldAccess (ExpNew C es) fi ~> ei
+  | R_Invk : forall C m xs ds es e0,
+            mbody(m, C) = xs o e0 ->
+            ExpMethodInvoc (ExpNew C es) m ds ~>
+            [xs ::= ds] [this := ExpNew C es] e0
+  | R_Cast : forall C D es,
+            C <: D ->
+            ExpCast D (ExpNew C es) ~> ExpNew C es
+  | RC_Field : forall e0 e0' f,
+            e0 ~> e0' ->
+            ExpFieldAccess e0 f ~> ExpFieldAccess e0' f
+  | RC_Invk_Recv : forall e0 e0' m es,
+            e0 ~> e0' ->
+            ExpMethodInvoc e0 m es ~> ExpMethodInvoc e0' m es
+  | RC_Invk_Arg : forall e0 ei' m es es' ei,
+            ei ~> ei' ->
+            In ei es ->
+            In ei es' ->
+            ExpMethodInvoc e0 m es ~> ExpMethodInvoc e0 m es'
+  | RC_New_Arg : forall C ei' es es' ei,
+            ei ~> ei' ->
+            In ei es ->
+            In ei es' ->
+            ExpNew C es ~> ExpNew C es'
+  | RC_Cast : forall C e0 e0',
+            e0 ~> e0' ->
+            ExpCast C e0 ~> ExpCast C e0'
+  where "e '~>' e1" := (Computation e e1).
+Print Computation.
+
+Tactic Notation "computation_cases" tactic(first) ident(c) :=
+  first;
+  [ Case_aux c "R_Field" | Case_aux c "R_Invk" 
+  | Case_aux c "R_Cast" | Case_aux c "RC_Field"
+  | Case_aux c "RC_Invk_Recv" | Case_aux c "RC_Invk_Arg" 
+  | Case_aux c "RC_New_Arg" | Case_aux c "RC_Cast"].
 
 Definition ExpTyping_ind' := 
   fun (Gamma : partial_map ClassName) (P : Exp -> ClassName -> Prop)
@@ -261,50 +316,3 @@ fix F (e : Exp) (c : ClassName) (e0 : Gamma |- e : c) {struct e0} : P e c :=
   | T_DCast _ e1 C D e2 s n => f4 e1 C D e2 (F e1 D e2) s n
   | T_SCast _ e1 D C e2 s s0 w => f5 e1 D C e2 (F e1 D e2) s s0 w
   end.
-
-Reserved Notation "e '~>' e1" (at level 40).
-Inductive Computation : Exp -> Exp -> Prop :=
-  | R_Field : forall C Fs fs es fi ei i,
-            fields C (Fs) ->
-            fs = map ref Fs ->
-            nth_error fs i = Some fi ->
-            nth_error es i = Some ei-> 
-            ExpFieldAccess (ExpNew C es) fi ~> ei
-  | R_Invk : forall C m xs ds es e0,
-            mbody(m, C) = xs o e0 ->
-            ExpMethodInvoc (ExpNew C es) m ds ~>
-            fold_left 
-              (fun ex u => match u with (d, x) => [x := d] ex end) 
-              (combine ds xs)
-              ([this := ExpNew C es] e0) 
-  | R_Cast : forall C D es,
-            C <: D ->
-            ExpCast D (ExpNew C es) ~> ExpNew C es
-  | RC_Field : forall e0 e0' f,
-            e0 ~> e0' ->
-            ExpFieldAccess e0 f ~> ExpFieldAccess e0' f
-  | RC_Invk_Recv : forall e0 e0' m es,
-            e0 ~> e0' ->
-            ExpMethodInvoc e0 m es ~> ExpMethodInvoc e0' m es
-  | RC_Invk_Arg : forall e0 ei' m es es' ei,
-            ei ~> ei' ->
-            In ei es ->
-            In ei es' ->
-            ExpMethodInvoc e0 m es ~> ExpMethodInvoc e0 m es'
-  | RC_New_Arg : forall C ei' es es' ei,
-            ei ~> ei' ->
-            In ei es ->
-            In ei es' ->
-            ExpNew C es ~> ExpNew C es'
-  | RC_Cast : forall C e0 e0',
-            e0 ~> e0' ->
-            ExpCast C e0 ~> ExpCast C e0'
-  where "e '~>' e1" := (Computation e e1).
-
-Tactic Notation "computation_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "R_Field" | Case_aux c "R_Invk" 
-  | Case_aux c "R_Cast" | Case_aux c "RC_Field"
-  | Case_aux c "RC_Invk_Recv" | Case_aux c "RC_Invk_Arg" 
-  | Case_aux c "RC_New_Arg" | Case_aux c "RC_Cast"].
-

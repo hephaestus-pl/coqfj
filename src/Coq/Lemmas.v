@@ -129,7 +129,7 @@ Lemma term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
   Gamma extds xs : Bs |- e : D ->
   Forall' (ExpTyping Gamma) ds As ->
   Forall' Subtype As Bs ->
-  exists C, C <:D -> Gamma |- (fold_left (fun ex u => match u with (x,d) => [x := d] ex end) (combine xs ds) e ) : C.
+  exists C, C <:D -> Gamma |- subst_list e xs ds : C.
 Proof.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case.

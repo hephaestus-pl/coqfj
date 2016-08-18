@@ -121,9 +121,20 @@ Proof.
     inversion H2. subst.
     rewrite IHfields with fs'0; auto.
 Qed.
-Print fold_left.
 
-Locate "..".
+Lemma var_subst_notin : forall (xs: [Var]) (ds: list Exp) (x: Var),
+  ~ In x xs ->
+  subst_list (ExpVar x) xs ds = (ExpVar x).
+Proof.
+  intros.
+  generalize dependent ds.
+  induction xs; simpl; auto.
+  apply not_in_cons in H.
+  destruct H.
+  rewrite not_eq_beq_id_false.
+  intro.
+  case ds; auto. auto.
+Qed.
 
 Lemma term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
   Gamma extds xs : Bs |- e : D ->
@@ -134,9 +145,14 @@ Proof.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case.
   Case "T_Var".
-    exists C. intro. simpl.
-    simpl in H.
-  induction H.
+    destruct (In_dec (eq_id_dec) x xs).
+    SCase "In x xs". 
+      admit.
+    SCase "~In x xs".
+      rewrite var_subst_notin; auto.
+      exists C; intro. constructor.
+      rewrite extend_list_not_shadow in H; auto.
+Admitted.
 
 Theorem subject_reduction : forall Gamma e e' C,
   Gamma |- e : C ->

@@ -99,8 +99,6 @@ Proof.
 Qed.
 
 Definition partial_map (A:Type) := id -> (option A).
-Bind Scope map_scope with partial_map.
-Open Scope map_scope.
 Definition empty {A:Type} : partial_map A := fun _ => None.
 
 (* Adds an element at the head of the map *)
@@ -115,9 +113,8 @@ fun x' =>
      | None => if beq_id x x' then Some v else None
      | otherwise => m x'
     end.
-Bind Scope extend_scope with extend.
-Open Scope extend_scope.
-Notation " m 'extd' id ':' val" := (extend m id val) (at level 20, id at next level): extend_scope.
+Notation " m 'extd' id ':' val" := (extend m id val) (at level 20, id at next level).
+
 
 (* Extends a list of element at the tail of the map *)
 Fixpoint extend_list {A:Type} (m : partial_map A) (ids : list id) (vals : list A) :=
@@ -126,9 +123,7 @@ match ids, vals with
  | _, _ => m
 end.
 
-Bind Scope extend_list_scope with extend_list.
-Open Scope extend_list_scope.
-Notation " m 'extds' ids ':' vals" := (extend_list m ids vals) (at level 20, ids at next level): extend_list_scope.
+Notation " m 'extds' ids ':' vals" := (extend_list m ids vals) (at level 20, ids at next level).
 
 Lemma update_eq : forall A (m: partial_map A) x v,
 (update m x v) x = Some v.
@@ -162,6 +157,27 @@ Proof.
 intros A m v1 v2 x1 H. unfold extend.
 rewrite H; auto.
 Qed.
+
+Lemma extend_list_ill: forall A (m: partial_map A) x xs,
+  m x = (m extds xs : nil) x.
+Proof.
+  intros.
+  induction xs.
+  simpl; auto.
+  simpl. auto.
+Qed.
+
+Lemma extend_list_not_shadow: forall A (m: partial_map A) x xs ds,
+~In x xs ->
+(m extds xs : ds) x = m x.
+Proof.
+intros.
+induction xs; auto.
+apply not_in_cons in H. destruct H.
+rewrite <- IHxs; auto.
+simpl. case ds. apply extend_list_ill.
+intros. unfold extend. 
+Admitted.
 
 Lemma extend_neq : forall A (m: partial_map A) v x x0,
 x <> x0 ->

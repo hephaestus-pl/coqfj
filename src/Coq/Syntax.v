@@ -146,25 +146,21 @@ Tactic Notation "mbdy_cases" tactic(first) ident(c) :=
 
 Fixpoint subst (e: Exp) (v: Var) (v': Exp) : Exp:=
   match e with
-  | ExpVar var => if eq_id_dec var v then v' else ExpVar var
+  | ExpVar var => if beq_id var v then v' else ExpVar var
   | ExpFieldAccess exp i => ExpFieldAccess (subst exp v v') i
   | ExpMethodInvoc exp i exps => 
       ExpMethodInvoc (subst exp v v') i (map (fun x => subst x v v') exps)
   | ExpCast cname exp => ExpCast cname (subst exp v v')
   | ExpNew cname exps => ExpNew cname (map (fun x => subst x v v') exps)
   end.
-Bind Scope subst_scope with subst.
-Open Scope subst_scope.
-Notation " '[' v ':=' v' ']' e " := (subst e v v') (at level 25, v' at next level, v at next level): subst_scope.
+Notation " '[' v' '/' v ']' e " := (subst e v v') (at level 25, v' at next level, v at next level).
 
 Fixpoint subst_list (e: Exp) (v: [Var]) (v': [Exp]) : Exp :=
   match v, v' with
   | (vx::vs), (vx'::vs') => subst_list (subst e vx vx') vs vs'
   | _ , _ => e
   end.
-Bind Scope substl_scope with subst_list.
-Open Scope substl_scope.
-Notation " '[' v '::=' v' ']' e " := (subst_list e v v') (at level 30): substl_scope.
+Notation " '[' v' '//' v ']' e " := (subst_list e v v') (at level 30).
 
 Inductive Warning (s: string) : Prop :=
   | w_str : Warning s.
@@ -229,7 +225,7 @@ Inductive Computation : Exp -> Exp -> Prop :=
   | R_Invk : forall C m xs ds es e0,
             mbody(m, C) = xs o e0 ->
             ExpMethodInvoc (ExpNew C es) m ds ~>
-            [xs ::= ds] [this := ExpNew C es] e0
+            [ds // xs] [ExpNew C es / this] e0
   | R_Cast : forall C D es,
             C <: D ->
             ExpCast D (ExpNew C es) ~> ExpNew C es

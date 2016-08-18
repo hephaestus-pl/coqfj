@@ -79,16 +79,16 @@ Qed.
 
 Lemma weakening: forall Gamma e x C D,
   Gamma |- e : C ->
-  update_tail Gamma x D |- e : C.
+  Gamma extd x : D |- e : C.
 Proof with eauto.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case; try (solve [econstructor; eauto]).
   Case "T_Var".
     constructor.
     destruct eq_id_dec with x x0; subst.
-    apply update_tail_not_shadow; assumption.
+    apply extend_not_shadow; assumption.
     rewrite <- H.
-    apply update_tail_neq; auto.
+    apply extend_neq; auto.
 Qed.
 
 Lemma fields_obj_nil: forall f,
@@ -122,8 +122,11 @@ Proof.
     rewrite IHfields with fs'0; auto.
 Qed.
 Print fold_left.
-Lemma term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As Bs e,
-  fold_left (fun G u => match u with (x, b) => update_tail G x b end) (combine xs Bs) Gamma |- e : D ->
+
+Locate "..".
+
+Lemma term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
+  Gamma extds xs : Bs |- e : D ->
   Forall' (ExpTyping Gamma) ds As ->
   Forall' Subtype As Bs ->
   exists C, C <:D -> Gamma |- (fold_left (fun ex u => match u with (x,d) => [x := d] ex end) (combine xs ds) e ) : C.

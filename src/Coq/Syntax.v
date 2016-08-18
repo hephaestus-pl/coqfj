@@ -1,5 +1,5 @@
 Require Export List.
-Require Export SfLib.
+Require Export Metatheory.
 Require Export String.
 
 Notation "'[' X ']'" := (list X) (at level 40).

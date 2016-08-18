@@ -98,20 +98,37 @@ Proof.
   apply none_ex_Some; auto.
 Qed.
 
-Section PartialMap.
-
 Definition partial_map (A:Type) := id -> (option A).
+Bind Scope map_scope with partial_map.
+Open Scope map_scope.
 Definition empty {A:Type} : partial_map A := fun _ => None.
+
+(* Adds an element at the head of the map *)
 Definition update {A:Type} (m : partial_map A)
 (x : id) (v : A) :=
 fun x' => if beq_id x x' then (Some v) else m x'.
 
-Definition update_tail {A:Type} (m : partial_map A) (x : id) (v : A) :=
+(* Adds an element at the tail of the map *)
+Definition extend {A:Type} (m : partial_map A) (x : id) (v : A) :=
 fun x' => 
     match m x' with
      | None => if beq_id x x' then Some v else None
      | otherwise => m x'
     end.
+Bind Scope extend_scope with extend.
+Open Scope extend_scope.
+Notation " m 'extd' id ':' val" := (extend m id val) (at level 20, id at next level): extend_scope.
+
+(* Extends a list of element at the tail of the map *)
+Fixpoint extend_list {A:Type} (m : partial_map A) (ids : list id) (vals : list A) :=
+match ids, vals with
+ | (x::xs), (v::vs) => extend_list (extend m x v) xs vs
+ | _, _ => m
+end.
+
+Bind Scope extend_list_scope with extend_list.
+Open Scope extend_list_scope.
+Notation " m 'extds' ids ':' vals" := (extend_list m ids vals) (at level 20, ids at next level): extend_list_scope.
 
 Lemma update_eq : forall A (m: partial_map A) x v,
 (update m x v) x = Some v.
@@ -138,19 +155,19 @@ Proof.
   rewrite <- beq_id_refl; auto.
 Qed.
 
-Lemma update_tail_not_shadow : forall A (m: partial_map A) v1 v2 x,
+Lemma extend_not_shadow : forall A (m: partial_map A) v1 v2 x,
 m x = Some v1 ->
-(update_tail m x v2) x = Some v1.
+(extend m x v2) x = Some v1.
 Proof.
-intros A m v1 v2 x1 H. unfold update_tail.
+intros A m v1 v2 x1 H. unfold extend.
 rewrite H; auto.
 Qed.
 
-Lemma update_tail_neq : forall A (m: partial_map A) v x x0,
+Lemma extend_neq : forall A (m: partial_map A) v x x0,
 x <> x0 ->
-(update_tail m x v) x0 = m x0.
+(extend m x v) x0 = m x0.
 Proof.
-intros A m v x1 x2 H. unfold update_tail.
+intros A m v x1 x2 H. unfold extend.
 case (m x2). auto.
 rewrite not_eq_beq_id_false; auto.
 Qed.
@@ -173,7 +190,6 @@ intros X v1 v2 x1 x2 m. unfold update.
 Admitted.
 *)
 
-End PartialMap.
 Section Ref.
 
 Class Referable (a: Type) :={

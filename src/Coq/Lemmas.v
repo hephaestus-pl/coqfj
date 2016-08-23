@@ -1,5 +1,6 @@
 Require Export Syntax.
-
+Import Arith.
+SearchAbout "suc".
 Lemma arg_dec: forall a1 a2: Argument,
   {a1 = a2} + {a1 <> a2}.
 Proof.
@@ -122,25 +123,52 @@ Proof.
     rewrite IHfields with fs'0; auto.
 Qed.
 
+Lemma substL_eq_size : forall (xs:[Var]) (ds:[Exp]) e e',
+  [; ds \ xs ;] e = e' ->
+  length ds = length xs.
+Proof.
+  intros.
+  induction H.
+  auto. simpl.
+  apply Nat.succ_inj_wd. auto.
+Qed.
+
 Lemma var_subst_notin : forall (xs: [Var]) (ds: list Exp) (x: Var),
+  length ds = length xs ->  
   ~ In x xs ->
-  subst_list (ExpVar x) xs ds = (ExpVar x).
+  [; ds \ xs ;] (ExpVar x) = (ExpVar x).
 Proof.
   intros.
   generalize dependent ds.
-  induction xs; simpl; auto.
-  apply not_in_cons in H.
-  destruct H.
-  rewrite not_eq_beq_id_false.
-  intro.
-  case ds; auto. auto.
+  induction xs, ds; intros. constructor.
+  inversion H.
+  inversion H. 
+  apply not_in_cons in H0; destruct H0.
+  apply Subst_cons with (ExpVar x).
+  unfold subst. rewrite not_eq_beq_id_false; auto.
+  apply IHxs. auto.
+  simpl in H. apply Nat.succ_inj_wd; auto.
 Qed.
 
-Lemma term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
+Lemma substL_det : forall ds xs x e1 e2,
+  [; ds \ xs ;] (ExpVar x) = e1 ->
+  [; ds \ xs ;] (ExpVar x) = e2 ->
+  e1 = e2.
+Proof.
+  intros.
+  generalize dependent e2.
+  induction H.
+  intros. inversion H0; auto.
+  intros. apply IHsubst_list.
+  inversion H1; subst. auto.
+Qed.
+
+Lemma term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e e',
   Gamma extds xs : Bs |- e : D ->
   Forall' (ExpTyping Gamma) ds As ->
   Forall' Subtype As Bs ->
-  exists C, C <:D -> Gamma |- subst_list e xs ds : C.
+  [; ds \ xs ;] e = e' ->
+  exists C, C <:D -> Gamma |- e' : C.
 Proof.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case.
@@ -149,9 +177,13 @@ Proof.
     SCase "In x xs". 
       admit.
     SCase "~In x xs".
-      rewrite var_subst_notin; auto.
-      exists C; intro. constructor.
+      exists C; intro. 
       rewrite extend_list_not_shadow in H; auto.
+      assert ( [; ds \ xs ;] (ExpVar x) = (ExpVar x)). 
+      apply var_subst_notin; [ | assumption].
+      apply substL_eq_size with (ExpVar x) (e'); auto.
+      replace e' with (ExpVar x). constructor; auto.
+      apply substL_det with ds xs x; auto.
 Admitted.
 
 Theorem subject_reduction : forall Gamma e e' C,
@@ -182,4 +214,3 @@ Proof with eauto.
   Case "R_Invk".
 Admitted.
 
-Eval compute in ([ (Id 1) := ExpFieldAccess (ExpVar this) (Id 2)] ExpVar (Id 1)).

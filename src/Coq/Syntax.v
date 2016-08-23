@@ -1,6 +1,6 @@
 Require Export List.
 Require Export Metatheory.
-Require Export String.
+Require Import String.
 
 Notation "'[' X ']'" := (list X) (at level 40).
 (* We will use Notation to make automation easier
@@ -143,24 +143,27 @@ Tactic Notation "mbdy_cases" tactic(first) ident(c) :=
   first;
   [ Case_aux c "mbdy_ok" | Case_aux c "mbdy_no_override"].
 
-
-Fixpoint subst (e: Exp) (v: Var) (v': Exp) : Exp:=
+Fixpoint subst (e: Exp) (v: Var) (e': Exp) : Exp:=
   match e with
-  | ExpVar var => if beq_id var v then v' else ExpVar var
-  | ExpFieldAccess exp i => ExpFieldAccess (subst exp v v') i
+  | ExpVar var => if beq_id var v then e' else e
+  | ExpFieldAccess exp i => ExpFieldAccess (subst exp v e') i
   | ExpMethodInvoc exp i exps => 
-      ExpMethodInvoc (subst exp v v') i (map (fun x => subst x v v') exps)
-  | ExpCast cname exp => ExpCast cname (subst exp v v')
-  | ExpNew cname exps => ExpNew cname (map (fun x => subst x v v') exps)
+      ExpMethodInvoc (subst exp v e') i (map (fun x => subst x v e') exps)
+  | ExpCast cname exp => ExpCast cname (subst exp v e')
+  | ExpNew cname exps => ExpNew cname (map (fun x => subst x v e') exps)
   end.
-Notation " '[' v' '/' v ']' e " := (subst e v v') (at level 25, v' at next level, v at next level).
+Notation " ([ v' '\' v ']' e )" := (subst e v v') (at level 35).
+Check (subst (ExpVar (Id 1)) (Id 1) (ExpFieldAccess (ExpVar this) (Id 2))).
+Eval compute in (([ExpFieldAccess (ExpVar this) (Id 2) \ Id 1] ExpVar (Id 1))).
 
-Fixpoint subst_list (e: Exp) (v: [Var]) (v': [Exp]) : Exp :=
-  match v, v' with
-  | (vx::vs), (vx'::vs') => subst_list (subst e vx vx') vs vs'
-  | _ , _ => e
-  end.
-Notation " '[' v' '//' v ']' e " := (subst_list e v v') (at level 30).
+Reserved Notation " [; es '\' vs ;] e1 '=' e2" (at level 30, e1 at next level).
+Inductive subst_list : Exp -> [Var] -> [Exp] -> Exp -> Prop :=
+  | Subst_nil : forall e: Exp, [; nil \ nil ;] e = e
+  | Subst_cons : forall e1 e2 e3 (e': Exp) (v: Var) es vs,
+    ([e' \ v] e1) = e2->
+    [;es \ vs;] e2 = e3 ->
+    [; e'::es \ v::vs ;] e1 = e3
+where " [; es '\' vs ;] e1 '=' e2 " := (subst_list e1 vs es e2).
 
 Inductive Warning (s: string) : Prop :=
   | w_str : Warning s.
@@ -213,8 +216,7 @@ Tactic Notation "typing_cases" tactic(first) ident(c) :=
   | Case_aux c "T_UCast" | Case_aux c "T_DCast" 
   | Case_aux c "T_SCast"].
 
-
-Reserved Notation "e '~>' e1" (at level 40).
+Reserved Notation "e '~>' e1" (at level 60).
 Inductive Computation : Exp -> Exp -> Prop :=
   | R_Field : forall C Fs fs es fi ei i,
             fields C (Fs) ->
@@ -222,10 +224,10 @@ Inductive Computation : Exp -> Exp -> Prop :=
             nth_error fs i = Some fi ->
             nth_error es i = Some ei-> 
             ExpFieldAccess (ExpNew C es) fi ~> ei
-  | R_Invk : forall C m xs ds es e0,
+  | R_Invk : forall C m xs ds es e0 ex,
             mbody(m, C) = xs o e0 ->
-            ExpMethodInvoc (ExpNew C es) m ds ~>
-            [ds // xs] [ExpNew C es / this] e0
+            [; ds \ xs ;] (([ExpNew C es \ this] e0)) = ex ->
+            ExpMethodInvoc (ExpNew C es) m ds ~> ex
   | R_Cast : forall C D es,
             C <: D ->
             ExpCast D (ExpNew C es) ~> ExpNew C es
@@ -249,7 +251,6 @@ Inductive Computation : Exp -> Exp -> Prop :=
             e0 ~> e0' ->
             ExpCast C e0 ~> ExpCast C e0'
   where "e '~>' e1" := (Computation e e1).
-Print Computation.
 
 Tactic Notation "computation_cases" tactic(first) ident(c) :=
   first;

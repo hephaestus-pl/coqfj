@@ -98,6 +98,30 @@ Proof.
   apply none_ex_Some; auto.
 Qed.
 
+Lemma nth_error_In': forall {A:Type} (l: list A) x,
+  In x l ->
+  exists n, nth_error l n = Some x.
+Proof.
+  intros.
+  induction l. simpl in H; contradiction.
+  simpl in *. destruct H.
+  rewrite H; simpl. exists 0; auto.
+  destruct IHl as [n]; auto.
+  exists (S n); auto.
+Qed.
+
+
+Lemma nth_error_dec : forall {A: Type} n l,
+  {x | nth_error l n = Some x} + {nth_error l n = @None A}.
+Proof.
+  intros; generalize dependent n.
+  induction l.
+  right; apply nth_error_nil. intro.
+  case n in *. left; exists a; auto.
+  simpl. apply IHl.
+Qed.
+  
+
 Definition partial_map (A:Type) := id -> (option A).
 Definition empty {A:Type} : partial_map A := fun _ => None.
 
@@ -300,13 +324,37 @@ End Ref.
 
 Section Two_predicate.
 
-  Variables A B: Type.
-  Variable P: A -> B -> Prop.
+Variables A B: Type.
+Variable P: A -> B -> Prop.
 Inductive Forall': list A -> list B -> Prop :=
   | Forall'_nil : Forall' nil nil
   | Forall'_cons : forall x y l l', P x y -> Forall' l l' -> Forall' (x::l) (y::l').
 
 Hint Constructors Forall'.
+
+Lemma Forall'_len: forall xs ys,
+  Forall' xs ys -> length xs = length ys.
+Proof.
+  intros.
+  induction H. auto.
+  simpl. rewrite IHForall'; auto.
+Qed.
+
+Lemma Forall'_nth_error(l:list A)(l': list B): forall n x,
+  Forall' l l' -> 
+  nth_error l n = Some x ->
+  exists y, nth_error l' n = Some y.
+Proof.
+  intros. generalize dependent n.
+  induction H.
+  intros.
+  rewrite nth_error_nil in H0; inversion H0.
+  intros.
+  case n in *.
+  simpl; exists y; auto.
+  simpl in *.
+  apply IHForall'; auto.
+Qed.
 
 Lemma Forall'_forall (l:list A)(l': list B): forall n x y,
   Forall' l l' -> 
@@ -324,23 +372,6 @@ Proof.
   apply IHForall' with n; auto.
 Qed.
 
-(*
-Lemma Forall'_rect : forall (Q : list A -> list B -> Prop),
-  Q [] [] -> (forall a b l l', P a b -> Q (a :: l) (b :: l')) -> forall l l', Forall' l l' -> Q l l'.
-Admitted.
-
-Lemma Forall'_inv : forall x y xs ys,
-  Forall' (x::xs) (y::ys) -> P x y.
-Admitted.
-*)
-
-Lemma Forall'_len: forall xs ys,
-  Forall' xs ys -> length xs = length ys.
-Proof.
-  intros.
-  induction H. auto.
-  simpl. rewrite IHForall'; auto.
-Qed.
 
 
 End Two_predicate.
@@ -394,3 +425,4 @@ Tactic Notation "solve" "by" "inversion" "3" :=
 solve_by_inversion_step (solve by inversion 2).
 Tactic Notation "solve" "by" "inversion" :=
 solve by inversion 1.
+SearchAbout nth_error.

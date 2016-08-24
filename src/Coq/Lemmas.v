@@ -1,6 +1,6 @@
 Require Export Syntax.
 Import Arith.
-SearchAbout "suc".
+
 Lemma arg_dec: forall a1 a2: Argument,
   {a1 = a2} + {a1 <> a2}.
 Proof.
@@ -123,7 +123,7 @@ Proof.
     rewrite IHfields with fs'0; auto.
 Qed.
 
-Lemma substL_eq_size : forall (xs:[Var]) (ds:[Exp]) e e',
+Lemma subst_list_eq_size : forall (xs:[Var]) (ds:[Exp]) e e',
   [; ds \ xs ;] e = e' ->
   length ds = length xs.
 Proof.
@@ -132,6 +132,43 @@ Proof.
   auto. simpl.
   apply Nat.succ_inj_wd. auto.
 Qed.
+
+
+Lemma subst_list_det : forall ds xs e e1 e2,
+  [; ds \ xs ;] e = e1 ->
+  [; ds \ xs ;] e = e2 ->
+  e1 = e2.
+Proof.
+  intros.
+  generalize dependent e2.
+  induction H.
+  intros. inversion H0; auto.
+  intros. apply IHsubst_list.
+  inversion H1; subst. auto.
+Qed.
+
+Lemma subst_exi_len : forall ds xs e e',
+  [; ds \ xs ;] e = e' ->
+  exists n, n <= length ds /\ n <= length xs.
+Proof.
+  intros.
+ induction H. simpl; eexists; split; auto. 
+  destruct IHsubst_list as [n]. destruct H1.
+  exists (S n); simpl; auto using le_n_S.
+Qed.
+
+Lemma subst_nth_error: forall ds xs e e' i xi,
+  [; ds \ xs ;] e = e' ->
+  nth_error xs i = Some xi ->
+  exists di, nth_error ds i = Some di.
+Proof.
+  intros.
+  generalize dependent i.
+  induction H. intros; simpl. rewrite nth_error_nil in H0. inversion H0.
+  intros. case i in *. simpl; exists e'; auto.
+  simpl in *. apply IHsubst_list; auto.
+Qed.
+
 
 Lemma var_subst_notin : forall (xs: [Var]) (ds: list Exp) (x: Var),
   length ds = length xs ->  
@@ -150,20 +187,35 @@ Proof.
   simpl in H. apply Nat.succ_inj_wd; auto.
 Qed.
 
-Lemma substL_det : forall ds xs x e1 e2,
-  [; ds \ xs ;] (ExpVar x) = e1 ->
-  [; ds \ xs ;] (ExpVar x) = e2 ->
-  e1 = e2.
+Lemma var_subst_in: forall ds xs x i di,
+  nth_error xs i = Some x ->
+  nth_error ds i = Some di ->
+  [; ds \ xs ;] (ExpVar x) = di.
 Proof.
-  intros.
-  generalize dependent e2.
-  induction H.
-  intros. inversion H0; auto.
-  intros. apply IHsubst_list.
-  inversion H1; subst. auto.
-Qed.
+  intros. generalize dependent i.
+  induction xs, ds; intros.
+  rewrite nth_error_nil in H; inversion H.
+  rewrite nth_error_nil in H; inversion H.
+  rewrite nth_error_nil in H0; inversion H0.
+Admitted.
 
-Lemma term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e e',
+(*
+Lemma subst_exi_di_xi :forall ds xs e e' n,
+  [; ds \ xs ;] e = e' ->
+  n <= length ds ->
+  exists di xi, nth_error ds n = Some di /\ nth_error xs n = Some xi.
+Proof.
+  intros. 
+  induction H.
+  exists 1.
+  intro; simpl in H; inversion H.
+
+  simpl. destruct IHsubst_list as [n'].
+  exists (S n'). simpl. intro. apply H1.
+  apply le_S_n; auto.
+Qed.
+*)
+Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e e',
   Gamma extds xs : Bs |- e : D ->
   Forall' (ExpTyping Gamma) ds As ->
   Forall' Subtype As Bs ->
@@ -173,17 +225,22 @@ Proof.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case.
   Case "T_Var".
-    destruct (In_dec (eq_id_dec) x xs).
-    SCase "In x xs". 
-      admit.
+    destruct (In_dec (eq_id_dec) x xs) as [xIn|xNIn].
+    SCase "In x xs".
+      destruct (@nth_error_In' id) with xs x as [i]; auto.
+      destruct subst_nth_error with ds xs (ExpVar x) e' i x as [di]; auto.
+      destruct (Forall'_nth_error _ _ (ExpTyping Gamma) ds As i di) as [Ai]; auto.
+      exists Ai. intro. replace e' with di.
+      eapply Forall'_forall; eauto.
+      apply subst_list_det with ds xs (ExpVar x); auto. eapply var_subst_in; eauto.
     SCase "~In x xs".
       exists C; intro. 
       rewrite extend_list_not_shadow in H; auto.
       assert ( [; ds \ xs ;] (ExpVar x) = (ExpVar x)). 
       apply var_subst_notin; [ | assumption].
-      apply substL_eq_size with (ExpVar x) (e'); auto.
+      apply subst_list_eq_size with (ExpVar x) (e'); auto.
       replace e' with (ExpVar x). constructor; auto.
-      apply substL_det with ds xs x; auto.
+      eapply subst_list_det; eauto.
 Admitted.
 
 Theorem subject_reduction : forall Gamma e e' C,

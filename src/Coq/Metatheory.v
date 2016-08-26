@@ -110,6 +110,20 @@ Proof.
   exists (S n); auto.
 Qed.
 
+Lemma nth_error_same_len : forall {A B:Type} (l:list A) (l': list B) n x,
+  length l = length l' ->
+  nth_error l n = Some x ->
+  exists y, nth_error l' n = Some y.
+Proof.
+  induction l, l'; intros.
+  rewrite nth_error_nil in H0; inversion H0.
+  simpl in H; inversion H.
+  simpl in H; inversion H.
+  intros; simpl in *.
+  case n in *. exists b; auto.
+  simpl in *.
+  eapply IHl; eauto.
+Qed.
 
 Lemma nth_error_dec : forall {A: Type} n l,
   {x | nth_error l n = Some x} + {nth_error l n = @None A}.
@@ -425,4 +439,3 @@ Tactic Notation "solve" "by" "inversion" "3" :=
 solve_by_inversion_step (solve by inversion 2).
 Tactic Notation "solve" "by" "inversion" :=
 solve by inversion 1.
-SearchAbout nth_error.

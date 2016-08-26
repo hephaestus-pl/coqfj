@@ -187,6 +187,37 @@ Proof.
   simpl in H. apply Nat.succ_inj_wd; auto.
 Qed.
 
+Lemma free_in_context : forall x e C Gamma,
+  appears_free_in x e ->
+  Gamma |- e : C ->
+  exists C', Gamma x = Some C'.
+Proof with eauto.
+  intros x e C Gamma H. generalize dependent C.
+  afi_cases (induction H) Case; intros.
+  Case "afi_var".
+    inversion H; subst. exists C; auto.
+  Case "afi_field".
+    inversion H0...
+  Case "afi_m_invk1".
+    try (inversion H0; eauto).
+  Case "afi_m_invk2".
+    inversion H1; subst. 
+    apply nth_error_In' in H. destruct H.
+    assert (length es = length Cs) by (eauto using Forall'_len).
+    edestruct Forall'_nth_error. apply H8. apply H.
+    eapply IHappears_free_in.
+    eapply Forall'_forall. apply H8. eauto. eauto.
+  Case "afi_cast".
+    inversion H0...
+  Case "afi_new".
+    apply nth_error_In' in H. destruct H.
+    inversion H1.
+    assert (length es = length Cs) by (eauto using Forall'_len).
+    edestruct Forall'_nth_error. apply H6. apply H.
+    eapply IHappears_free_in.
+    eapply Forall'_forall. apply H6. eauto. eauto.
+Qed.
+
 Lemma var_subst_in: forall ds xs x i di,
   nth_error xs i = Some x ->
   nth_error ds i = Some di ->

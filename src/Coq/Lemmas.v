@@ -218,6 +218,22 @@ Proof with eauto.
     eapply Forall'_forall. apply H6. eauto. eauto.
 Qed.
 
+Corollary typable_empty_closed : forall t C,
+  empty |- t : C ->
+  closed t.
+Proof.
+  intros.
+  typing_cases (induction H using ExpTyping_ind') Case.
+  Case "T_Var".
+    inversion H.
+  Case "T_Field".
+    unfold closed in *.
+  intros. intro. inversion H4. subst.
+    apply IHExpTyping with x; au
+    contradiction.
+    constructor; auto.
+Admitted.
+
 Lemma var_subst_in: forall ds xs x i di,
   nth_error xs i = Some x ->
   nth_error ds i = Some di ->

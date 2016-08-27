@@ -1,4 +1,5 @@
 Require Export Syntax.
+Require Import LibTactics.
 Import Arith.
 
 Lemma arg_dec: forall a1 a2: Argument,
@@ -223,15 +224,46 @@ Corollary typable_empty_closed : forall t C,
   closed t.
 Proof.
   intros.
-  typing_cases (induction H using ExpTyping_ind') Case.
+  typing_cases (induction H using ExpTyping_ind') Case; intros_all.
   Case "T_Var".
     inversion H.
   Case "T_Field".
-    unfold closed in *.
-  intros. intro. inversion H4. subst.
-    apply IHExpTyping with x; au
-    contradiction.
-    constructor; auto.
+    inverts H4.
+    apply IHExpTyping with x; auto.
+  Case "T_Invk".
+    inverts H4.
+    apply IHExpTyping with x; auto.
+    apply In_nth_error in H8. destruct H8.
+    edestruct Forall'_nth_error. apply H3. eauto.
+    eapply Forall'_forall in H3. apply H3 with x. apply H10. eauto. eauto.
+  Case "T_New".
+    inverts H4.
+    apply In_nth_error in H8. destruct H8.
+    edestruct Forall'_nth_error. apply H3. eauto.
+    eapply Forall'_forall in H3. apply H3 with x. apply H9. eauto. eauto.
+  Case "T_UCast".
+    inverts H1.
+    apply IHExpTyping with x; auto.
+  Case "T_DCast".
+    inverts H2.
+    apply IHExpTyping with x; auto.
+  Case "T_SCast".
+    inverts H3.
+    apply IHExpTyping with x; auto.
+Qed.
+
+Lemma context_invariance : forall Gamma' Gamma e C,
+  Gamma |- e : C ->
+  (forall x, appears_free_in x e -> Gamma x = Gamma' x) ->
+  Gamma' |- e : C.
+Proof.
+  intros. 
+  typing_cases (induction H using ExpTyping_ind') Case; econstructor; eauto.
+  Case "T_Var".
+    rewrite <- H0; auto.
+  Case "T_Invk".
+    specialize H0 with .
+    eapply H3.
 Admitted.
 
 Lemma var_subst_in: forall ds xs x i di,
@@ -274,6 +306,7 @@ Proof.
   Case "T_Var".
     destruct (In_dec (eq_id_dec) x xs) as [xIn|xNIn].
     SCase "In x xs".
+      lets Hx: (nth_error_In' xs x xIn); destruct Hx as [i].
       destruct (@nth_error_In' id) with xs x as [i]; auto.
       destruct subst_nth_error with ds xs (ExpVar x) e' i x as [di]; auto.
       destruct (Forall'_nth_error _ _ (ExpTyping Gamma) ds As i di) as [Ai]; auto.

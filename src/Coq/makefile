@@ -80,7 +80,7 @@ endif
 #                    #
 ######################
 
-VFILES:=Syntax.v
+VFILES:=Metatheory.v Syntax.v Lemmas.v
 
 -include $(addsuffix .d,$(VFILES))
 .SECONDARY: $(addsuffix .d,$(VFILES))

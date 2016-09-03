@@ -171,7 +171,7 @@ Fixpoint subst (e: Exp) (v: Var) (e': Exp) : Exp:=
   | ExpNew cname exps => ExpNew cname (map (fun x => subst x v e') exps)
   end.
 Notation " ([ v' '\' v ']' e )" := (subst e v v') (at level 35).
-Check (subst (ExpVar (Id 1)) (Id 1) (ExpFieldAccess (ExpVar this) (Id 2))).
+
 Eval compute in (([ExpFieldAccess (ExpVar this) (Id 2) \ Id 1] ExpVar (Id 1))).
 Inductive subst_list : Exp -> [Var] -> [Exp] -> Exp -> Prop :=
   | Subst_Var : forall ds xs xi di i,

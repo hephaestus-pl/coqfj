@@ -17,6 +17,7 @@ Require Export Arith.
 Require Export Arith.EqNat.  (* Contains [beq_nat], among other things *)
 Import ListNotations.
 Require Import NPeano.
+Require Export LibTactics.
 
 (* Identifiers and polymorphic partial maps. *)
 Inductive id : Type := 
@@ -28,16 +29,16 @@ Definition beq_id id1 id2 :=
   end.
 
 Theorem beq_id_refl : forall i,
-  true = beq_id i i.
+  beq_id i i = true.
 Proof.
-  intros. destruct i.
+  intros. destruct i. symmetry.
   apply beq_nat_refl.  Qed.
 
 Theorem beq_id_eq : forall i1 i2,
-  true = beq_id i1 i2 -> i1 = i2.
+  beq_id i1 i2 = true -> i1 = i2.
 Proof.
   intros i1 i2 H.
-  destruct i1. destruct i2.
+  destruct i1. destruct i2. symmetry in H.
   apply beq_nat_eq in H. subst.
   reflexivity.  Qed.
 
@@ -103,7 +104,7 @@ Proof.
   induction xs. 
     - inversion H.
     - intros; simpl. simpl in H. destruct H eqn:Eq.
-      rewrite e. rewrite <- beq_id_refl. eauto. 
+      rewrite e. rewrite beq_id_refl. eauto. 
       case beq_id. eauto. auto.
 Qed.
 
@@ -182,8 +183,7 @@ Definition update {A:Type} (m : partial_map A)
 fun x' => if beq_id x x' then (Some v) else m x'.
 
 (* Adds an element at the tail of the map *)
-Definition extend {A:Type} (m : partial_map A) (x : id) (v : A) :=
-fun x' => 
+Definition extend {A:Type} (m : partial_map A) (x : id) (v : A) (x': id) :=
     match m x' with
      | None => if beq_id x x' then Some v else None
      | otherwise => m x'
@@ -203,7 +203,7 @@ Notation " m 'extds' ids ':' vals" := (extend_list m ids vals) (at level 20, ids
 Lemma update_eq : forall A (m: partial_map A) x v,
 (update m x v) x = Some v.
 Proof.
-intros A m x v. unfold update. rewrite <- beq_id_refl with (i:= x).
+intros A m x v. unfold update. rewrite beq_id_refl with (i:= x).
 reflexivity.
 Qed.
 
@@ -222,15 +222,15 @@ Lemma update_shadow : forall A (m: partial_map A) v1 v2 x,
 Proof.
   intros A m v1 v2 x.
   unfold update.
-  rewrite <- beq_id_refl; auto.
+  rewrite beq_id_refl; auto.
 Qed.
 
 Lemma extend_not_shadow : forall A (m: partial_map A) v1 v2 x,
 m x = Some v1 ->
 (extend m x v2) x = Some v1.
 Proof.
-intros A m v1 v2 x1 H. unfold extend.
-rewrite H; auto.
+  intros A m v1 v2 x1 H. unfold extend.
+  rewrite H; auto.
 Qed.
 
 Lemma extend_list_ill: forall A (m: partial_map A) x xs,
@@ -246,40 +246,25 @@ Lemma extend_list_not_shadow: forall A (m: partial_map A) x xs ds,
 ~In x xs ->
 (m extds xs : ds) x = m x.
 Proof.
-intros.
-induction xs; auto.
-apply not_in_cons in H. destruct H.
-rewrite <- IHxs; auto.
-simpl. case ds. apply extend_list_ill.
-intros. unfold extend. 
-Admitted.
+  intros; gen xs ds m.
+  induction xs, ds; auto.
+  apply not_in_cons in H. destruct H.
+  simpl.
+  intro.
+  rewrite IHxs; auto.
+  unfold extend.
+  destruct (m x). auto.
+  rewrite not_eq_beq_id_false; auto.
+Qed.
 
 Lemma extend_neq : forall A (m: partial_map A) v x x0,
 x <> x0 ->
 (extend m x v) x0 = m x0.
 Proof.
-intros A m v x1 x2 H. unfold extend.
-case (m x2). auto.
-rewrite not_eq_beq_id_false; auto.
+  intros A m v x1 x2 H. unfold extend.
+  case (m x2). auto.
+  rewrite not_eq_beq_id_false; auto.
 Qed.
-
-(*
-Theorem update_same : forall X v x (m : partial_map X),
-m x = Some v -> 
-update m x v = m.
-Proof. 
-  intros X v x m H. unfold update. rewrite <- H.
-Admitted.
-
-Theorem update_permute : forall (X:Type) v1 v2 x1 x2
-(m : partial_map X),
-x2 <> x1 -> 
-(update (update m x2 v2) x1 v1)
-= (update (update m x1 v1) x2 v2).
-Proof.
-intros X v1 v2 x1 x2 m. unfold update.
-Admitted.
-*)
 
 Section Ref.
 
@@ -337,11 +322,10 @@ Proof.
 
   remember (ref a) as r.
   destruct eq_id_dec with (i1:= k1) (i2:= r); rewrite Heqr in *; clear Heqr.
-  rewrite e in H; simpl in H. rewrite <- beq_id_refl in H.
+  rewrite e in H; simpl in H. rewrite beq_id_refl in H.
   inversion H.
   rewrite e. rewrite H1.
   constructor.
-  
   unfold find in H.
   rewrite not_eq_beq_id_false in H; auto.
   fold (@find A) in H.
@@ -352,22 +336,10 @@ Proof.
   intro.
   induction H.
   simpl. 
-  rewrite <- beq_id_refl. auto.
+  rewrite beq_id_refl. auto.
   unfold find.
   rewrite not_eq_beq_id_false; auto.
 Qed.
-
-(*
-Lemma find_dec : forall (A: Type) (R: Referable A) k1 d (v: A),
-(forall (a1 a2: A), {a1 = a2} + {a1 <> a2}) ->
-{find k1 d = Some v} + {find k1 d = None}.
-Proof.
-  intros.
-  induction d.
-  right; auto.
-  destruct IHd.
-Admitted.
-*)
 
 End Ref.
 
@@ -387,7 +359,7 @@ Proof.
   simpl. rewrite IHForall2; auto.
 Qed.
 
-Lemma Forall_nth_error(l:list A)(l': list B): forall n x,
+Lemma Forall2_nth_error(l:list A)(l': list B): forall n x,
   Forall2 P l l' -> 
   nth_error l n = Some x ->
   exists y, nth_error l' n = Some y.

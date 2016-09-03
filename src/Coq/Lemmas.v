@@ -141,27 +141,26 @@ Qed.
 
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
   Gamma extds xs : Bs |- e : D ->
-  Forall' (ExpTyping Gamma) ds As ->
-  Forall' Subtype As Bs ->
+  Forall2 (ExpTyping Gamma) ds As ->
+  Forall2 Subtype As Bs ->
   length ds = length xs ->
   exists C, C <:D -> Gamma |- [; ds \ xs ;] e : C.
-Proof.
+Proof with eauto.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case.
   Case "T_Var".
     destruct (In_dec (eq_id_dec) x xs) as [xIn|xNIn].
-    SCase "In x xs". 
-      simpl. 
-      destruct in_findwhere with x xs as [i']; auto. rewrite H3. destruct (nth_error) eqn:Heq.
-       destruct (Forall'_nth_error _ _ (ExpTyping Gamma) ds As i' e) as [Ai]; auto.
-          exists Ai. intro. eapply Forall'_forall; eauto.
-       apply findwhere_ntherror in H3.
-          lets Hx : (nth_error_same_len xs ds i' x). destruct Hx; eauto. rewrite H4 in Heq; inversion Heq.
+    SCase "In x xs".
+      apply nth_error_In' in xIn as [i]. symmetry in H2.
+      edestruct (@nth_error_same_len id Exp) as [di]...
+      erewrite var_subst_in...
+      destruct (Forall2_nth_error _ _ (ExpTyping Gamma) ds As i di) as [Ai]...
+      exists Ai. intro. eapply Forall2_forall...
     SCase "~In x xs".
       exists C; intro. 
-      rewrite extend_list_not_shadow in H; auto.
+      rewrite extend_list_not_shadow in H...
       assert ( [; ds \ xs ;] (ExpVar x) = (ExpVar x)). simpl. rewrite notin_findwhere; auto. rewrite H4. 
-      constructor; auto.
+      constructor...
 Admitted.
 
 Theorem subject_reduction : forall Gamma e e' C,
@@ -181,14 +180,14 @@ Proof with eauto.
     clear H0 H8 Fs fs0.
     rename Fi into fi.
     assert (nth_error es i <> None). intro. rewrite H0 in H3. inversion H3.
-    assert (List.length es = List.length Cs) by (apply (Forall'_len _ _ _ _ _ H10)).
+    assert (List.length es = List.length Cs) by (apply (Forall2_len _ _ _ _ _ H10)).
     apply -> (nth_error_Some) in H0. rewrite H1 in H0.
     assert (exists Ci, nth_error Cs i = Some Ci). 
     apply nth_error_Some'. assumption.
     destruct H4 as [Ci].
     exists Ci.
     intro. 
-    apply (Forall'_forall _ _ (ExpTyping Gamma) es Cs i ei Ci); auto.
+    apply (Forall2_forall _ _ (ExpTyping Gamma) es Cs i ei Ci); auto.
   Case "R_Invk".
 Admitted.
 

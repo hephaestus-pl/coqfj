@@ -143,6 +143,24 @@ Tactic Notation "mbdy_cases" tactic(first) ident(c) :=
   first;
   [ Case_aux c "mbdy_ok" | Case_aux c "mbdy_no_override"].
 
+Fixpoint subst (e: Exp) (ds: [Exp]) (xs: [Var]): Exp := 
+  match e with
+  | ExpVar var => match find_where var xs with
+                  | Some i => match nth_error ds i with
+                                   | None => e | Some di => di end
+                  | None => e end
+  | ExpFieldAccess exp i => ExpFieldAccess (subst exp ds xs) i
+  | ExpMethodInvoc exp i exps => 
+      ExpMethodInvoc (subst exp ds xs) i (map (fun x => subst x ds xs) exps)
+  | ExpCast cname exp => ExpCast cname (subst exp ds xs)
+  | ExpNew cname exps => ExpNew cname (map (fun x => subst x ds xs) exps)
+  end.
+Notation " [; ds '\' xs ;] e " := (subst e ds xs) (at level 30).
+
+Eval compute in ([;(ExpVar this) :: ExpFieldAccess (ExpVar this) (Id 2) :: nil \ Id 2 :: Id 1 :: nil;] ExpVar (Id 1)).
+Check (subst (ExpVar (Id 1)) ((ExpFieldAccess (ExpVar this) (Id 2))::nil)) ((Id 1)::nil).
+
+(*
 Fixpoint subst (e: Exp) (v: Var) (e': Exp) : Exp:=
   match e with
   | ExpVar var => if beq_id var v then e' else e
@@ -155,16 +173,22 @@ Fixpoint subst (e: Exp) (v: Var) (e': Exp) : Exp:=
 Notation " ([ v' '\' v ']' e )" := (subst e v v') (at level 35).
 Check (subst (ExpVar (Id 1)) (Id 1) (ExpFieldAccess (ExpVar this) (Id 2))).
 Eval compute in (([ExpFieldAccess (ExpVar this) (Id 2) \ Id 1] ExpVar (Id 1))).
-
-Reserved Notation " [; es '\' vs ;] e1 '=' e2" (at level 30, e1 at next level).
 Inductive subst_list : Exp -> [Var] -> [Exp] -> Exp -> Prop :=
-  | Subst_nil : forall e: Exp, [; nil \ nil ;] e = e
+  | Subst_Var : forall ds xs xi di i,
+      nth_error xs i = Some xi->
+      nth_error ds i = Some di ->
+      [; ds \ xs ;] (ExpVar xi) = di
+  | Subst_FieldAcc : forall e: Exp, [; ds \ xs ;] e = e
+  | Subst_Invk : forall e: Exp, [; nil \ nil ;] e = e
+  | Subst_Cast : forall e: Exp, [; nil \ nil ;] e = e
+  | Subst_New : forall e: Exp, [; nil \ nil ;] e = e
   | Subst_cons : forall e1 e2 e3 (e': Exp) (v: Var) es vs,
     ([e' \ v] e1) = e2->
     [;es \ vs;] e2 = e3 ->
     [; e'::es \ v::vs ;] e1 = e3
 where " [; es '\' vs ;] e1 '=' e2 " := (subst_list e1 vs es e2).
 Print ExpVar.
+*)
 
 Inductive appears_free_in : Var -> Exp -> Prop :=
   | afi_var : forall x,
@@ -257,10 +281,9 @@ Inductive Computation : Exp -> Exp -> Prop :=
             nth_error fs i = Some fi ->
             nth_error es i = Some ei-> 
             ExpFieldAccess (ExpNew C es) fi ~> ei
-  | R_Invk : forall C m xs ds es e0 ex,
+  | R_Invk : forall C m xs ds es e0,
             mbody(m, C) = xs o e0 ->
-            [; ds \ xs ;] (([ExpNew C es \ this] e0)) = ex ->
-            ExpMethodInvoc (ExpNew C es) m ds ~> ex
+            ExpMethodInvoc (ExpNew C es) m ds ~> [; ExpNew C es :: ds \ this :: xs;] e0
   | R_Cast : forall C D es,
             C <: D ->
             ExpCast D (ExpNew C es) ~> ExpNew C es

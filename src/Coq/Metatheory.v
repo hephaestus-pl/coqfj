@@ -74,6 +74,39 @@ Proof.
   apply n1; inversion H; auto.
 Qed.
 
+Definition find_where : id -> list id -> option nat := 
+  let fix f (n: nat) (key: id) (l: list id) :=
+  match l with
+    | [] => None
+    | (x :: xs) => if beq_id key x 
+                    then Some n
+                    else f (S n) key xs
+  end in f 0.
+
+Lemma notin_findwhere : forall x xs,
+  ~In x xs -> find_where x xs = None.
+Proof.
+  intros. unfold find_where. generalize 0.
+  induction xs.
+  intros. reflexivity.
+  intros.
+  simpl in *. 
+  apply Decidable.not_or in H. destruct H.
+  unfold find_where.
+  simpl. rewrite not_eq_beq_id_false; auto.
+Qed.
+
+Lemma in_findwhere : forall x xs,
+  In x xs -> exists i, find_where x xs = Some i.
+Proof.
+  intros. unfold find_where. generalize 0.
+  induction xs. 
+    - inversion H.
+    - intros; simpl. simpl in H. destruct H eqn:Eq.
+      rewrite e. rewrite <- beq_id_refl. eauto. 
+      case beq_id. eauto. auto.
+Qed.
+
 Lemma none_ex_Some: forall {A: Type} x,
   x <> @None A ->
   exists x', x = Some x'.
@@ -125,7 +158,7 @@ Proof.
   eapply IHl; eauto.
 Qed.
 
-Lemma nth_error_dec : forall {A: Type} n l,
+Lemma nth_error_dec : forall {A: Type} l n,
   {x | nth_error l n = Some x} + {nth_error l n = @None A}.
 Proof.
   intros; generalize dependent n.
@@ -133,8 +166,9 @@ Proof.
   right; apply nth_error_nil. intro.
   case n in *. left; exists a; auto.
   simpl. apply IHl.
-Qed.
-  
+Defined.
+Definition x:= (1::2::nil).
+Eval compute in (if (nth_error_dec x 0) then 2 else 200).
 
 Definition partial_map (A:Type) := id -> (option A).
 Definition empty {A:Type} : partial_map A := fun _ => None.
@@ -166,7 +200,7 @@ Notation " m 'extds' ids ':' vals" := (extend_list m ids vals) (at level 20, ids
 Lemma update_eq : forall A (m: partial_map A) x v,
 (update m x v) x = Some v.
 Proof.
-intros. unfold update. rewrite <- beq_id_refl with (i:= x).
+intros A m x v. unfold update. rewrite <- beq_id_refl with (i:= x).
 reflexivity.
 Qed.
 
@@ -255,8 +289,9 @@ match l with
   | (x :: xs) => if beq_id key (ref x) 
                   then Some x
                   else f key xs
-end in f
+end in f;
 }.
+
 
 Inductive findi {A: Type} {R: @Referable A} : id -> list A -> A -> Prop:=
 | find_head : forall x xs, findi (ref x) (x :: xs) (x)

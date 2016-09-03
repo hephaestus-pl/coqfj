@@ -262,8 +262,6 @@ Proof.
   Case "T_Var".
     rewrite <- H0; auto.
   Case "T_Invk".
-    specialize H0 with .
-    eapply H3.
 Admitted.
 
 Lemma var_subst_in: forall ds xs x i di,
@@ -294,33 +292,31 @@ Proof.
   apply le_S_n; auto.
 Qed.
 *)
-Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e e',
+Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
   Gamma extds xs : Bs |- e : D ->
   Forall' (ExpTyping Gamma) ds As ->
   Forall' Subtype As Bs ->
-  [; ds \ xs ;] e = e' ->
-  exists C, C <:D -> Gamma |- e' : C.
+  exists C, C <:D -> Gamma |- [; ds \ xs ;] e : C.
 Proof.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case.
   Case "T_Var".
     destruct (In_dec (eq_id_dec) x xs) as [xIn|xNIn].
     SCase "In x xs".
-      lets Hx: (nth_error_In' xs x xIn); destruct Hx as [i].
-      destruct (@nth_error_In' id) with xs x as [i]; auto.
+      lets Hx: (nth_error_In' xs x xIn); destruct Hx as [i]. simpl. 
+      destruct in_findwhere with x xs; auto. rewrite H3.
+      unfold find_where.
+ rewrite H3.
       destruct subst_nth_error with ds xs (ExpVar x) e' i x as [di]; auto.
       destruct (Forall'_nth_error _ _ (ExpTyping Gamma) ds As i di) as [Ai]; auto.
       exists Ai. intro. replace e' with di.
       eapply Forall'_forall; eauto.
-      apply subst_list_det with ds xs (ExpVar x); auto. eapply var_subst_in; eauto.
+      apply subst_list_det with ds xs (ExpVar x); auto. eapply var_subst_in; eauto.*)
     SCase "~In x xs".
       exists C; intro. 
       rewrite extend_list_not_shadow in H; auto.
-      assert ( [; ds \ xs ;] (ExpVar x) = (ExpVar x)). 
-      apply var_subst_notin; [ | assumption].
-      apply subst_list_eq_size with (ExpVar x) (e'); auto.
-      replace e' with (ExpVar x). constructor; auto.
-      eapply subst_list_det; eauto.
+      assert ( [; ds \ xs ;] (ExpVar x) = (ExpVar x)). simpl. rewrite notin_findwhere; auto. rewrite H3. 
+      constructor; auto.
 Admitted.
 
 Theorem subject_reduction : forall Gamma e e' C,

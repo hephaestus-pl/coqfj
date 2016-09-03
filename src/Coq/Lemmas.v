@@ -124,174 +124,20 @@ Proof.
     rewrite IHfields with fs'0; auto.
 Qed.
 
-Lemma subst_list_eq_size : forall (xs:[Var]) (ds:[Exp]) e e',
-  [; ds \ xs ;] e = e' ->
-  length ds = length xs.
-Proof.
-  intros.
-  induction H.
-  auto. simpl.
-  apply Nat.succ_inj_wd. auto.
-Qed.
-
-
-Lemma subst_list_det : forall ds xs e e1 e2,
-  [; ds \ xs ;] e = e1 ->
-  [; ds \ xs ;] e = e2 ->
-  e1 = e2.
-Proof.
-  intros.
-  generalize dependent e2.
-  induction H.
-  intros. inversion H0; auto.
-  intros. apply IHsubst_list.
-  inversion H1; subst. auto.
-Qed.
-
-Lemma subst_exi_len : forall ds xs e e',
-  [; ds \ xs ;] e = e' ->
-  exists n, n <= length ds /\ n <= length xs.
-Proof.
-  intros.
- induction H. simpl; eexists; split; auto. 
-  destruct IHsubst_list as [n]. destruct H1.
-  exists (S n); simpl; auto using le_n_S.
-Qed.
-
-Lemma subst_nth_error: forall ds xs e e' i xi,
-  [; ds \ xs ;] e = e' ->
-  nth_error xs i = Some xi ->
-  exists di, nth_error ds i = Some di.
-Proof.
-  intros.
-  generalize dependent i.
-  induction H. intros; simpl. rewrite nth_error_nil in H0. inversion H0.
-  intros. case i in *. simpl; exists e'; auto.
-  simpl in *. apply IHsubst_list; auto.
-Qed.
-
-
-Lemma var_subst_notin : forall (xs: [Var]) (ds: list Exp) (x: Var),
-  length ds = length xs ->  
-  ~ In x xs ->
-  [; ds \ xs ;] (ExpVar x) = (ExpVar x).
-Proof.
-  intros.
-  generalize dependent ds.
-  induction xs, ds; intros. constructor.
-  inversion H.
-  inversion H. 
-  apply not_in_cons in H0; destruct H0.
-  apply Subst_cons with (ExpVar x).
-  unfold subst. rewrite not_eq_beq_id_false; auto.
-  apply IHxs. auto.
-  simpl in H. apply Nat.succ_inj_wd; auto.
-Qed.
-
-Lemma free_in_context : forall x e C Gamma,
-  appears_free_in x e ->
-  Gamma |- e : C ->
-  exists C', Gamma x = Some C'.
-Proof with eauto.
-  intros x e C Gamma H. generalize dependent C.
-  afi_cases (induction H) Case; intros.
-  Case "afi_var".
-    inversion H; subst. exists C; auto.
-  Case "afi_field".
-    inversion H0...
-  Case "afi_m_invk1".
-    try (inversion H0; eauto).
-  Case "afi_m_invk2".
-    inversion H1; subst. 
-    apply nth_error_In' in H. destruct H.
-    assert (length es = length Cs) by (eauto using Forall'_len).
-    edestruct Forall'_nth_error. apply H8. apply H.
-    eapply IHappears_free_in.
-    eapply Forall'_forall. apply H8. eauto. eauto.
-  Case "afi_cast".
-    inversion H0...
-  Case "afi_new".
-    apply nth_error_In' in H. destruct H.
-    inversion H1.
-    assert (length es = length Cs) by (eauto using Forall'_len).
-    edestruct Forall'_nth_error. apply H6. apply H.
-    eapply IHappears_free_in.
-    eapply Forall'_forall. apply H6. eauto. eauto.
-Qed.
-
-Corollary typable_empty_closed : forall t C,
-  empty |- t : C ->
-  closed t.
-Proof.
-  intros.
-  typing_cases (induction H using ExpTyping_ind') Case; intros_all.
-  Case "T_Var".
-    inversion H.
-  Case "T_Field".
-    inverts H4.
-    apply IHExpTyping with x; auto.
-  Case "T_Invk".
-    inverts H4.
-    apply IHExpTyping with x; auto.
-    apply In_nth_error in H8. destruct H8.
-    edestruct Forall'_nth_error. apply H3. eauto.
-    eapply Forall'_forall in H3. apply H3 with x. apply H10. eauto. eauto.
-  Case "T_New".
-    inverts H4.
-    apply In_nth_error in H8. destruct H8.
-    edestruct Forall'_nth_error. apply H3. eauto.
-    eapply Forall'_forall in H3. apply H3 with x. apply H9. eauto. eauto.
-  Case "T_UCast".
-    inverts H1.
-    apply IHExpTyping with x; auto.
-  Case "T_DCast".
-    inverts H2.
-    apply IHExpTyping with x; auto.
-  Case "T_SCast".
-    inverts H3.
-    apply IHExpTyping with x; auto.
-Qed.
-
-Lemma context_invariance : forall Gamma' Gamma e C,
-  Gamma |- e : C ->
-  (forall x, appears_free_in x e -> Gamma x = Gamma' x) ->
-  Gamma' |- e : C.
-Proof.
-  intros. 
-  typing_cases (induction H using ExpTyping_ind') Case; econstructor; eauto.
-  Case "T_Var".
-    rewrite <- H0; auto.
-  Case "T_Invk".
-Admitted.
 
 Lemma var_subst_in: forall ds xs x i di,
   nth_error xs i = Some x ->
   nth_error ds i = Some di ->
   [; ds \ xs ;] (ExpVar x) = di.
 Proof.
-  intros. generalize dependent i.
-  induction xs, ds; intros.
-  rewrite nth_error_nil in H; inversion H.
+  intros. gen ds xs i.
+  induction ds, xs; intros.
   rewrite nth_error_nil in H; inversion H.
   rewrite nth_error_nil in H0; inversion H0.
-Admitted.
-
-(*
-Lemma subst_exi_di_xi :forall ds xs e e' n,
-  [; ds \ xs ;] e = e' ->
-  n <= length ds ->
-  exists di xi, nth_error ds n = Some di /\ nth_error xs n = Some xi.
-Proof.
-  intros. 
-  induction H.
-  exists 1.
-  intro; simpl in H; inversion H.
-
-  simpl. destruct IHsubst_list as [n'].
-  exists (S n'). simpl. intro. apply H1.
-  apply le_S_n; auto.
+  rewrite nth_error_nil in H; inversion H.
+  apply findwhere_ntherror in H. unfold subst.
+  rewrite H; simpl. rewrite H0. auto.
 Qed.
-*)
 
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
   Gamma extds xs : Bs |- e : D ->
@@ -306,7 +152,7 @@ Proof.
     destruct (In_dec (eq_id_dec) x xs) as [xIn|xNIn].
     SCase "In x xs". 
       simpl. 
-      destruct in_findwhere with x xs as [i']; auto. rewrite H3. destruct (nth_error) eqn:Heq. 
+      destruct in_findwhere with x xs as [i']; auto. rewrite H3. destruct (nth_error) eqn:Heq.
        destruct (Forall'_nth_error _ _ (ExpTyping Gamma) ds As i' e) as [Ai]; auto.
           exists Ai. intro. eapply Forall'_forall; eauto.
        apply findwhere_ntherror in H3.

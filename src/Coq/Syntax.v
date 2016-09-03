@@ -160,68 +160,6 @@ Notation " [; ds '\' xs ;] e " := (subst e ds xs) (at level 30).
 Eval compute in ([;(ExpVar this) :: ExpFieldAccess (ExpVar this) (Id 2) :: nil \ Id 2 :: Id 1 :: nil;] ExpVar (Id 1)).
 Check (subst (ExpVar (Id 1)) ((ExpFieldAccess (ExpVar this) (Id 2))::nil)) ((Id 1)::nil).
 
-(*
-Fixpoint subst (e: Exp) (v: Var) (e': Exp) : Exp:=
-  match e with
-  | ExpVar var => if beq_id var v then e' else e
-  | ExpFieldAccess exp i => ExpFieldAccess (subst exp v e') i
-  | ExpMethodInvoc exp i exps => 
-      ExpMethodInvoc (subst exp v e') i (map (fun x => subst x v e') exps)
-  | ExpCast cname exp => ExpCast cname (subst exp v e')
-  | ExpNew cname exps => ExpNew cname (map (fun x => subst x v e') exps)
-  end.
-Notation " ([ v' '\' v ']' e )" := (subst e v v') (at level 35).
-
-Eval compute in (([ExpFieldAccess (ExpVar this) (Id 2) \ Id 1] ExpVar (Id 1))).
-Inductive subst_list : Exp -> [Var] -> [Exp] -> Exp -> Prop :=
-  | Subst_Var : forall ds xs xi di i,
-      nth_error xs i = Some xi->
-      nth_error ds i = Some di ->
-      [; ds \ xs ;] (ExpVar xi) = di
-  | Subst_FieldAcc : forall e: Exp, [; ds \ xs ;] e = e
-  | Subst_Invk : forall e: Exp, [; nil \ nil ;] e = e
-  | Subst_Cast : forall e: Exp, [; nil \ nil ;] e = e
-  | Subst_New : forall e: Exp, [; nil \ nil ;] e = e
-  | Subst_cons : forall e1 e2 e3 (e': Exp) (v: Var) es vs,
-    ([e' \ v] e1) = e2->
-    [;es \ vs;] e2 = e3 ->
-    [; e'::es \ v::vs ;] e1 = e3
-where " [; es '\' vs ;] e1 '=' e2 " := (subst_list e1 vs es e2).
-Print ExpVar.
-*)
-
-Inductive appears_free_in : Var -> Exp -> Prop :=
-  | afi_var : forall x,
-    appears_free_in x (ExpVar x)
-  | afi_field : forall x e fi,
-    appears_free_in x e ->
-    appears_free_in x (ExpFieldAccess e fi)
-  | afi_m_invk1 : forall x e mname es,
-    appears_free_in x e ->
-    appears_free_in x (ExpMethodInvoc e mname es)
-  | afi_m_invk2 : forall x e e' mname es,
-    In e' es ->
-    appears_free_in x e' ->
-    appears_free_in x (ExpMethodInvoc e mname es)
-  | afi_cast : forall x e CName,
-    appears_free_in x e ->
-    appears_free_in x (ExpCast CName e)
-  | afi_new : forall x e es CName,
-    In e es ->
-    appears_free_in x e ->
-    appears_free_in x (ExpNew CName es).
-
-Hint Constructors appears_free_in.
-Tactic Notation "afi_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "afi_var" | Case_aux c "afi_field"
-  | Case_aux c "afi_m_invk1" | Case_aux c "afi_m_invk2"
-  | Case_aux c "afi_cast" | Case_aux c "afi_new"].
-
-
-Definition closed (e: Exp) :=
-  forall x, ~ appears_free_in x e.
-
 Inductive Warning (s: string) : Prop :=
   | w_str : Warning s.
 Notation stupid_warning := (Warning "stupid warning").

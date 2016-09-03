@@ -292,30 +292,29 @@ Proof.
   apply le_S_n; auto.
 Qed.
 *)
+
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
   Gamma extds xs : Bs |- e : D ->
   Forall' (ExpTyping Gamma) ds As ->
   Forall' Subtype As Bs ->
+  length ds = length xs ->
   exists C, C <:D -> Gamma |- [; ds \ xs ;] e : C.
 Proof.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case.
   Case "T_Var".
     destruct (In_dec (eq_id_dec) x xs) as [xIn|xNIn].
-    SCase "In x xs".
-      lets Hx: (nth_error_In' xs x xIn); destruct Hx as [i]. simpl. 
-      destruct in_findwhere with x xs; auto. rewrite H3.
-      unfold find_where.
- rewrite H3.
-      destruct subst_nth_error with ds xs (ExpVar x) e' i x as [di]; auto.
-      destruct (Forall'_nth_error _ _ (ExpTyping Gamma) ds As i di) as [Ai]; auto.
-      exists Ai. intro. replace e' with di.
-      eapply Forall'_forall; eauto.
-      apply subst_list_det with ds xs (ExpVar x); auto. eapply var_subst_in; eauto.*)
+    SCase "In x xs". 
+      simpl. 
+      destruct in_findwhere with x xs as [i']; auto. rewrite H3. destruct (nth_error) eqn:Heq. 
+       destruct (Forall'_nth_error _ _ (ExpTyping Gamma) ds As i' e) as [Ai]; auto.
+          exists Ai. intro. eapply Forall'_forall; eauto.
+       apply findwhere_ntherror in H3.
+          lets Hx : (nth_error_same_len xs ds i' x). destruct Hx; eauto. rewrite H4 in Heq; inversion Heq.
     SCase "~In x xs".
       exists C; intro. 
       rewrite extend_list_not_shadow in H; auto.
-      assert ( [; ds \ xs ;] (ExpVar x) = (ExpVar x)). simpl. rewrite notin_findwhere; auto. rewrite H3. 
+      assert ( [; ds \ xs ;] (ExpVar x) = (ExpVar x)). simpl. rewrite notin_findwhere; auto. rewrite H4. 
       constructor; auto.
 Admitted.
 

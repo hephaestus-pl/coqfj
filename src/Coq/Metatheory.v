@@ -167,8 +167,11 @@ Proof.
   case n in *. left; exists a; auto.
   simpl. apply IHl.
 Defined.
-Definition x:= (1::2::nil).
-Eval compute in (if (nth_error_dec x 0) then 2 else 200).
+
+Lemma findwhere_ntherror : forall x xs i,
+  find_where x xs = Some i <-> nth_error xs i = Some x.
+Admitted.
+
 
 Definition partial_map (A:Type) := id -> (option A).
 Definition empty {A:Type} : partial_map A := fun _ => None.

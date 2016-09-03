@@ -378,22 +378,17 @@ Section Two_predicate.
 
 Variables A B: Type.
 Variable P: A -> B -> Prop.
-Inductive Forall': list A -> list B -> Prop :=
-  | Forall'_nil : Forall' nil nil
-  | Forall'_cons : forall x y l l', P x y -> Forall' l l' -> Forall' (x::l) (y::l').
 
-Hint Constructors Forall'.
-
-Lemma Forall'_len: forall xs ys,
-  Forall' xs ys -> length xs = length ys.
+Lemma Forall2_len: forall xs ys,
+  Forall2 P xs ys -> length xs = length ys.
 Proof.
   intros.
   induction H. auto.
-  simpl. rewrite IHForall'; auto.
+  simpl. rewrite IHForall2; auto.
 Qed.
 
-Lemma Forall'_nth_error(l:list A)(l': list B): forall n x,
-  Forall' l l' -> 
+Lemma Forall_nth_error(l:list A)(l': list B): forall n x,
+  Forall2 P l l' -> 
   nth_error l n = Some x ->
   exists y, nth_error l' n = Some y.
 Proof.
@@ -405,11 +400,11 @@ Proof.
   case n in *.
   simpl; exists y; auto.
   simpl in *.
-  apply IHForall'; auto.
+  apply IHForall2; auto.
 Qed.
 
-Lemma Forall'_forall (l:list A)(l': list B): forall n x y,
-  Forall' l l' -> 
+Lemma Forall2_forall (l:list A)(l': list B): forall n x y,
+  Forall2 P l l' -> 
     nth_error l  n = Some x ->
     nth_error l' n = Some y -> P x y.
 Proof.
@@ -418,20 +413,14 @@ Proof.
   induction H.
   intros.
   rewrite nth_error_nil in H. inversion H.
-  
   intros.
   case n in *; simpl in H1, H2. inversion H1. inversion H2. rewrite <- H4, <- H5; auto.
-  apply IHForall' with n; auto.
+  apply IHForall2 with n; auto.
 Qed.
 
-
-
 End Two_predicate.
-Arguments Forall': default implicits.
 
 (** * From Basics.v *)
-
-Definition admit {T: Type} : T.  Admitted.
 
 Require String. Open Scope string_scope.
 

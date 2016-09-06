@@ -194,8 +194,8 @@ Notation " m 'extd' id ':' val" := (extend m id val) (at level 20, id at next le
 (* Extends a list of element at the tail of the map *)
 Fixpoint extend_list {A:Type} (m : partial_map A) (ids : list id) (vals : list A) :=
 match ids, vals with
- | (x::xs), (v::vs) => extend_list (extend m x v) xs vs
- | _, _ => m
+ | (x::xs), (v::vs) => (update (extend_list m xs vs) x v)
+ | _, _ => m 
 end.
 
 Notation " m 'extds' ids ':' vals" := (extend_list m ids vals) (at level 20, ids at next level).
@@ -242,6 +242,36 @@ Proof.
   simpl. auto.
 Qed.
 
+Lemma ex': forall A xs ds (m: partial_map A) x di,
+  (m extds (x::xs) : (di::ds)) x = Some di.
+Proof.
+  intros; simpl. unfold update. rewrite beq_id_refl; auto.
+Qed.
+
+Lemma ex: forall A xs ds i xi di (m: partial_map A),
+  nth_error xs i = Some xi ->
+  length xs = length ds ->
+  (m extds xs : ds) xi = Some di ->
+  nth_error ds i = Some di.
+Proof.
+  induction xs, ds; intros; try (solve [
+    match goal with 
+    | [ H: (nth_error [] _ = _) |- _ ] => rewrite nth_error_nil in H; inversion H 
+    end
+    ]).
+  inversion H0.
+  destruct i eqn:Heq. inversion H.
+  rewrite H3 in H1.
+  rewrite ex' in H1. simpl; auto.
+  simpl in *. inversion H0. eapply IHxs; eauto.
+ simpl in *.
+  
+   unfold extend_list in H1.
+  rewrite beq_id_refl in H1.
+  simpl in H1.
+Admitted.
+
+(*
 Lemma extend_list_not_shadow: forall A (m: partial_map A) x xs ds,
 ~In x xs ->
 (m extds xs : ds) x = m x.
@@ -257,6 +287,20 @@ Proof.
   rewrite not_eq_beq_id_false; auto.
 Qed.
 
+
+Lemma extend_list_not_shadow': forall A xs ds (m: partial_map A) x,
+Forall (fun x' => m x' = None) xs ->
+In x xs ->
+length xs = length ds ->
+(m extds xs : ds) x = (empty extds xs : ds) x.
+Proof.
+  induction xs, ds; intros; try (solve [inversion H0| inversion H1]).
+  simpl in *. inversion H1.
+  destruct eq_id_dec with a x. rewrite e. 
+ simpl. unfold empty.
+  simpl.
+*)
+
 Lemma extend_neq : forall A (m: partial_map A) v x x0,
 x <> x0 ->
 (extend m x v) x0 = m x0.
@@ -265,6 +309,7 @@ Proof.
   case (m x2). auto.
   rewrite not_eq_beq_id_false; auto.
 Qed.
+
 
 Section Ref.
 

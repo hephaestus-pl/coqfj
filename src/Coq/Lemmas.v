@@ -81,17 +81,34 @@ Qed.
 
 Lemma weakening: forall Gamma e x C D,
   Gamma |- e : C ->
-  Gamma extd x : D |- e : C.
+  Gamma x = None ->
+  update Gamma x D |- e : C.
 Proof with eauto.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case; try (solve [econstructor; eauto]).
   Case "T_Var".
     constructor.
-    destruct eq_id_dec with x x0; subst.
+    destruct eq_id_dec with x x0; subst. rewrite H0 in H. inversion H.
+    rewrite update_neq; auto.
+(*
     apply extend_not_shadow; assumption.
     rewrite <- H.
-    apply extend_neq; auto.
+    apply extend_neq; auto.*)
 Qed.
+
+Lemma A14: forall D D0 m C0 xs Ds e,
+  mtype(m,C0) = Ds ~> D ->
+  mbody(m,C0) = xs o e ->
+  C0 <: D0 -> 
+  exists C, C <: D /\
+  (empty extd this : C0) extds xs : Ds |- e : C.
+Proof.
+  intros.
+  mbdy_cases (induction H0) Case.
+  Case "mbdy_ok".
+(*
+    Print T_Method.*)
+Admitted.
 
 Lemma fields_obj_nil: forall f,
   fields Object f -> f = nil.
@@ -140,27 +157,34 @@ Proof.
 Qed.
 
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
+  (forall x, In x xs -> Gamma x = None) ->
   Gamma extds xs : Bs |- e : D ->
   Forall2 (ExpTyping Gamma) ds As ->
   Forall2 Subtype As Bs ->
   length ds = length xs ->
-  exists C, C <:D -> Gamma |- [; ds \ xs ;] e : C.
+  exists C, C <:D /\ Gamma |- [; ds \ xs ;] e : C.
 Proof with eauto.
   intros.
-  typing_cases (induction H using ExpTyping_ind') Case.
+  typing_cases (induction H0 using ExpTyping_ind') Case.
   Case "T_Var".
     destruct (In_dec (eq_id_dec) x xs) as [xIn|xNIn].
-    SCase "In x xs".
-      apply nth_error_In' in xIn as [i]. symmetry in H2.
+    SCase "In x xs". rename C into Bi.
+      apply Forall_forall in H.       
+      apply nth_error_In' in xIn as [i]. symmetry in H3.
       edestruct (@nth_error_same_len id Exp) as [di]...
       erewrite var_subst_in...
       destruct (Forall2_nth_error _ _ (ExpTyping Gamma) ds As i di) as [Ai]...
-      exists Ai. intro. eapply Forall2_forall...
+      exists Ai.
+      split. erewrite ex in H0.
+      case extend_list in H. admit. admit. 
+ eapply Forall2_forall...
     SCase "~In x xs".
       exists C; intro. 
       rewrite extend_list_not_shadow in H...
       assert ( [; ds \ xs ;] (ExpVar x) = (ExpVar x)). simpl. rewrite notin_findwhere; auto. rewrite H4. 
       constructor...
+  Case "T_Field".
+      
 Admitted.
 
 Theorem subject_reduction : forall Gamma e e' C,

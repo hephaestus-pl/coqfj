@@ -266,13 +266,10 @@ Proof.
   simpl in *. inversion H0. eapply IHxs; eauto.
  simpl in *.
   
-   unfold extend_list in H1.
-  rewrite beq_id_refl in H1.
-  simpl in H1.
 Admitted.
-
 (*
 Lemma extend_list_not_shadow: forall A (m: partial_map A) x xs ds,
+
 ~In x xs ->
 (m extds xs : ds) x = m x.
 Proof.

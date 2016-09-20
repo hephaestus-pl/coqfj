@@ -186,7 +186,7 @@ fun x' => if beq_id x x' then (Some v) else m x'.
 Definition extend {A:Type} (m : partial_map A) (x : id) (v : A) (x': id) :=
     match m x' with
      | None => if beq_id x x' then Some v else None
-     | otherwise => m x'
+     | otherwise => if beq_id x x' then None else m x'
     end.
 Notation " m 'extd' id ':' val" := (extend m id val) (at level 20, id at next level).
 
@@ -225,12 +225,14 @@ Proof.
   rewrite beq_id_refl; auto.
 Qed.
 
-Lemma extend_not_shadow : forall A (m: partial_map A) v1 v2 x,
-m x = Some v1 ->
-(extend m x v2) x = Some v1.
+Lemma extend_wf : forall A (m: partial_map A) v x,
+m x <> None ->
+(extend m x v) x = None.
 Proof.
-  intros A m v1 v2 x1 H. unfold extend.
+  intros A m v x1 H. unfold extend.
+  apply none_ex_Some in H. destruct H. 
   rewrite H; auto.
+  rewrite beq_id_refl; eauto.
 Qed.
 
 Lemma extend_list_ill: forall A (m: partial_map A) x xs,
@@ -280,10 +282,10 @@ Proof.
   induction xs, ds; auto.
   apply not_in_cons in H. destruct H.
   simpl.
-  intro.
+  intros.
   rewrite IHxs; auto.
   unfold extend.
-  destruct (m x). auto.
+  destruct (m x) eqn:Heq;
   rewrite not_eq_beq_id_false; auto.
 Qed.
 
@@ -306,7 +308,7 @@ x <> x0 ->
 (extend m x v) x0 = m x0.
 Proof.
   intros A m v x1 x2 H. unfold extend.
-  case (m x2). auto.
+  case (m x2);
   rewrite not_eq_beq_id_false; auto.
 Qed.
 

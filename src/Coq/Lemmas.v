@@ -152,30 +152,35 @@ Proof.
   rewrite H; simpl. rewrite H0. auto.
 Qed.
 
+
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
-(*  (forall x, In x xs -> get Gamma x = None) ->*)
+  (forall x, In x xs -> get Gamma x = None) ->
   Gamma extds xs : Bs |- e : D ->
   Forall2 (ExpTyping Gamma) ds As ->
   Forall2 Subtype As Bs ->
   length ds = length xs ->
-  exists C, C <:D /\ Gamma |- [; ds \ xs ;] e : C.
+  exists C, (C <:D /\ Gamma |- [; ds \ xs ;] e : C).
 Proof with eauto.
   intros.
-  typing_cases (induction H using ExpTyping_ind') Case.
+  typing_cases (induction H0 using ExpTyping_ind') Case.
   Case "T_Var".
     destruct (In_dec (eq_id_dec) x xs) as [xIn|xNIn].
     SCase "In x xs". rename C into Bi. SearchAbout Forall2.
+      assert (In x xs); eauto.
       apply nth_error_In' in xIn as [i]. symmetry in H3.
       edestruct (@nth_error_same_len id Exp) as [di]...
+      assert (nth_error Bs i = Some Bi).
+      eapply get_correct; eauto. 
       erewrite var_subst_in...
       destruct (Forall2_nth_error _ _ (ExpTyping Gamma) ds As i di) as [Ai]...
+      
       exists Ai.
-      split. erewrite ex in H0.
-      case extend_list in H. admit. admit. 
- eapply Forall2_forall...
+      split.
+      eapply Forall2_forall...
+      eapply Forall2_forall...
     SCase "~In x xs".
-      exists C; intro. 
-      rewrite extend_list_not_shadow in H...
+      split with C. split. eauto.
+      rewrite extend_list_not_shadow in H0...
       assert ( [; ds \ xs ;] (ExpVar x) = (ExpVar x)). simpl. rewrite notin_findwhere; auto. rewrite H4. 
       constructor...
   Case "T_Field".

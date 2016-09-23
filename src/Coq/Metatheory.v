@@ -334,6 +334,7 @@ Proof.
   rewrite not_eq_beq_id_false; auto.
 Qed.
 *)
+*)
 
 Section Ref.
 
@@ -440,6 +441,22 @@ Proof.
   intros.
   case n in *.
   simpl; exists y; auto.
+  simpl in *.
+  apply IHForall2; auto.
+Qed.
+
+Lemma Forall2_nth_error'(l:list A)(l': list B): forall n x,
+  Forall2 P l l' -> 
+  nth_error l' n = Some x ->
+  exists y, nth_error l n = Some y.
+Proof.
+  intros. generalize dependent n.
+  induction H.
+  intros.
+  rewrite nth_error_nil in H0; inversion H0.
+  intros.
+  case n in *.
+  simpl. exists x0; auto.
   simpl in *.
   apply IHForall2; auto.
 Qed.

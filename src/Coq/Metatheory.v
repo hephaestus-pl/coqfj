@@ -295,13 +295,18 @@ Proof.
   simpl in *. inversion H0. eapply IHxs; eauto.
  simpl in *.
   
-   unfold extend_list in H1.
-  rewrite beq_id_refl in H1.
-  simpl in H1.
 Admitted.
+<<<<<<< HEAD
 
 Lemma ex': forall A xs ds (m: partial_map A) x di,
   (m extds (x::xs) : (di::ds)) x = Some di.
+=======
+(*
+Lemma extend_list_not_shadow: forall A (m: partial_map A) x xs ds,
+
+~In x xs ->
+(m extds xs : ds) x = m x.
+>>>>>>> 059af6ae144bf86764ab8c9ad517b800e87e1bd4
 Proof.
   intros; simpl. unfold update. rewrite beq_id_refl; auto.
 Qed.

@@ -81,19 +81,15 @@ Qed.
 
 Lemma weakening: forall Gamma e x C D,
   Gamma |- e : C ->
-  Gamma x = None ->
-  update Gamma x D |- e : C.
+  get Gamma x = None ->
+  extend Gamma x D |- e : C.
 Proof with eauto.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case; try (solve [econstructor; eauto]).
   Case "T_Var".
     constructor.
     destruct eq_id_dec with x x0; subst. rewrite H0 in H. inversion H.
-    rewrite update_neq; auto.
-(*
-    apply extend_not_shadow; assumption.
-    rewrite <- H.
-    apply extend_neq; auto.*)
+    rewrite extend_neq; auto.
 Qed.
 
 Lemma A14: forall D D0 m C0 xs Ds e,
@@ -101,7 +97,7 @@ Lemma A14: forall D D0 m C0 xs Ds e,
   mbody(m,C0) = xs o e ->
   C0 <: D0 -> 
   exists C, C <: D /\
-  (empty extd this : C0) extds xs : Ds |- e : C.
+  (nil extd this : C0) extds xs : Ds |- e : C.
 Proof.
   intros.
   mbdy_cases (induction H0) Case.
@@ -157,7 +153,7 @@ Proof.
 Qed.
 
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
-  (forall x, In x xs -> Gamma x = None) ->
+(*  (forall x, In x xs -> get Gamma x = None) ->*)
   Gamma extds xs : Bs |- e : D ->
   Forall2 (ExpTyping Gamma) ds As ->
   Forall2 Subtype As Bs ->
@@ -165,11 +161,10 @@ Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
   exists C, C <:D /\ Gamma |- [; ds \ xs ;] e : C.
 Proof with eauto.
   intros.
-  typing_cases (induction H0 using ExpTyping_ind') Case.
+  typing_cases (induction H using ExpTyping_ind') Case.
   Case "T_Var".
     destruct (In_dec (eq_id_dec) x xs) as [xIn|xNIn].
-    SCase "In x xs". rename C into Bi.
-      apply Forall_forall in H.       
+    SCase "In x xs". rename C into Bi. SearchAbout Forall2.
       apply nth_error_In' in xIn as [i]. symmetry in H3.
       edestruct (@nth_error_same_len id Exp) as [di]...
       erewrite var_subst_in...

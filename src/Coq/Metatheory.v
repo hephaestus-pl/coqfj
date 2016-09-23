@@ -173,6 +173,7 @@ Lemma findwhere_ntherror : forall x xs i,
   find_where x xs = Some i <-> nth_error xs i = Some x.
 Admitted.
 
+(*
 
 Definition partial_map (A:Type) := id -> (option A).
 Definition empty {A:Type} : partial_map A := fun _ => None.
@@ -194,10 +195,10 @@ Notation " m 'extd' id ':' val" := (extend m id val) (at level 20, id at next le
 (* Extends a list of element at the tail of the map *)
 Fixpoint extend_list {A:Type} (m : partial_map A) (ids : list id) (vals : list A) :=
 match ids, vals with
- | (x::xs), (v::vs) => (update (extend_list m xs vs) x v)
- | _, _ => m 
+ | (x::xs), (v::vs) => extend_list (extend m x v) xs vs
+ | nil, nil => m
+ | _, _ => @empty A
 end.
-
 Notation " m 'extds' ids ':' vals" := (extend_list m ids vals) (at level 20, ids at next level).
 
 Lemma update_eq : forall A (m: partial_map A) x v,
@@ -235,22 +236,48 @@ Proof.
   rewrite beq_id_refl; eauto.
 Qed.
 
-Lemma extend_list_ill: forall A (m: partial_map A) x xs,
-  m x = (m extds xs : nil) x.
+Lemma extend_list_ill: forall A (m: partial_map A) x1 x xs,
+  (m extds (x1 :: xs) : nil) x = None.
 Proof.
   intros.
-  induction xs.
+  induction xs;
   simpl; auto.
-  simpl. auto.
 Qed.
 
-Lemma ex': forall A xs ds (m: partial_map A) x di,
-  (m extds (x::xs) : (di::ds)) x = Some di.
+  Lemma extend_list_not_shadow: forall A (m: partial_map A) x xs ds,
+  ~In x xs ->
+  (m extds xs : ds) x = m x.
 Proof.
-  intros; simpl. unfold update. rewrite beq_id_refl; auto.
+  intros; gen xs ds m.
+  induction xs, ds; auto.
+  apply not_in_cons in H. destruct H.
+  simpl.
+  intros.
+  rewrite IHxs; auto.
+  unfold extend.
+  destruct (m x) eqn:Heq;
+  rewrite not_eq_beq_id_false; auto.
 Qed.
 
-Lemma ex: forall A xs ds i xi di (m: partial_map A),
+Lemma extend_list_not_shadow': forall A (m: partial_map A) x xs ds,
+In x xs ->
+(m extds xs : ds) x = None.
+Proof.
+  intros; gen xs ds m.
+  induction xs, ds; intros.  inversion H. inversion H.
+  simpl.
+  rewrite <- extend_list_ill.
+  
+  apply not_in_cons in H. destruct H.
+  simpl.
+  intros.
+  rewrite IHxs; auto.
+  unfold extend.
+  destruct (m x) eqn:Heq;
+  rewrite not_eq_beq_id_false; auto.
+Qed.
+
+Lemma extend_list_wf: forall A xs ds i xi di (m: partial_map A),
   nth_error xs i = Some xi ->
   length xs = length ds ->
   (m extds xs : ds) xi = Some di ->
@@ -263,7 +290,7 @@ Proof.
     ]).
   inversion H0.
   destruct i eqn:Heq. inversion H.
-  rewrite H3 in H1.
+  rewrite H3 in H1. simpl in H1.
   rewrite ex' in H1. simpl; auto.
   simpl in *. inversion H0. eapply IHxs; eauto.
  simpl in *.
@@ -273,20 +300,10 @@ Proof.
   simpl in H1.
 Admitted.
 
-(*
-Lemma extend_list_not_shadow: forall A (m: partial_map A) x xs ds,
-~In x xs ->
-(m extds xs : ds) x = m x.
+Lemma ex': forall A xs ds (m: partial_map A) x di,
+  (m extds (x::xs) : (di::ds)) x = Some di.
 Proof.
-  intros; gen xs ds m.
-  induction xs, ds; auto.
-  apply not_in_cons in H. destruct H.
-  simpl.
-  intros.
-  rewrite IHxs; auto.
-  unfold extend.
-  destruct (m x) eqn:Heq;
-  rewrite not_eq_beq_id_false; auto.
+  intros; simpl. unfold update. rewrite beq_id_refl; auto.
 Qed.
 
 
@@ -301,7 +318,7 @@ Proof.
   destruct eq_id_dec with a x. rewrite e. 
  simpl. unfold empty.
   simpl.
-*)
+
 
 Lemma extend_neq : forall A (m: partial_map A) v x x0,
 x <> x0 ->
@@ -311,7 +328,7 @@ Proof.
   case (m x2);
   rewrite not_eq_beq_id_false; auto.
 Qed.
-
+*)
 
 Section Ref.
 

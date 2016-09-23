@@ -1,6 +1,7 @@
 Require Export List.
 Require Export Metatheory.
 Require Import String.
+Require Export env.
 
 Notation "'[' X ']'" := (list X) (at level 40).
 (* We will use Notation to make automation easier
@@ -200,14 +201,14 @@ Inductive appears_free_in : Var -> Exp -> Prop :=
     appears_free_in x e ->
     appears_free_in x (ExpMethodInvoc e mname es)
   | afi_m_invk2 : forall x e e' mname es,
-    In e' es ->
+    List.In e' es ->
     appears_free_in x e' ->
     appears_free_in x (ExpMethodInvoc e mname es)
   | afi_cast : forall x e CName,
     appears_free_in x e ->
     appears_free_in x (ExpCast CName e)
   | afi_new : forall x e es CName,
-    In e es ->
+    List.In e es ->
     appears_free_in x e ->
     appears_free_in x (ExpNew CName es).
 
@@ -226,9 +227,9 @@ Inductive Warning (s: string) : Prop :=
   | w_str : Warning s.
 Notation stupid_warning := (Warning "stupid warning").
 
-Reserved Notation "Gamma '|-' x ':' C" (at level 60, x at next level).
-Inductive ExpTyping (Gamma: partial_map ClassName) : Exp -> ClassName -> Prop :=
-  | T_Var : forall x C, Gamma x = Some C -> 
+Reserved Notation "Gamma '|-' x ':' C" (at level 60, x at next level). Print get.
+Inductive ExpTyping (Gamma: env ClassName) : Exp -> ClassName -> Prop :=
+  | T_Var : forall x C, get Gamma x = Some C -> 
                 Gamma |- ExpVar x : C
   | T_Field: forall e0 C0 fs i Fi Ci fi,
                 Gamma |- e0 : C0 ->
@@ -316,8 +317,8 @@ Tactic Notation "computation_cases" tactic(first) ident(c) :=
   | Case_aux c "RC_New_Arg" | Case_aux c "RC_Cast"].
 
 Definition ExpTyping_ind' := 
-  fun (Gamma : partial_map ClassName) (P : Exp -> ClassName -> Prop)
-  (f : forall (x : id) (C : ClassName), Gamma x = Some C -> P (ExpVar x) C)
+  fun (Gamma : env ClassName) (P : Exp -> ClassName -> Prop)
+  (f : forall (x : id) (C : ClassName), get Gamma x = Some C -> P (ExpVar x) C)
   (f0 : forall (e0 : Exp) (C0 : ClassName) (fs : [FieldDecl]) (i : nat) (Fi : FieldDecl)
           (Ci : ClassName) (fi : id),
         Gamma |- e0 : C0 ->

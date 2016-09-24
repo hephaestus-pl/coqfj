@@ -3,6 +3,12 @@ Import List.
 Import ListNotations.
 
 Definition env (A:Type) := list (id * A).
+Definition wf_list {A: Type} (l: list A) :=  
+  forall i1 i2 x1 x2, 
+    i1 <> i2 -> 
+    nth_error l i1 = Some x1 -> 
+    nth_error l i2 = Some x2 -> 
+    x1 <> x2.
 
 Fixpoint get {A: Type} (m: env A) (x: id): option A :=
   match m with
@@ -75,15 +81,62 @@ Proof.
   simpl in *.
 Admitted.
 
-Lemma get_correct: forall A xs bs x bi i (m: env A),
+
+Lemma get_hd_ext: forall {A: Type} (m: env A) x a,
   get m x = None ->
+  get (m extd x : a) x = Some a.
+Proof.
+  induction m; intros. simpl in *. rewrite beq_id_refl; auto.
+  destruct a.
+  simpl in *.
+  destruct eq_id_dec with x i.
+  rewrite e in H. 
+rewrite beq_id_refl in H. inversion H.
+  rewrite not_eq_beq_id_false in H; auto. 
+Admitted.
+
+Lemma ignore_extds : forall (A: Type) (m: env A) xs bs x,
+  get m x <> None ->
+  get (m extds xs : bs) x = get m x.
+Admitted.
+
+Lemma get_correct: forall A bs xs x bi i (m: env A),
+  (forall x', In x' xs -> get m x' = None) ->
+  wf_list xs ->
   nth_error xs i = Some x ->
   get (m extds xs : bs) x = Some bi ->
   nth_error bs i = Some bi.
 Proof.
-  induction xs, bs; try (intros; rewrite nth_error_nil in H0; inversion H0).
-  intros. simpl in *. rewrite H in H1; inversion H1.
-  intros. simpl in *.
+  induction bs, xs; try (intros; rewrite nth_error_nil in H1; inversion H1).  
+  intros. simpl in H1.
+
+  - rewrite H in H2. inversion H2.
+    apply nth_error_In with i0; auto.
+
+
+  - intros.
+  case i0 in *. simpl in *.
+    + inversion H1.
+      rewrite ignore_extds in H2. 
+      rewrite H4 in H2.
+      rewrite get_hd_ext in H2. auto. auto. 
+      rewrite H4; auto. rewrite get_hd_ext. intro. inversion H3. auto.
+
+    + apply IHbs with xs x (m extd i : a) ; eauto.
+      intros. 
+ destruct eq_id_dec with i x.
+      assert (get (m) x = None). apply H; left; auto.  
+ destruct eq_id_dec with i x. rewrite e.
+      rewrite get_hd_ext.
+apply H. right. apply nth_error_In with i0. auto.
+
+ destruct eq_id_dec with i x. rewrite e in H1.
+  rewrite ignore_extds in H1. rewrite get_hd_ext in H1. 
+  apply IHbs with xs x (m extd i : a); eauto.
+  rewrite ignore_extds in H1.
+  admit. 
+
+ apply IHbs with xs x (m extd i : a); auto.
   case i in *. simpl in *. inversion H0.
   rewrite H3 in H1. admit.
 

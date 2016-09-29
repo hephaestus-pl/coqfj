@@ -28,7 +28,11 @@ Fixpoint extend_list {B: Type} (m: env B) (xs: list id) (bs: list B): (env B) :=
 Notation " m 'extds' ids ':' vals" := (extend_list m ids vals) (at level 20, ids at next level).
 
 Definition Dom {A:Type} (m: env A):= map fst m.
-Definition wf_extd {A: Type} (m:env A) xs := (forall x, In x xs -> ~In x (Dom m)).
+(*
+Definition wf_extd {A: Type} (m:env A) xs := (forall x, In x xs -> ~In x (Dom m)) /\ (NoDup xs).
+*)
+Inductive wf_extd {A: Type} (m:env A) xs : Prop :=
+  | wf_extds : forall x, In x xs -> ~In x (Dom m) -> NoDup xs -> wf_extd m xs.
 
 Lemma update_not_shadow: forall {A: Type} (m: env A) x a,
   In x (Dom m) ->
@@ -121,10 +125,40 @@ Proof.
     eauto.
 Qed.
 
-Theorem get_wf_extd: forall (A: Type) (m: env A) xs bs x b i,
+Lemma get_wf_extd: forall (A: Type) (m: env A) x b i,
+  wf_extd m [x] ->
+  get (m extd x : b) x = Some b ->
+  nth_error [x] i = Some x ->
+  nth_error [b] i = Some b.
+Proof.
+Admitted.
+Print combine.
+Lemma extds_nil: forall (B: Type) (xs: list id) (bs: list B),
+  @wf_extd id nil xs ->
+  [] extds xs : bs = combine xs bs.
+Proof.
+  induction xs, bs; simpl; auto.
+  intros. destruct H. simpl in *. 
+  destruct H; inversion H1; subst. 
+
+admit.
+  
+  inversion H0. 
+  unfold extend_list. 
+  simpl.
+  simpl.
+
+Theorem get_wf_extds: forall (A: Type) (m: env A) xs bs x b i,
   wf_extd m xs ->
   get (m extds xs : bs) x = Some b ->
   nth_error xs i = Some x ->
   nth_error bs i = Some b.
 Proof.
+  induction m; intros.
+  Case "[]".
+    unfold extend_list in H0. 
+    simpl in *.
+ unfold wf_extd in *. simpl in H.
+    intros.
+  intros.
 Admitted.

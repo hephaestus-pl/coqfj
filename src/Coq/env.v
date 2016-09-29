@@ -2,13 +2,8 @@ Require Import Metatheory.
 Import List.
 Import ListNotations.
 
+
 Definition env (A:Type) := list (id * A).
-Definition wf_list {A: Type} (l: list A) :=  
-  forall i1 i2 x1 x2, 
-    i1 <> i2 -> 
-    nth_error l i1 = Some x1 -> 
-    nth_error l i2 = Some x2 -> 
-    x1 <> x2.
 
 Fixpoint get {A: Type} (m: env A) (x: id): option A :=
   match m with
@@ -18,17 +13,12 @@ Fixpoint get {A: Type} (m: env A) (x: id): option A :=
     else get ms x
   end.
 
-
-Definition extend {A: Type} (m: env A) (x: id) (a: A) :=
-  match (get m x) with
-  | None => (x, a) :: m
-  | _ => m
+Fixpoint extend {A: Type} (m: env A) (x: id) (a: A) :=
+  match m with
+  | [] => [(x,a)]
+  | (x',a') :: ms => if beq_id x x' then m else (x',a') :: extend ms x a
   end.
 Notation " m 'extd' id ':' val" := (extend m id val) (at level 20, id at next level).
-
-Inductive is_in_env {A: Type} (m: env A) (x: id) : Prop:=
-  | is_in : forall a, get m x = Some a -> is_in_env m x.
-Notation "x 'is_in' m" := (is_in_env m x) (at level 40). 
 
 Fixpoint extend_list {B: Type} (m: env B) (xs: list id) (bs: list B): (env B) :=
   match xs, bs with
@@ -37,26 +27,69 @@ Fixpoint extend_list {B: Type} (m: env B) (xs: list id) (bs: list B): (env B) :=
   end.
 Notation " m 'extds' ids ':' vals" := (extend_list m ids vals) (at level 20, ids at next level).
 
+Definition Dom {A:Type} (m: @env A):= map fst m.
+
 Lemma update_not_shadow: forall {A: Type} (m: env A) x a,
-  x is_in m ->
+  In x (Dom m) ->
   (m extd x : a) = m.
 Proof.
-  intros; case m in *. inversion H. inversion H0.
-  inversion H.
-  unfold extend.
-  rewrite H0. auto.
+  intros; induction m in *. inversion H. 
+  destruct a0.  simpl in *. destruct H.
+  rewrite H; rewrite beq_id_refl. auto.
+  case beq_id; auto.
+  rewrite IHm; auto.
 Qed.
 
-Theorem extend_neq : forall (X:Type) v x1 x2 (m : env X),
+
+Theorem extend_neq : forall (X:Type) (m : env X) v x1 x2,
 x2 <> x1 -> 
 get (extend m x2 v) x1 = get m x1.
 Proof.
-intros X v x1 x2 m H.
-unfold extend.
-case (get m x2); auto. simpl.
-rewrite not_eq_beq_id_false; auto.
+  induction m; intros. simpl. rewrite not_eq_beq_id_false; auto.
+  destruct a; simpl.
+  case beq_id eqn:Heq; case (beq_id x1 i) eqn:Heq1;
+  unfold get; rewrite Heq1; auto.
 Qed.
 
+Lemma notin_extd: forall (A: Type) (m: env A) x i v,
+  x <> i -> 
+  (In i (Dom m) <-> 
+   In i (Dom (m extd x : v))).
+Proof.
+  induction m; intros; split; intros; simpl in *; auto. 
+  - inversion H0; [contradiction | assumption].
+  - intros. destruct a. simpl in *.
+    case beq_id. simpl in *. auto. simpl.
+    destruct H0. auto. right. apply IHm; auto.
+  - destruct a. case beq_id in H0; simpl in *. auto.
+    destruct H0. left; auto. right; apply IHm in H0; auto.
+Qed.
+
+Theorem extend_nodup: forall (A: Type) (m: env A) x v,
+NoDup (Dom m) <-> NoDup (Dom (extend m x v)).
+Proof.
+  induction m; split; intros; simpl; auto; unfold extend. simpl.
+  constructor; auto.
+  constructor; auto.
+  inversion H. destruct a; subst.
+  simpl. case beq_id eqn:Heq. constructor. auto. auto. simpl.
+  constructor. intro. apply H2. simpl.
+  apply <- notin_extd; eauto. apply beq_id_false_not_eq; auto.
+  apply IHm; auto. 
+  destruct a; simpl in *.
+  inversion H.
+  case beq_id eqn:Heq in H1. simpl in *. rewrite <- H1; constructor. inversion H1.
+
+  destruct x0; subst.
+  destruct eq_id_dec with x i. 
+  rewrite e in H0. rewrite beq_id_refl in H0. simpl in H0. rewrite <- H0; constructor; auto.
+  rewrite not_eq_beq_id_false in H0; auto.
+  inversion H0. subst.  
+  rewrite not_eq_beq_id_false in H; auto. simpl in H.
+  apply IHm in H2.
+ constructor. intro. apply H1.
+  apply notin_extd; eauto. auto.
+Qed.
 
 Lemma extend_list_not_shadow: forall A (m: env A) x xs bs,
   ~In x xs ->
@@ -70,176 +103,15 @@ Proof.
   rewrite extend_neq; auto.
 Qed.
 
-
-Lemma ex : forall A xs bs a a0 i x bi (m: env A),
-  nth_error (a :: xs) (S i) = Some x -> 
-  get ((m extd a : a0) extds xs : bs) x = Some bi ->
-  x <> a.
+Theorem extend_list_nodup: forall (A: Type) xs bs (m: env A),
+NoDup (Dom m) <-> NoDup (Dom (m extds xs : bs)).
 Proof.
-  intros. 
-  induction xs, bs; try( simpl in H; rewrite nth_error_nil in H; inversion H).
-  simpl in *.
-Admitted.
-
-
-Lemma get_hd_ext: forall {A: Type} (m: env A) x a,
-  get m x = None ->
-  get (m extd x : a) x = Some a.
-Proof.
-  induction m; intros. simpl in *. rewrite beq_id_refl; auto.
-  destruct a.
-  simpl in *.
-  destruct eq_id_dec with x i.
-  rewrite e in H. 
-rewrite beq_id_refl in H. inversion H.
-  rewrite not_eq_beq_id_false in H; auto. 
-Admitted.
-
-Lemma ignore_extds : forall (A: Type) (m: env A) xs bs x,
-  get m x <> None ->
-  get (m extds xs : bs) x = get m x.
-Admitted.
-
-Lemma get_correct: forall A bs xs x bi i (m: env A),
-  (forall x', In x' xs -> get m x' = None) ->
-  wf_list xs ->
-  nth_error xs i = Some x ->
-  get (m extds xs : bs) x = Some bi ->
-  nth_error bs i = Some bi.
-Proof.
-  induction bs, xs; try (intros; rewrite nth_error_nil in H1; inversion H1).  
-  intros. simpl in H1.
-
-  - rewrite H in H2. inversion H2.
-    apply nth_error_In with i0; auto.
-
-
-  - intros.
-  case i0 in *. simpl in *.
-    + inversion H1.
-      rewrite ignore_extds in H2. 
-      rewrite H4 in H2.
-      rewrite get_hd_ext in H2. auto. auto. 
-      rewrite H4; auto. rewrite get_hd_ext. intro. inversion H3. auto.
-
-    + apply IHbs with xs x (m extd i : a) ; eauto.
-      intros. 
- destruct eq_id_dec with i x.
-      assert (get (m) x = None). apply H; left; auto.  
- destruct eq_id_dec with i x. rewrite e.
-      rewrite get_hd_ext.
-apply H. right. apply nth_error_In with i0. auto.
-
- destruct eq_id_dec with i x. rewrite e in H1.
-  rewrite ignore_extds in H1. rewrite get_hd_ext in H1. 
-  apply IHbs with xs x (m extd i : a); eauto.
-  rewrite ignore_extds in H1.
-  admit. 
-
- apply IHbs with xs x (m extd i : a); auto.
-  case i in *. simpl in *. inversion H0.
-  rewrite H3 in H1. admit.
-
-  simpl in *.
-  apply IHxs with x m; auto.
-  simpl in H0|-*.
-
-  rewrite <- H1. case m.
-  unfold extend. simpl. admit. intros.
-(*
-  rewrite <- H1. simpl.
-  simpl.
-
- unfold get in H1. simpl in H1. unfold extend in H1. simpl in H1. 
-  simpl in H1. case H1.
- case m in H1.
- apply IHxs.
-  admit.
-  simpl. admit.
-
-  intros; simpl in *.
-  apply IHxs; auto.
-
- inversion H0. inversion H0.
-  intros. simpl in H1.
-  intros; simpl in *.
-  destruct H0.
-*)
-Admitted.
-
-
-
-(*
-Locate "*".
-SearchAbout prod.
- Only update our env if x is not defined yet
-   This will ensure a well formed env 
-Inductive env {A: Type}: list (id * A) -> Type :=
-  | env_nil : env nil
-    env [(x, a)]
-  | env_ext : forall e x b,
-    env e ->
-    ~In x (map fst e)->
-    env ((x,b):: e).
-Hint Constructors env.
-
-Inductive get {A: Type} : env A -> id -> Prop:=
-  | get_head : forall x b e, get ((x,b)::e) b
-  .
-
-
-Fixpoint get {A: Type} {l: list (id * A)} (m: env l) (x: id): option A :=
-  match m  with
-  | env_nil => None
-  | env_ext _ x1 a en _ =>
-    if (beq_id x x1) then Some a
-    else get en x
-  end.
-Notation " m 'extds' ids ':' vals" := (env (m ++ combine ids vals)) (at level 20, ids at next level).
-
-Lemma get_if_in : forall (A: Type) (l: list (id * A)) (e: env l) x (Bi:A) e,
-  @get A l e x = Some Bi ->
-  In x (map fst l).
-Proof.
-  intros.
-  induction e.
-  simpl.
-  unfold get in H.
-  case e0.
-  inversion H.
-  rewrite e0 in H.
-  inversion H.
-
-
-
-
-Lemma exists_bs : forall (A: Type) Gamma xs (Bs: list A) (e: Gamma extds xs : Bs) x Bi,
-  get e x = Some Bi ->
-  exists i, nth_error Bs i = Some Bi.
-Proof.
-  intros.
-  induction env0. inversion H.
-  apply IHenv0. inversion H.
-  assert (In x (map fst e)).
- subst.
-
-Lemma env_1 : env [(Id 1, 100); (Id 2, 200); (Id 3, 300)].
-Proof.
-  repeat constructor; eauto.
-  simpl. intro. inversion H. inversion H0. auto.
-  simpl.
-  intro.
-  destruct H; auto. inversion H.
-  destruct H; inversion H.
+  induction xs, bs; auto; intros; try (simpl; split; intro; assumption).
+  split; intro; simpl in *.
+  -  apply IHxs.
+     apply extend_nodup.
+     assumption.
+ -  apply IHxs in H.
+    eapply extend_nodup.
+    eauto.
 Qed.
-
-
-Eval compute in (get env_1 (Id 1)).
-
-Lemma env_
-
-Lemma get_ex : get env_1 (Id 1) = Some 100.
-Proof.
-  unfold get.
-  simpl.
-  *)

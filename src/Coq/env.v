@@ -27,7 +27,8 @@ Fixpoint extend_list {B: Type} (m: env B) (xs: list id) (bs: list B): (env B) :=
   end.
 Notation " m 'extds' ids ':' vals" := (extend_list m ids vals) (at level 20, ids at next level).
 
-Definition Dom {A:Type} (m: @env A):= map fst m.
+Definition Dom {A:Type} (m: env A):= map fst m.
+Definition wf_extd {A: Type} (m:env A) xs := (forall x, In x xs -> ~In x (Dom m)).
 
 Lemma update_not_shadow: forall {A: Type} (m: env A) x a,
   In x (Dom m) ->
@@ -119,3 +120,11 @@ Proof.
     eapply extend_nodup.
     eauto.
 Qed.
+
+Theorem get_wf_extd: forall (A: Type) (m: env A) xs bs x b i,
+  wf_extd m xs ->
+  get (m extds xs : bs) x = Some b ->
+  nth_error xs i = Some x ->
+  nth_error bs i = Some b.
+Proof.
+Admitted.

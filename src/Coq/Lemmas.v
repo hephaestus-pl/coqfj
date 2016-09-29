@@ -154,7 +154,7 @@ Qed.
 
 
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
-  (forall x, In x xs -> get Gamma x = None) ->
+  wf_extd Gamma xs ->
   Gamma extds xs : Bs |- e : D ->
   Forall2 (ExpTyping Gamma) ds As ->
   Forall2 Subtype As Bs ->
@@ -170,7 +170,7 @@ Proof with eauto.
       apply nth_error_In' in xIn as [i]. symmetry in H3.
       edestruct (@nth_error_same_len id Exp) as [di]...
       assert (nth_error Bs i = Some Bi).
-      eapply get_correct; eauto. 
+      eapply get_wf_extd; eauto. 
       erewrite var_subst_in...
       destruct (Forall2_nth_error _ _ (ExpTyping Gamma) ds As i di) as [Ai]...
       

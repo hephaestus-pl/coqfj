@@ -68,27 +68,31 @@ Qed.
 Theorem extend_nodup: forall (A: Type) (m: env A) x v,
 NoDup (Dom m) <-> NoDup (Dom (extend m x v)).
 Proof.
-  induction m; split; intros; simpl; auto; unfold extend. simpl.
-  constructor; auto.
-  constructor; auto.
-  inversion H. destruct a; subst.
-  simpl. case beq_id eqn:Heq. constructor. auto. auto. simpl.
-  constructor. intro. apply H2. simpl.
-  apply <- notin_extd; eauto. apply beq_id_false_not_eq; auto.
-  apply IHm; auto. 
-  destruct a; simpl in *.
-  inversion H.
-  case beq_id eqn:Heq in H1. simpl in *. rewrite <- H1; constructor. inversion H1.
-
-  destruct x0; subst.
-  destruct eq_id_dec with x i. 
-  rewrite e in H0. rewrite beq_id_refl in H0. simpl in H0. rewrite <- H0; constructor; auto.
-  rewrite not_eq_beq_id_false in H0; auto.
-  inversion H0. subst.  
-  rewrite not_eq_beq_id_false in H; auto. simpl in H.
-  apply IHm in H2.
- constructor. intro. apply H1.
-  apply notin_extd; eauto. auto.
+  induction m.
+  Case "nil".
+    split; constructor; auto.
+  Case "a :: m". 
+    intros; split; intro.
+    SCase "->".
+      inversion H. destruct a; subst. simpl.
+      case beq_id eqn:Heq.
+      SSCase "x = i".
+        constructor; auto.
+      SSCase "x <> i". 
+        simpl. constructor. intro. apply H2. simpl.
+        apply <- notin_extd; eauto. 
+        apply beq_id_false_not_eq; auto.
+        apply IHm; auto.
+    SCase "<-".
+      destruct a; simpl in *.
+      case beq_id eqn:Heq.
+      SSCase "x = i". 
+        simpl in *; assumption.
+      SSCase "x <> i".
+        simpl in *. inversion H. subst.
+        constructor.
+        intro. apply H2. apply notin_extd; auto using (beq_id_false_not_eq).
+        apply IHm in H3; auto.
 Qed.
 
 Lemma extend_list_not_shadow: forall A (m: env A) x xs bs,

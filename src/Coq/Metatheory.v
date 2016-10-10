@@ -108,6 +108,13 @@ Proof.
       case beq_id. eauto. auto.
 Qed.
 
+
+Lemma findwhere_ntherror : forall x xs i,
+  find_where x xs = Some i <-> nth_error xs i = Some x.
+Admitted.
+
+
+
 Lemma none_ex_Some: forall {A: Type} x,
   x <> @None A ->
   exists x', x = Some x'.
@@ -169,9 +176,16 @@ Proof.
   simpl. apply IHl.
 Defined.
 
-Lemma findwhere_ntherror : forall x xs i,
-  find_where x xs = Some i <-> nth_error xs i = Some x.
-Admitted.
+Lemma nth_error_fst: forall {A: Type} {a: A} l i,
+  NoDup (a::l) ->
+  nth_error (a::l) i = Some a ->
+  i = 0.
+Proof.
+  intros.
+  induction i. auto.
+  inversion H. subst. simpl in H0. SearchAbout nth_error.
+  apply nth_error_In in H0. contradiction.
+Qed.
 
 (*
 

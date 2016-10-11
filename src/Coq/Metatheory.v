@@ -59,6 +59,10 @@ Proof.
     intros C. subst. apply H. reflexivity.
   apply beq_nat_false_iff. assumption.  Qed.
 
+Hint Resolve beq_id_false_not_eq.
+Hint Rewrite beq_id_refl.
+
+
 Theorem beq_id_sym: forall i1 i2,
   beq_id i1 i2 = beq_id i2 i1.
 Proof.

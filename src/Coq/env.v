@@ -91,8 +91,7 @@ Proof.
         constructor; auto.
       SSCase "x <> i". 
         simpl. constructor. intro. apply H2. simpl.
-        apply <- notin_extd; eauto. 
-        apply beq_id_false_not_eq; auto.
+        apply <- notin_extd; eauto.
         apply IHm; auto.
     SCase "<-".
       destruct a; simpl in *.
@@ -137,28 +136,19 @@ Lemma get_wf_extd: forall (A: Type) (m: env A) x b i,
   nth_error [x] i = Some x ->
   nth_error [b] i = Some b.
 Proof.
+  induction m.
+  intros; simpl in *. rewrite beq_id_refl in H0. inversion H. case i in *. auto. simpl in H1.
+  rewrite nth_error_nil in H1. inversion H1.
+  intros; simpl in *.
+  destruct a. inversion H.
+  simpl.
 Admitted.
-Print combine.
-
-(*
-Lemma extds_nil: forall (B: Type) (xs: list id) (bs: list B),
-  @wf_extd id nil xs ->
-  [] extds xs : bs = combine xs bs.
-Proof.
-  induction xs, bs; simpl; auto.
-  intros. destruct H. simpl in *.  
-  edestruct H. inversion H1. esubst. 
-Admitted.
-*)
 
 Lemma get_noteq: forall (A:Type) (m: env A) x' x a,
   x' <> x ->
   get ((x', a) :: m) x = get m x.
 Proof.
-  induction m.
   intros; simpl; auto.
-  rewrite not_eq_beq_id_false; auto.
-  intros. simpl.
   rewrite not_eq_beq_id_false; auto.
 Qed.
 
@@ -214,6 +204,103 @@ Proof.
   destruct H. inversion H0; auto.
 Qed.
 
+Lemma get_notIn_Dom: forall (A: Type) (m: env A) x,
+  ~ In x (Dom m) ->
+  get m x = None.
+Proof.
+Admitted.
+
+Lemma get_In_Dom: forall (A: Type) (m: env A) x,
+  In x (Dom m) ->
+  exists x', get m x = Some x'.
+Proof.
+  induction m.
+  simpl; intros. contradiction.
+  intros; simpl.
+  simpl in H. destruct a. simpl in *.
+  destruct H. rewrite H; rewrite beq_id_refl; eexists; auto.
+  destruct IHm with x; auto.
+  case beq_id. eauto. eexists; eauto.
+Qed.
+
+Lemma get_extd_m: forall (A: Type) (m: env A) x' b' x,
+  In x (Dom m) ->
+  get (m extd x' : b') x = get m x.
+Proof.
+  induction m. simpl; auto. intros; contradiction.
+  intros; simpl; auto.
+  destruct a. simpl in *.
+  destruct H. rewrite H; rewrite beq_id_refl.
+  case beq_id. simpl. rewrite beq_id_refl; auto.
+  simpl; auto. rewrite beq_id_refl; auto.
+  destruct eq_id_dec with x' i;
+  destruct eq_id_dec with x i; try rewrite e; try rewrite e0; simpl; autorewrite with core.
+  simpl. autorewrite with core; auto.
+  rewrite not_eq_beq_id_false; simpl; auto.
+  rewrite not_eq_beq_id_false; simpl; auto.
+  rewrite not_eq_beq_id_false; simpl; auto. 
+  rewrite beq_id_refl; simpl; auto. 
+  rewrite not_eq_beq_id_false.
+  rewrite not_eq_beq_id_false. simpl; auto.
+  rewrite not_eq_beq_id_false.
+  apply IHm; auto. auto. auto. auto.
+Qed.
+
+Lemma get_extd_not_m: forall (A: Type) (m: env A) x' b' x,
+  ~ In x (Dom m) ->
+  get (m extd x' : b') x = get ([] extd x' : b') x.
+Proof.
+  induction m.
+  simpl; intros. auto.
+  simpl; intros.
+  apply Decidable.not_or in H. destruct H.
+  destruct a. simpl in *.
+  case beq_id eqn:Beq.
+  simpl. rewrite not_eq_beq_id_false; auto.
+  apply beq_id_eq in Beq. rewrite <- Beq in H.
+  rewrite not_eq_beq_id_false; auto.
+  apply get_notIn_Dom; auto.
+
+  apply beq_id_false_not_eq in Beq.
+  destruct eq_id_dec with x x'.
+  simpl. 
+  rewrite not_eq_beq_id_false. rewrite IHm; auto. auto. simpl.
+  rewrite not_eq_beq_id_false. apply IHm; auto. auto.
+Qed.
+
+Lemma In_Dom_weak: forall (A: Type) (m: env A) x x' b,
+  In x (Dom m) ->
+  In x (Dom (m extd x' : b)).
+Proof.
+  induction m.
+  simpl; intros; contradiction.
+  destruct a.
+  simpl; intros.
+  destruct H.
+  rewrite H. case beq_id; simpl; left; auto.
+  case beq_id.
+  simpl. right; auto.
+  simpl. right. apply IHm; auto.
+Qed.
+
+Lemma get_extds_m: forall (A: Type)  xs bs (m: env A) x,
+  In x (Dom m) ->
+  get (m extds xs : bs) x = get m x.
+Proof.
+  induction xs; intros; auto. simpl; auto.
+  case bs in *; auto.
+  rewrite IHxs with bs (m extd a : a0) x. apply get_extd_m. assumption.
+  apply In_Dom_weak; auto.
+Qed.
+
+Lemma get_extd_notin_Dom_nil: forall (A: Type) (b0: A) x xs bs,
+  get ([] extds (x::xs) : (b0 ::bs)) x = Some b0.
+Proof.
+  intros. simpl.
+  rewrite get_extds_m. simpl. autorewrite with core; auto.
+  simpl; auto.
+Qed.
+  
 
 Lemma get_extd_notin_Dom: forall (A: Type) (b0: A) m x xs bs,
   ~In x (Dom m) ->
@@ -247,36 +334,26 @@ Proof.
   intros. inversion H. rewrite nth_error_nil in H1. inversion H1.
   intros.
   destruct H.
-  inversion H2.
-  assert (i=0).
-    eapply nth_error_fst. exact H2. rewrite <- H3 in H1; auto.
-  case bs in *. simpl in H0. 
-  apply get_in_Dom in H0.
-  false. apply H with x; auto. rewrite <- H3. apply nth_error_In with i;auto.
-  subst.
-  
-  rewrite H6; simpl.
-  rewrite H5 in H0.
+  inversion H2; subst.
+  case i in *; case bs in *. simpl in *.
+  false. apply H with x. left; inversion H1. auto.
+  eapply get_in_Dom; eauto.
+  inversion H1. subst.
   rewrite get_extd_notin_Dom in H0; auto.
-
-  case i in *.
-  case bs in *. simpl in H0.
-  apply get_in_Dom in H0. contradiction.
-  simpl in *.
-  inversion H1. rewrite H7 in H2.
-  inversion H2. subst. contradiction.
+  eapply H; auto.
+  simpl. left; auto. 
   
-  case bs in *.
-  simpl in *. 
-  apply get_in_Dom in H0; contradiction.
-  inversion H2. subst.
-  
+  simpl in *. false; apply H with x. right.
+  eapply nth_error_In. eauto.
+  eapply get_in_Dom; eauto.
+
+  simpl.
+  eapply IHxs.
+  eapply wf_weak; constructor; eauto.
+  rewrite get_extds_notin_head in H0. eauto.
   simpl in *.
-  eapply in_notin_noteq in H5; eauto.
-  apply IHxs with m x; auto.
-  apply wf_weak with a.
-  constructor; auto.
+  apply nth_error_In in H1.
+  apply in_notin_noteq with xs; auto.
 
-  erewrite <- get_extds_notin_head; eauto.
-
+  simpl in H1; exact H1.
 Qed.

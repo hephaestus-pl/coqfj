@@ -23,8 +23,8 @@ Inductive FormalArg :=
   | FArg : ClassName -> id -> FormalArg.
 
 Instance FargRef : Referable FormalArg :={
-  ref cdecl := 
-    match cdecl with 
+  ref farg := 
+    match farg with 
    | FArg _ id => id end
 }.
 
@@ -53,13 +53,14 @@ Inductive Exp : Type :=
   | ExpCast : ClassName -> Exp -> Exp
   | ExpNew : id -> [Exp] -> Exp.
 
+(* Notice that arguments cannot have duplicate names *)
 Inductive MethodDecl :=
-  | MDecl : ClassName -> id -> [FormalArg] -> Exp -> MethodDecl.
+  | MDecl : ClassName -> id -> forall fargs:[FormalArg], NoDup (map ref fargs) -> Exp -> MethodDecl.
 
 Instance MDeclRef : Referable MethodDecl :={
   ref mdecl := 
     match mdecl with 
-   | MDecl _ id _ _ => id end
+   | MDecl _ id _ _ _ => id end
 }.
 
 
@@ -110,14 +111,14 @@ Tactic Notation "fields_cases" tactic(first) ident(c) :=
 
 Reserved Notation "'mtype(' m ',' D ')' '=' c '~>' c0" (at level 40, c at next level).
 Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:=
-  | mty_ok : forall D Fs K Ms fargs e,
+  | mty_ok : forall D Fs K Ms fargs,
               find C CT = Some (CDecl C D Fs K Ms)->
-              In (MDecl B m fargs e) Ms ->
+              In m (map ref Ms) ->
               map fargType fargs = Bs ->
               mtype(m, C) = Bs ~> B
-  | mty_no_override: forall D Fs K Ms fargs e,
+  | mty_no_override: forall D Fs K Ms fargs,
               find C CT = Some (CDecl C D Fs K Ms)->
-              ~In (MDecl B m fargs e) Ms->
+              ~In m (map ref Ms) ->
               map fargType fargs = Bs ->
               mtype(m, D) = Bs ~> B ->
               mtype(m, C) = Bs ~> B
@@ -126,14 +127,14 @@ Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:
 
 
 Inductive m_body (m: id) (C: ClassName) (xs: [ClassName]) (e: Exp) : Prop:=
-  | mbdy_ok : forall D Fs K Ms fargs B,
+  | mbdy_ok : forall D Fs K Ms fargs,
               find C CT = Some (CDecl C D Fs K Ms)->
-              In (MDecl B m fargs e) Ms ->
+              In m (map ref Ms) ->
               map ref fargs = xs ->
               m_body m C xs e
-  | mbdy_no_override: forall D Fs K Ms fargs B,
+  | mbdy_no_override: forall D Fs K Ms fargs,
               find C CT = Some (CDecl C D Fs K Ms)->
-              ~In (MDecl B m fargs e) Ms->
+              ~In m (map ref Ms) ->
               map ref fargs = xs ->
               m_body m D xs e ->
               m_body m C xs e.

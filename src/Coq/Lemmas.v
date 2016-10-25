@@ -1,5 +1,6 @@
 Require Export Syntax.
 Require Import LibTactics.
+
 Import Arith.
 
 Lemma A11: forall m D C Cs C0,
@@ -58,6 +59,14 @@ Proof.
   inversion H.
 Qed.
 
+Lemma fields_NoDup : forall C fs,
+  fields C fs ->
+  NoDup (refs fs).
+Proof.
+  intros.
+  inversion H; [simpl; constructor | assumption].
+Qed.
+
 Lemma fields_det: forall C f1 f2,
   fields C f1 ->
   fields C f2 ->
@@ -69,12 +78,12 @@ Proof.
   Case "F_Obj".
     apply fields_obj_nil; auto.
   Case "F_Decl".
-    inversion H1.
-    subst.
+    inversion H4.
+    subst. sort.
     rewrite sane_CT in H. inversion H.
     subst.
-    rewrite H in H2.
-    inversion H2. subst.
+    rewrite H in H5.
+    inversion H5. subst.
     rewrite IHfields with fs'0; auto.
 Qed.
 
@@ -127,6 +136,15 @@ Proof with eauto.
       
 Admitted.
 
+Lemma ref_noDup_nth_error: forall {T} {H: Referable T} (xs:list T) i i1 x x1,
+  nth_error xs i = Some x ->
+  nth_error xs i1 = Some x1 ->
+  NoDup (refs xs) ->
+  ref x = ref x1 ->
+  x = x1.
+Proof.
+Admitted.
+
 Theorem subject_reduction : forall Gamma e e' C,
   Gamma |- e : C ->
   e ~> e' ->
@@ -135,23 +153,27 @@ Proof with eauto.
   intros.
   computation_cases (induction H0) Case.
   Case "R_Field".
-    subst.
-    inversion H. subst.
-    rename C1 into D0.
-    inversion H5. subst.
-    rewrite (fields_det D0 fs0 fs) in H12 by auto.
-    rewrite (fields_det D0 Fs fs) in H2 by auto.
-    clear H0 H8 Fs fs0.
-    rename Fi into fi. sort.
-    apply nth
-    assert (nth_error es i <> None). intro. rewrite H0 in H3. inversion H3.
-    assert (List.length es = List.length Cs) by (apply (Forall2_len _ _ _ _ _ H10)).
-    apply -> (nth_error_Some) in H0. rewrite H1 in H0.
+    subst. destruct fi; simpl in *. 
+    inversion H. subst. simpl in *. destruct Fi in *. simpl in *. subst. 
+    rename C1 into D0. sort. assert (C0 = D0). inversion H5. reflexivity. subst.
+    rewrite (fields_det D0 fs Fs) in H7 by auto.
+    clear H6 fs. assert ((FDecl c0 i0) = (FDecl c i0)).
+    eapply ref_noDup_nth_error; eauto.  eapply fields_NoDup; eauto. inversion H3.
+    inversion H5. subst. sort.
+    rewrite (fields_det D0 Fs fs) in H1 by auto.
+    rewrite (fields_det D0 Fs fs) in H7 by auto.
+    clear H0 H12 H7 Fs. 
+    assert (nth_error es i <> None). intro. rewrite H0 in H2. inversion H2.
+    assert (List.length es = List.length Cs) by (apply (Forall2_len _ _ _ _ _ H11)).
+    apply -> (nth_error_Some) in H0. rewrite H4 in H0.
     assert (exists Ci, nth_error Cs i = Some Ci). 
     apply nth_error_Some'. assumption.
-    destruct H4 as [Ci].
+    destruct H6 as [Ci].
+     destruct (Forall2_nth_error _ _ (Subtype) Cs (map fieldType fs) i Ci) as [fi']...
     exists Ci.
     split. sort.
+    apply map_nth_error with (B:=ClassName) (f:=fieldType) in H1; simpl in *.
+    eapply Forall2_forall...
     apply (Forall2_forall _ _ (ExpTyping Gamma) es Cs i ei Ci); auto.
   Case "R_Invk".
     inversion H. subst. inversion H4; subst. inversion H; subst. sort.

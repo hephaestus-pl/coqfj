@@ -3,6 +3,11 @@ Require Export Metatheory.
 Require Import String.
 Require Export env.
 
+Module Refs.
+Notation "'refs' x":= (map ref x) (at level 30).
+End Refs.
+Export Refs.
+
 Notation "'[' X ']'" := (list X) (at level 40).
 (* We will use Notation to make automation easier
  * This will be the notation to be similar with haskell *)
@@ -53,9 +58,18 @@ Inductive Exp : Type :=
   | ExpCast : ClassName -> Exp -> Exp
   | ExpNew : id -> [Exp] -> Exp.
 
+(*
+Inductive NoDupList (T:Type) {H: Referable T} (xs: [T]) := 
+  |noDup_nil : NoDup (@nil T) -> NoDupList T
+  |noDupSome : forall , NoDup  -> NoDupList (map ref xs).
+
+Print NoDupList.
+*)
+
 (* Notice that arguments cannot have duplicate names *)
 Inductive MethodDecl :=
-  | MDecl : ClassName -> id -> forall fargs:[FormalArg], NoDup (map ref fargs) -> Exp -> MethodDecl.
+  | MDecl : ClassName -> id -> forall (fargs: [FormalArg]), NoDup (refs fargs) -> Exp -> MethodDecl.
+
 
 Instance MDeclRef : Referable MethodDecl :={
   ref mdecl := 
@@ -65,16 +79,20 @@ Instance MDeclRef : Referable MethodDecl :={
 
 
 Inductive ClassDecl:=
-  | CDecl: id -> ClassName -> [FieldDecl] -> Constructor -> [MethodDecl] -> ClassDecl.
-
-Inductive Program :=
-  | CProgram : [ClassDecl] -> Exp -> Program.
+  | CDecl: id -> ClassName -> 
+    forall (fDecls:[FieldDecl]), NoDup (refs fDecls) -> Constructor -> 
+    forall (mDecls:[MethodDecl]), NoDup (refs mDecls) -> ClassDecl.
 
 Instance CDeclRef : Referable ClassDecl :={
   ref cdecl := 
     match cdecl with 
-   | CDecl id _ _ _ _ => id end
+   | CDecl id _ _ _ _ _ _ => id end
 }.
+
+Inductive Program :=
+  | CProgram : forall (cDecls: [ClassDecl]), NoDup (refs cDecls) -> Exp -> Program.
+
+
 
 Parameter CT: [ClassDecl].
 (*We will assume a global CT to make our definitions easier
@@ -88,8 +106,8 @@ Inductive Subtype : id -> ClassName -> Prop :=
     C <: D -> 
     D <: E -> 
     C <: E
-  | S_Decl: forall C D fs K mds,
-    find C CT = Some (CDecl C D fs K mds) ->
+  | S_Decl: forall C D fs noDupfs K mds noDupMds,
+    find C CT = Some (CDecl C D fs noDupfs K mds noDupMds ) ->
     C <: D
 where "C '<:' D" := (Subtype C D).
 Hint Constructors Subtype.
@@ -101,9 +119,12 @@ Tactic Notation "subtype_cases" tactic(first) ident(c) :=
 
 Inductive fields : id -> [FieldDecl] -> Prop :=
  | F_Obj : fields Object nil
- | F_Decl : forall C D fs K mds fs', 
-     find C CT = Some (CDecl C D fs K mds) ->
+ | F_Decl : forall C D fs  noDupfs K mds noDupMds fs', 
+     find C CT = Some (CDecl C D fs noDupfs K mds noDupMds) ->
+     NoDup (refs fs') ->
+     NoDup (refs fs) ->
      fields D fs' ->
+     NoDup (refs (fs' ++ fs)) ->
      fields C (fs'++fs).
 Tactic Notation "fields_cases" tactic(first) ident(c) :=
   first;
@@ -111,13 +132,13 @@ Tactic Notation "fields_cases" tactic(first) ident(c) :=
 
 Reserved Notation "'mtype(' m ',' D ')' '=' c '~>' c0" (at level 40, c at next level).
 Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:=
-  | mty_ok : forall D Fs K Ms fargs,
-              find C CT = Some (CDecl C D Fs K Ms)->
+  | mty_ok : forall D Fs K Ms fargs noDupfs noDupMds,
+              find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds)->
               In m (map ref Ms) ->
               map fargType fargs = Bs ->
               mtype(m, C) = Bs ~> B
-  | mty_no_override: forall D Fs K Ms fargs,
-              find C CT = Some (CDecl C D Fs K Ms)->
+  | mty_no_override: forall D Fs K Ms fargs noDupfs noDupMds,
+              find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
               ~In m (map ref Ms) ->
               map fargType fargs = Bs ->
               mtype(m, D) = Bs ~> B ->
@@ -127,13 +148,13 @@ Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:
 
 
 Inductive m_body (m: id) (C: ClassName) (xs: [ClassName]) (e: Exp) : Prop:=
-  | mbdy_ok : forall D Fs K Ms fargs,
-              find C CT = Some (CDecl C D Fs K Ms)->
+  | mbdy_ok : forall D Fs K Ms fargs noDupfs noDupMds,
+              find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds)->
               In m (map ref Ms) ->
               map ref fargs = xs ->
               m_body m C xs e
-  | mbdy_no_override: forall D Fs K Ms fargs,
-              find C CT = Some (CDecl C D Fs K Ms)->
+  | mbdy_no_override: forall D Fs K Ms fargs noDupfs noDupMds,
+              find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds)->
               ~In m (map ref Ms) ->
               map ref fargs = xs ->
               m_body m D xs e ->
@@ -277,12 +298,11 @@ Tactic Notation "typing_cases" tactic(first) ident(c) :=
 
 Reserved Notation "e '~>' e1" (at level 60).
 Inductive Computation : Exp -> Exp -> Prop :=
-  | R_Field : forall C Fs fs es fi ei i,
-            fields C (Fs) ->
-            fs = map ref Fs ->
-            nth_error fs i = Some fi ->
+  | R_Field : forall C Fs es fi ei i,
+            fields C Fs ->
+            nth_error Fs i = Some fi ->
             nth_error es i = Some ei-> 
-            ExpFieldAccess (ExpNew C es) fi ~> ei
+            ExpFieldAccess (ExpNew C es) (ref fi) ~> ei
   | R_Invk : forall C m xs ds es e0,
             mbody(m, C) = xs o e0 ->
             ExpMethodInvoc (ExpNew C es) m ds ~> [; ExpNew C es :: ds \ this :: xs;] e0

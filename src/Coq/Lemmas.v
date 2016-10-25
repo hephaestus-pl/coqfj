@@ -38,7 +38,7 @@ Lemma A14: forall D D0 m C0 xs Ds e,
   mbody(m,C0) = xs o e ->
   C0 <: D0 -> 
   exists C, C <: D /\
-  (nil extd this : C0) extds xs : Ds |- e : C.
+  nil extds (this :: xs) : (C0 :: Ds) |- e : C.
 Proof.
   intros.
   mbdy_cases (induction H0) Case.
@@ -130,7 +130,7 @@ Admitted.
 Theorem subject_reduction : forall Gamma e e' C,
   Gamma |- e : C ->
   e ~> e' ->
-  exists C', C' <: C -> Gamma |- e' : C'.
+  exists C', C' <: C /\ Gamma |- e' : C'.
 Proof with eauto.
   intros.
   computation_cases (induction H0) Case.
@@ -142,7 +142,8 @@ Proof with eauto.
     rewrite (fields_det D0 fs0 fs) in H12 by auto.
     rewrite (fields_det D0 Fs fs) in H2 by auto.
     clear H0 H8 Fs fs0.
-    rename Fi into fi.
+    rename Fi into fi. sort.
+    apply nth
     assert (nth_error es i <> None). intro. rewrite H0 in H3. inversion H3.
     assert (List.length es = List.length Cs) by (apply (Forall2_len _ _ _ _ _ H10)).
     apply -> (nth_error_Some) in H0. rewrite H1 in H0.
@@ -150,9 +151,11 @@ Proof with eauto.
     apply nth_error_Some'. assumption.
     destruct H4 as [Ci].
     exists Ci.
-    intro. 
+    split. sort.
     apply (Forall2_forall _ _ (ExpTyping Gamma) es Cs i ei Ci); auto.
   Case "R_Invk".
-    inversion H. subst. inversion H4; subst. inversion H; subst.
+    inversion H. subst. inversion H4; subst. inversion H; subst. sort.
+    eapply A14 in H5. destruct H5. destruct H1.
+    eapply term_subst_preserv_typing in H2. destruct H2. destruct H2.
 Admitted.
 

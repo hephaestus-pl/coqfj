@@ -235,7 +235,7 @@ Inductive ExpTyping (Gamma: env ClassName) : Exp -> ClassName -> Prop :=
   | T_Field: forall e0 C0 fs i Fi Ci fi,
                 Gamma |- e0 : C0 ->
                 fields C0 fs ->
-                Some Fi = nth_error fs i ->
+                nth_error fs i = Some Fi ->
                 Ci = fieldType Fi ->
                 fi = ref Fi ->
                 Gamma |- ExpFieldAccess e0 fi : Ci
@@ -325,7 +325,7 @@ Definition ExpTyping_ind' :=
         Gamma |- e0 : C0 ->
         P e0 C0 ->
         fields C0 fs ->
-        Some Fi = nth_error fs i -> Ci = fieldType Fi -> fi = ref Fi -> P (ExpFieldAccess e0 fi) Ci)
+        nth_error fs i = Some Fi -> Ci = fieldType Fi -> fi = ref Fi -> P (ExpFieldAccess e0 fi) Ci)
   (f1 : forall (e0 : Exp) (C : ClassName) (Cs : [ClassName]) (C0 : ClassName) (Ds : [ClassName]) 
           (m : id) (es : [Exp]),
         Gamma |- e0 : C0 ->

@@ -21,17 +21,14 @@ Proof with eauto.
 Qed.
 
 
-Lemma weakening: forall Gamma e x C D,
-  Gamma |- e : C ->
-  get Gamma x = None ->
-  Gamma extd x : D |- e : C.
+Lemma weakening: forall Gamma e C,
+  nil |- e : C ->
+  Gamma |- e : C.
 Proof with eauto.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case; try (solve [econstructor; eauto]).
   Case "T_Var".
-    constructor.
-    destruct eq_id_dec with x x0; subst. rewrite H0 in H. inversion H.
-    rewrite extend_neq; auto.
+    inversion H; eauto.
 Qed.
 
 Lemma A14: forall D D0 m C0 xs Ds e,
@@ -104,15 +101,15 @@ Qed.
 
 
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
-  wf_extd Gamma xs ->
   Gamma extds xs : Bs |- e : D ->
+  wf_extd Gamma xs ->
   Forall2 (ExpTyping Gamma) ds As ->
   Forall2 Subtype As Bs ->
   length ds = length xs ->
   exists C, (C <:D /\ Gamma |- [; ds \ xs ;] e : C).
 Proof with eauto.
   intros.
-  typing_cases (induction H0 using ExpTyping_ind') Case.
+  typing_cases (induction H using ExpTyping_ind') Case.
   Case "T_Var".
     destruct (In_dec (eq_id_dec) x xs) as [xIn|xNIn].
     SCase "In x xs". rename C into Bi. SearchAbout Forall2.
@@ -129,7 +126,7 @@ Proof with eauto.
       eapply Forall2_forall...
     SCase "~In x xs".
       split with C. split. eauto.
-      erewrite notin_extds in H0...
+      erewrite notin_extds in H...
       assert ( [; ds \ xs ;] (ExpVar x) = (ExpVar x)). simpl. rewrite notin_findwhere; auto. rewrite H4. 
       constructor...
   Case "T_Field".
@@ -176,8 +173,16 @@ Proof with eauto.
     eapply Forall2_forall...
     apply (Forall2_forall _ _ (ExpTyping Gamma) es Cs i ei Ci); auto.
   Case "R_Invk".
-    inversion H. subst. inversion H4; subst. inversion H; subst. sort.
-    eapply A14 in H5. destruct H5. destruct H1.
-    eapply term_subst_preserv_typing in H2. destruct H2. destruct H2.
+    inversion H. subst. inversion H5; subst; sort.
+    rename C2 into C0.
+    eapply A14 in H6. destruct H6 as [B]. destruct H2.
+
+    (*My Idea is to substitute before weakening, this way I don't have to prove that
+    this::xs is not int Gamma (which I think is not provable) *)
+    eapply term_subst_preserv_typing in H3. destruct H3 as [E]. destruct H3.
+    exists E; split; eauto. apply weakening. eauto.
+    constructor; eauto.
+    (* But then I have to prove that es and ExpNew C0 es are all closed *)
+    
 Admitted.
 

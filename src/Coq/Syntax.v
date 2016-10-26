@@ -305,6 +305,7 @@ Inductive Computation : Exp -> Exp -> Prop :=
             ExpFieldAccess (ExpNew C es) (ref fi) ~> ei
   | R_Invk : forall C m xs ds es e0,
             mbody(m, C) = xs o e0 ->
+            NoDup (this :: xs) ->
             ExpMethodInvoc (ExpNew C es) m ds ~> [; ExpNew C es :: ds \ this :: xs;] e0
   | R_Cast : forall C D es,
             C <: D ->

@@ -155,6 +155,16 @@ Proof.
   exists (S n); auto.
 Qed.
 
+
+Lemma nth_error_app_app : forall A (l l': list A) n x,
+  nth_error l n = Some x ->
+  nth_error (l ++ l') n = Some x.
+Proof.
+  intros. rewrite nth_error_app1; auto. 
+  apply nth_error_Some. intro.
+  rewrite H in H0; inversion H0.
+Qed.
+
 Lemma nth_error_same_len : forall {A B:Type} (l:list A) (l': list B) n x,
   length l = length l' ->
   nth_error l n = Some x ->

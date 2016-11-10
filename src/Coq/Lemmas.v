@@ -99,6 +99,12 @@ Proof.
   rewrite H; simpl. rewrite H0. auto.
 Qed.
 
+Lemma subtype_fields: forall C D fs ,
+  C <: D ->
+  fields D fs ->
+  exists fs', fields C (fs ++ fs').
+Proof.
+Admitted.
 
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
   nil extds xs : Bs |- e : D ->
@@ -109,7 +115,7 @@ Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
   exists C, (C <:D /\ Gamma |- [; ds \ xs ;] e : C).
 Proof with eauto.
   intros.
-  typing_cases (induction H using ExpTyping_ind') Case.
+  typing_cases (induction H using ExpTyping_ind') Case; sort.
   Case "T_Var".
     destruct (In_dec (eq_id_dec) x xs) as [xIn|xNIn].
     SCase "In x xs". rename C into Bi. SearchAbout Forall2.
@@ -127,7 +133,12 @@ Proof with eauto.
       split with C. split. eauto.
       erewrite notin_extds in H... inversion H. 
   Case "T_Field".
-      
+    simpl. destruct IHExpTyping as [C']. destruct H8. 
+    exists Ci. 
+    split...
+    eapply subtype_fields in H8... destruct H8 as [fs'].
+    eapply T_Field. eassumption.  eapply H8. eapply nth_error_app_app... auto. auto.
+  Case "T_Invk".
 Admitted.
 
 Lemma ref_noDup_nth_error: forall {T} {H: Referable T} (xs:list T) i i1 x x1,

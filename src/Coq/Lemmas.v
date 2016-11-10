@@ -101,8 +101,8 @@ Qed.
 
 
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
-  Gamma extds xs : Bs |- e : D ->
-  wf_extd Gamma xs ->
+  nil extds xs : Bs |- e : D ->
+  NoDup xs ->
   Forall2 (ExpTyping Gamma) ds As ->
   Forall2 Subtype As Bs ->
   length ds = length xs ->
@@ -117,18 +117,15 @@ Proof with eauto.
       apply nth_error_In' in xIn as [i]. symmetry in H3.
       edestruct (@nth_error_same_len id Exp) as [di]...
       assert (nth_error Bs i = Some Bi).
-      eapply get_wf_extds; eauto. 
-      erewrite var_subst_in...
+      eapply get_wf_extds; eauto; constructor; eauto. 
       destruct (Forall2_nth_error _ _ (ExpTyping Gamma) ds As i di) as [Ai]...
       exists Ai.
       split.
+      eapply Forall2_forall... erewrite var_subst_in; eauto.
       eapply Forall2_forall...
-      eapply Forall2_forall...
-    SCase "~In x xs".
+    SCase "~In x xs". 
       split with C. split. eauto.
-      erewrite notin_extds in H...
-      assert ( [; ds \ xs ;] (ExpVar x) = (ExpVar x)). simpl. rewrite notin_findwhere; auto. rewrite H4. 
-      constructor...
+      erewrite notin_extds in H... inversion H. 
   Case "T_Field".
       
 Admitted.
@@ -173,16 +170,13 @@ Proof with eauto.
     eapply Forall2_forall...
     apply (Forall2_forall _ _ (ExpTyping Gamma) es Cs i ei Ci); auto.
   Case "R_Invk".
-    inversion H. subst. inversion H5; subst; sort.
+    inversion H. subst. inversion H6; subst; sort.
     rename C2 into C0.
-    eapply A14 in H6. destruct H6 as [B]. destruct H2.
-
-    (*My Idea is to substitute before weakening, this way I don't have to prove that
-    this::xs is not int Gamma (which I think is not provable) *)
-    eapply term_subst_preserv_typing in H3. destruct H3 as [E]. destruct H3.
-    exists E; split; eauto. apply weakening. eauto.
-    constructor; eauto.
-    (* But then I have to prove that es and ExpNew C0 es are all closed *)
+    eapply A14 in H7. destruct H7 as [B]. destruct H3.
+    eapply term_subst_preserv_typing in H4. destruct H4 as [E]. destruct H4.
+    exists E; split; eauto. assumption. 
+    constructor; eauto. constructor; eauto. simpl. apply eq_S; auto. eauto. eauto.
+  Case "R_Cast".
     
 Admitted.
 

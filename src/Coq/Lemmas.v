@@ -172,10 +172,12 @@ Proof with eauto.
   Case "R_Invk".
     inversion H. subst. inversion H6; subst; sort.
     rename C2 into C0.
-    eapply A14 in H7. destruct H7 as [B]. destruct H3.
-    eapply term_subst_preserv_typing in H4. destruct H4 as [E]. destruct H4.
-    exists E; split; eauto. assumption. 
-    constructor; eauto. constructor; eauto. simpl. apply eq_S; auto. eauto. eauto.
+    eapply A14 in H7... 
+    destruct H7 as [B]. destruct H3.
+    eapply term_subst_preserv_typing with (ds := ExpNew C0 es :: ds) in H4...
+    destruct H4 as [E]. destruct H4.
+    exists E; split; eauto.
+    apply eq_S; auto.
   Case "R_Cast".
     
 Admitted.

@@ -88,6 +88,7 @@ Qed.
 Lemma var_subst_in: forall ds xs x i di,
   nth_error xs i = Some x ->
   nth_error ds i = Some di ->
+  NoDup xs ->
   [; ds \ xs ;] (ExpVar x) = di.
 Proof.
   intros. gen ds xs i.
@@ -95,7 +96,7 @@ Proof.
   rewrite nth_error_nil in H; inversion H.
   rewrite nth_error_nil in H0; inversion H0.
   rewrite nth_error_nil in H; inversion H.
-  apply findwhere_ntherror in H. unfold subst.
+  apply findwhere_ntherror in H; auto. unfold subst.
   rewrite H; simpl. rewrite H0. auto.
 Qed.
 

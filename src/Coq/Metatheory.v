@@ -79,14 +79,15 @@ Proof.
   apply n1; inversion H; auto.
 Qed.
 
-Definition find_where : id -> list id -> option nat := 
-  let fix f (n: nat) (key: id) (l: list id) :=
+Fixpoint find_w (n: nat) (key: id) (l: list id) :=
   match l with
     | [] => None
     | (x :: xs) => if beq_id key x 
                     then Some n
-                    else f (S n) key xs
-  end in f 0.
+                    else find_w (S n) key xs
+  end.
+
+Definition find_where := (find_w 0).
 
 Lemma notin_findwhere : forall x xs,
   ~In x xs -> find_where x xs = None.
@@ -111,13 +112,6 @@ Proof.
       rewrite e. rewrite beq_id_refl. eauto. 
       case beq_id. eauto. auto.
 Qed.
-
-
-Lemma findwhere_ntherror : forall x xs i,
-  find_where x xs = Some i <-> nth_error xs i = Some x.
-Admitted.
-
-
 
 Lemma none_ex_Some: forall {A: Type} x,
   x <> @None A ->
@@ -201,168 +195,35 @@ Proof.
   apply nth_error_In in H0. contradiction.
 Qed.
 
-(*
-
-Definition partial_map (A:Type) := id -> (option A).
-Definition empty {A:Type} : partial_map A := fun _ => None.
-
-(* Adds an element at the head of the map *)
-Definition update {A:Type} (m : partial_map A)
-(x : id) (v : A) :=
-fun x' => if beq_id x x' then (Some v) else m x'.
-
-(* Adds an element at the tail of the map *)
-Definition extend {A:Type} (m : partial_map A) (x : id) (v : A) (x': id) :=
-    match m x' with
-     | None => if beq_id x x' then Some v else None
-     | otherwise => if beq_id x x' then None else m x'
-    end.
-Notation " m 'extd' id ':' val" := (extend m id val) (at level 20, id at next level).
-
-
-(* Extends a list of element at the tail of the map *)
-Fixpoint extend_list {A:Type} (m : partial_map A) (ids : list id) (vals : list A) :=
-match ids, vals with
- | (x::xs), (v::vs) => extend_list (extend m x v) xs vs
- | nil, nil => m
- | _, _ => @empty A
-end.
-Notation " m 'extds' ids ':' vals" := (extend_list m ids vals) (at level 20, ids at next level).
-
-Lemma update_eq : forall A (m: partial_map A) x v,
-(update m x v) x = Some v.
+Lemma find_w_S : forall xs n x i,
+  find_w n x xs = Some i ->
+  find_w (S n) x xs = Some (S i).
 Proof.
-intros A m x v. unfold update. rewrite beq_id_refl with (i:= x).
-reflexivity.
+  induction xs, n; intros; try (inversion H; auto).
+  case beq_id eqn:Beq. inversion H1. simpl in *. 
+  apply beq_id_eq in Beq; rewrite Beq. rewrite beq_id_refl; auto.
+  simpl. apply beq_id_false_not_eq in Beq.
+  rewrite not_eq_beq_id_false in *; auto.
+  clear H.
+  simpl.
+  case beq_id eqn:Beq. inversion H1. eauto. apply IHxs. auto.
 Qed.
 
-
-Theorem update_neq : forall (X:Type) v x1 x2
-(m : partial_map X),
-x2 <> x1 -> 
-(update m x2 v) x1 = m x1.
-Proof.
-intros X v x1 x2 m H.
-unfold update. rewrite not_eq_beq_id_false. reflexivity.
-apply H. Qed.
-
-Lemma update_shadow : forall A (m: partial_map A) v1 v2 x,
-(update (update m x v1) x v2) x = Some v2.
-Proof.
-  intros A m v1 v2 x.
-  unfold update.
-  rewrite beq_id_refl; auto.
-Qed.
-
-Lemma extend_wf : forall A (m: partial_map A) v x,
-m x <> None ->
-(extend m x v) x = None.
-Proof.
-  intros A m v x1 H. unfold extend.
-  apply none_ex_Some in H. destruct H. 
-  rewrite H; auto.
-  rewrite beq_id_refl; eauto.
-Qed.
-
-Lemma extend_list_ill: forall A (m: partial_map A) x1 x xs,
-  (m extds (x1 :: xs) : nil) x = None.
-Proof.
+Lemma findwhere_ntherror : forall xs x i,
+  NoDup xs ->
+  nth_error xs i = Some x ->
+  find_where x xs = Some i. 
+Proof. 
+  induction xs. intros; rewrite nth_error_nil in H0; inversion H0.
   intros.
-  induction xs;
-  simpl; auto.
+  inversion H. clear H. subst. sort.
+  unfold find_where; simpl in *.
+  case i in *.
+    - inversion H0.  rewrite beq_id_refl. auto.
+    - simpl in *. case beq_id eqn:Beq. apply beq_id_eq in Beq.
+  rewrite Beq in H0. false.
+  apply H3. apply nth_error_In with i; auto. apply find_w_S. eapply IHxs; auto.
 Qed.
-
-  Lemma extend_list_not_shadow: forall A (m: partial_map A) x xs ds,
-  ~In x xs ->
-  (m extds xs : ds) x = m x.
-Proof.
-  intros; gen xs ds m.
-  induction xs, ds; auto.
-  apply not_in_cons in H. destruct H.
-  simpl.
-  intros.
-  rewrite IHxs; auto.
-  unfold extend.
-  destruct (m x) eqn:Heq;
-  rewrite not_eq_beq_id_false; auto.
-Qed.
-
-Lemma extend_list_not_shadow': forall A (m: partial_map A) x xs ds,
-In x xs ->
-(m extds xs : ds) x = None.
-Proof.
-  intros; gen xs ds m.
-  induction xs, ds; intros.  inversion H. inversion H.
-  simpl.
-  rewrite <- extend_list_ill.
-  
-  apply not_in_cons in H. destruct H.
-  simpl.
-  intros.
-  rewrite IHxs; auto.
-  unfold extend.
-  destruct (m x) eqn:Heq;
-  rewrite not_eq_beq_id_false; auto.
-Qed.
-
-Lemma extend_list_wf: forall A xs ds i xi di (m: partial_map A),
-  nth_error xs i = Some xi ->
-  length xs = length ds ->
-  (m extds xs : ds) xi = Some di ->
-  nth_error ds i = Some di.
-Proof.
-  induction xs, ds; intros; try (solve [
-    match goal with 
-    | [ H: (nth_error [] _ = _) |- _ ] => rewrite nth_error_nil in H; inversion H 
-    end
-    ]).
-  inversion H0.
-  destruct i eqn:Heq. inversion H.
-  rewrite H3 in H1. simpl in H1.
-  rewrite ex' in H1. simpl; auto.
-  simpl in *. inversion H0. eapply IHxs; eauto.
- simpl in *.
-  
-Admitted.
-<<<<<<< HEAD
-
-Lemma ex': forall A xs ds (m: partial_map A) x di,
-  (m extds (x::xs) : (di::ds)) x = Some di.
-=======
-(*
-Lemma extend_list_not_shadow: forall A (m: partial_map A) x xs ds,
-
-~In x xs ->
-(m extds xs : ds) x = m x.
->>>>>>> 059af6ae144bf86764ab8c9ad517b800e87e1bd4
-Proof.
-  intros; simpl. unfold update. rewrite beq_id_refl; auto.
-Qed.
-
-
-Lemma extend_list_not_shadow': forall A xs ds (m: partial_map A) x,
-Forall (fun x' => m x' = None) xs ->
-In x xs ->
-length xs = length ds ->
-(m extds xs : ds) x = (empty extds xs : ds) x.
-Proof.
-  induction xs, ds; intros; try (solve [inversion H0| inversion H1]).
-  simpl in *. inversion H1.
-  destruct eq_id_dec with a x. rewrite e. 
- simpl. unfold empty.
-  simpl.
-
-
-Lemma extend_neq : forall A (m: partial_map A) v x x0,
-x <> x0 ->
-(extend m x v) x0 = m x0.
-Proof.
-  intros A m v x1 x2 H. unfold extend.
-  case (m x2);
-  rewrite not_eq_beq_id_false; auto.
-Qed.
-*)
-*)
 
 Section Ref.
 

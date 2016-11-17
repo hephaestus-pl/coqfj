@@ -139,7 +139,10 @@ Proof with eauto.
     split...
     eapply subtype_fields in H8... destruct H8 as [fs'].
     eapply T_Field. eassumption.  eapply H8. eapply nth_error_app_app... auto. auto.
-  Case "T_Invk".
+  Case "T_Invk". rename C0 into D0.
+    destruct IHExpTyping as [C0]. destruct H8.
+    apply A11 with (m:=m) (Cs:=Ds) (C0:=C) in H8...
+    exists C. split; auto. simpl. eapply T_Invk; eauto.
 Admitted.
 
 Lemma ref_noDup_nth_error: forall {T} {H: Referable T} (xs:list T) i i1 x x1,

@@ -124,6 +124,11 @@ Lemma Forall2_trans: forall (A: Type) (P: A -> A -> Prop) xs ys zs,
   Forall2 P xs zs.
 Admitted.
 
+Lemma subtype_LEM: forall C D,
+  C <: D \/ ~ C <: D.
+Proof.
+Admitted.
+
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
   nil extds xs : Bs |- e : D ->
   NoDup xs ->
@@ -173,6 +178,21 @@ Proof with eauto.
     apply Forall2_map; auto.
     intros x y z ?H ?H1; apply S_Trans with y; auto.
   Case "T_UCast".
+    exists C. split; auto. simpl.
+    destruct IHExpTyping as [E]. destruct H5.
+    eapply T_UCast...
+  Case "T_DCast".
+    exists C; split; auto. simpl.
+    destruct IHExpTyping as [E]. destruct H6.
+    destruct subtype_LEM with E C.
+    eapply T_UCast in H7...
+    destruct eq_id_dec with E C. rewrite e in H8; false; apply H8; auto.
+    destruct subtype_LEM with C E.
+    eapply T_DCast in H7...
+    eapply T_SCast in H7...
+    apply STUPID_STEP.
+  Case "T_SCast".
+    
 
 Admitted.
 

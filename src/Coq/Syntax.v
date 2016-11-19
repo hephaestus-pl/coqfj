@@ -248,6 +248,7 @@ Definition closed (e: Exp) :=
 Inductive Warning (s: string) : Prop :=
   | w_str : Warning s.
 Notation stupid_warning := (Warning "stupid warning").
+Axiom STUPID_STEP : stupid_warning.
 
 Reserved Notation "Gamma '|-' x ':' C" (at level 60, x at next level). Print get.
 Inductive ExpTyping (Gamma: env ClassName) : Exp -> ClassName -> Prop :=

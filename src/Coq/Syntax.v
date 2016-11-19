@@ -283,8 +283,8 @@ Inductive ExpTyping (Gamma: env ClassName) : Exp -> ClassName -> Prop :=
                 Gamma |- ExpCast C e0 : C
   | T_SCast : forall e0 D C,
                 Gamma |- e0 : D ->
-                D <: C ->
-                C <: D ->
+                ~ D <: C ->
+                ~ C <: D ->
                 stupid_warning ->
                 Gamma |- ExpCast C e0 : C
   where " Gamma '|-' e ':' C " := (ExpTyping Gamma e C).
@@ -368,7 +368,7 @@ Definition ExpTyping_ind' :=
   (f4 : forall (e0 : Exp) (C : id) (D : ClassName),
         Gamma |- e0 : D -> P e0 D -> C <: D -> C <> D -> P (ExpCast C e0) C)
   (f5 : forall (e0 : Exp) (D C : ClassName),
-        Gamma |- e0 : D -> P e0 D -> D <: C -> C <: D -> stupid_warning -> P (ExpCast C e0) C) =>
+        Gamma |- e0 : D -> P e0 D -> ~ D <: C -> ~ C <: D -> stupid_warning -> P (ExpCast C e0) C) =>
 fix F (e : Exp) (c : ClassName) (e0 : Gamma |- e : c) {struct e0} : P e c :=
   match e0 in (_ |- e1 : c0) return (P e1 c0) with
   | T_Var _ x C e1 => f x C e1

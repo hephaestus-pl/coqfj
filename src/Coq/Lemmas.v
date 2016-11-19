@@ -124,6 +124,13 @@ Lemma Forall2_trans: forall (A: Type) (P: A -> A -> Prop) xs ys zs,
   Forall2 P xs zs.
 Admitted.
 
+Lemma subtype_not_sub: forall C D E,
+  ~ C <: D ->
+  ~ D <: C ->
+    E <: D ->
+  ~ E <: C.
+Admitted.
+
 Lemma subtype_LEM: forall C D,
   C <: D \/ ~ C <: D.
 Proof.
@@ -192,9 +199,12 @@ Proof with eauto.
     eapply T_SCast in H7...
     apply STUPID_STEP.
   Case "T_SCast".
-    
+    exists C; split; auto. simpl.
+    destruct IHExpTyping as [E]. destruct H7.
+    eapply T_SCast...
+    eapply subtype_not_sub...
+Qed. 
 
-Admitted.
 
 Lemma ref_noDup_nth_error: forall {T} {H: Referable T} (xs:list T) i i1 x x1,
   nth_error xs i = Some x ->

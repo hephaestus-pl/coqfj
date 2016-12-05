@@ -1,4 +1,0 @@
-let a = CDecl (Id "A") ClassObject [] (KDecl (Id "A") [] [] []) []
-let b = CDecl (Id "B") ClassObject [] (KDecl (Id "B") [] [] []) []
-let pair = CDecl (Id "Pair") ClassObject [FDecl (ClassId (Id "A")) (Id "fst"),FDecl (ClassId (Id "B")) (Id "snd")] (KDecl (Id "Pair") [Field (ClassId (Id "A")) (Id "fst"),Field (ClassId (Id "B")) (Id "snd")] [] [Assgnmt (Id "fst") (Id "fst"),Assgnmt (Id "snd") (Id "snd")]) [MDecl (ClassId (Id "Pair")) (Id "setfst") [FArg (ClassId (Id "A")) (Id "newfst"),FArg (ClassId (Id "B")) (Id "newsnd")] (TermExp (NewExp (Id "Pair") [TermVar (Id "newfst"),TermVar (Id "newsnd")]))]
-let ct = ClassTable [(Id "A", a), (Id "B", b), (Id "Pair", pair)]

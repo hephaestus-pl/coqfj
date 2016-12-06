@@ -21,9 +21,6 @@ Parameter this: Var.
 Inductive Argument :=
   | Arg : id -> Argument.
 
-Inductive Assignment :=
-  | Assgnmt : id -> id -> Assignment.
-
 Inductive FormalArg :=
   | FArg : ClassName -> id -> FormalArg.
 
@@ -35,9 +32,6 @@ Instance FargRef : Referable FormalArg :={
 
 Definition fargType (f: FormalArg):ClassName := 
   match f with FArg t _ => t end.
-
-Inductive Constructor :=
-  | KDecl : id -> [FormalArg] -> [Argument] -> [Assignment] -> Constructor.
 
 Inductive FieldDecl :=
   | FDecl : ClassName -> id -> FieldDecl.
@@ -57,6 +51,14 @@ Inductive Exp : Type :=
   | ExpMethodInvoc : Exp -> id -> [Exp] -> Exp
   | ExpCast : ClassName -> Exp -> Exp
   | ExpNew : id -> [Exp] -> Exp.
+
+Inductive Assignment :=
+  | Assgnmt : Exp -> Exp -> Assignment.
+
+
+Inductive Constructor :=
+  | KDecl : id -> [FormalArg] -> [Argument] -> [Assignment] -> Constructor.
+
 
 (* Arguments cannot have duplicate names *)
 Inductive MethodDecl :=
@@ -266,21 +268,23 @@ Tactic Notation "computation_cases" tactic(first) ident(c) :=
   | Case_aux c "RC_Invk_Recv" | Case_aux c "RC_Invk_Arg" 
   | Case_aux c "RC_New_Arg" | Case_aux c "RC_Cast"].
 
-Inductive MType_OK : ClassName -> id -> Prop :=
-  | T_Method : forall C D C0 E0 xs Cs e0 Fs noDupfs K Ms noDupMds m fargs noDupFargs,
+
+Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
+  | T_Method : forall C D C0 D0 E0 xs Cs Ds e0 Fs noDupfs K Ms noDupMds fargs m noDupFargs,
             nil extds (this :: xs) : (C :: Cs) |- e0 : E0 ->
             E0 <: C0 ->
             find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
-            find m Ms = Some (MDecl C0 m fargs noDupFargs e0) ->
-            MType_OK C m.
+            (mtype(m, D) = Ds ~> D0 -> Cs = Ds /\ C0 = D0) ->
+            map fargType fargs = Cs ->
+            MType_OK C (MDecl C0 m fargs noDupFargs e0).
 
-Inductive CType_OK: ClassName -> Prop :=
-  | T_Class : forall C D Fs noDupfs K Ms noDupMds fargs arg assgn fdecl,
-            find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
-            K = KDecl C fargs arg assgn ->
+
+Inductive CType_OK: ClassDecl -> Prop :=
+  | T_Class : forall C D Fs noDupfs K Ms noDupMds Cfargs Dfargs fdecl,
+            K = KDecl C (Cfargs ++ Dfargs) (map Arg (refs Cfargs)) (zipWith Assgnmt (map (ExpFieldAccess (ExpVar this)) (refs Fs)) (map ExpVar (refs Fs))) ->
             fields D fdecl ->
-            Forall (MType_OK C) (refs Ms) ->
-            CType_OK C.
+            Forall (MType_OK C) Ms ->
+            CType_OK (CDecl C D Fs noDupfs K Ms noDupMds).
             
 
 Definition ExpTyping_ind' := 

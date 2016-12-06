@@ -95,6 +95,14 @@ Proof.
   apply IHxs; auto.
 Qed.
 
+
+Fixpoint zipWith {A B C: Type}(f: A -> B -> C) (xs: [A] )(ys: [B]) : [C]:=
+match xs,ys with
+| nil,_ => nil
+| _,nil => nil
+| (x::xs'),(y::ys') => (f x y) :: (zipWith f xs' ys')
+end.
+
 Fixpoint find_w (n: nat) (key: id) (l: list id) :=
   match l with
     | [] => None

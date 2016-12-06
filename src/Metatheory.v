@@ -15,6 +15,7 @@ Require Export Bool.
 Require Export List.
 Require Export Arith.
 Require Export Arith.EqNat.  (* Contains [beq_nat], among other things *)
+Require Export RelationClasses.
 Import ListNotations.
 Require Import NPeano.
 Require Export LibTactics.

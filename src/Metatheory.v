@@ -15,6 +15,7 @@ Require Export Bool.
 Require Export List.
 Require Export Arith.
 Require Export Arith.EqNat.  (* Contains [beq_nat], among other things *)
+Require Export RelationClasses.
 Import ListNotations.
 Require Import NPeano.
 Require Export LibTactics.
@@ -380,7 +381,43 @@ Proof.
   apply IHForall2 with n; auto.
 Qed.
 
+Lemma Forall2_exi: forall (Q: B -> B -> Prop) xs ys,
+  Forall2 (fun x y => exists y', Q y' y /\ P x y') xs ys ->
+  exists ys', Forall2 Q ys' ys /\ Forall2 P xs ys'.
+Proof.
+  intros. induction H. exists (@nil B); split; constructor.
+  destruct H as [z]. destruct H. destruct IHForall2 as [zs]. destruct H2.
+  exists (z :: zs). split; constructor; auto.
+Qed.
+
+Lemma Forall2_map: forall (f: A -> A) xs ys,  
+  Forall2 (fun x => P (f x)) xs ys ->
+  Forall2 P (map f xs) ys.
+Proof.
+  intros. induction H. simpl; auto.
+  simpl in *. constructor; auto.
+Qed.
+
+
 End Two_predicate.
+
+
+Lemma Forall2_trans: forall (A: Type) (P: A -> A -> Prop) xs ys zs,
+  Transitive P ->
+  Forall2 P xs ys ->
+  Forall2 P ys zs ->
+  Forall2 P xs zs.
+Proof.
+  induction xs, ys, zs; intros; auto.
+  (* Trivial Cases solved by inversion *)
+  - inversion H0. 
+  - inversion H1. 
+  - inversion H1.
+
+  - inversion H0; inversion H1. subst.
+  constructor. transitivity a0; auto.
+  eapply IHxs; eauto.
+Qed.
 
 (** * From Basics.v *)
 

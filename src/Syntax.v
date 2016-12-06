@@ -279,13 +279,15 @@ Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
             MType_OK C (MDecl C0 m fargs noDupFargs e0).
 
 
-Inductive CType_OK: ClassDecl -> Prop :=
+Inductive CType_OK: ClassName -> Prop :=
   | T_Class : forall C D Fs noDupfs K Ms noDupMds Cfargs Dfargs fdecl,
             K = KDecl C (Cfargs ++ Dfargs) (map Arg (refs Cfargs)) (zipWith Assgnmt (map (ExpFieldAccess (ExpVar this)) (refs Fs)) (map ExpVar (refs Fs))) ->
             fields D fdecl ->
             Forall (MType_OK C) Ms ->
-            CType_OK (CDecl C D Fs noDupfs K Ms noDupMds).
-            
+            find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
+            CType_OK C.
+
+Axiom ClassesOK: forall C, CType_OK C.
 
 Definition ExpTyping_ind' := 
   fun (Gamma : env ClassName) (P : Exp -> ClassName -> Prop)

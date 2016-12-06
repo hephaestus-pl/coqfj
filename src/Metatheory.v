@@ -96,7 +96,7 @@ Proof.
 Qed.
 
 
-Fixpoint zipWith {A B C: Type}(f: A -> B -> C) (xs: [A] )(ys: [B]) : [C]:=
+Fixpoint zipWith {A B C: Type}(f: A -> B -> C) (xs: list A )(ys: list B) : list C:=
 match xs,ys with
 | nil,_ => nil
 | _,nil => nil

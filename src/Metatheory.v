@@ -326,6 +326,23 @@ Qed.
 
 End Ref.
 
+Instance Referable_id : Referable id :={
+  ref id := id
+}.
+
+Lemma nth_error_find {A: Prop} : forall {R: @Referable A} x xs,
+  In x xs -> 
+  (exists i, find i xs = Some x).
+Proof.
+  induction xs.
+  intros; inversion H.
+  simpl; intros. destruct H.
+  rewrite H. exists (ref x). rewrite beq_id_refl; auto.
+  destruct IHxs; auto.
+  destruct eq_id_dec with (Some a) (Some x).
+ exists (ref a); auto. rewrite beq_id_refl. exact e.
+  intros.
+
 (** Forall for two-fold relations **)
 
 

@@ -139,13 +139,13 @@ Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:
 Inductive m_body (m: id) (C: ClassName) (xs: [ClassName]) (e: Exp) : Prop:=
   | mbdy_ok : forall D Fs K Ms fargs noDupfs noDupMds,
               find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds)->
-              In m (map ref Ms) ->
-              map ref fargs = xs ->
+              In m (refs Ms) ->
+              refs fargs = xs ->
               m_body m C xs e
   | mbdy_no_override: forall D Fs K Ms fargs noDupfs noDupMds,
               find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds)->
-              ~In m (map ref Ms) ->
-              map ref fargs = xs ->
+              ~In m (refs Ms) ->
+              refs fargs = xs ->
               m_body m D xs e ->
               m_body m C xs e.
 Notation "'mbody(' m ',' D ')' '=' xs 'o' e" := (m_body m D xs e) (at level 40).
@@ -269,21 +269,23 @@ Tactic Notation "computation_cases" tactic(first) ident(c) :=
   | Case_aux c "RC_New_Arg" | Case_aux c "RC_Cast"].
 
 
-Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
+Inductive MType_OK : ClassName -> id -> Prop :=
   | T_Method : forall C D C0 D0 E0 xs Cs Ds e0 Fs noDupfs K Ms noDupMds fargs m noDupFargs,
             nil extds (this :: xs) : (C :: Cs) |- e0 : E0 ->
             E0 <: C0 ->
             find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
             (mtype(m, D) = Ds ~> D0 -> Cs = Ds /\ C0 = D0) ->
             map fargType fargs = Cs ->
-            MType_OK C (MDecl C0 m fargs noDupFargs e0).
+            refs fargs = xs ->
+            find m Ms = Some (MDecl C0 m fargs noDupFargs e0) ->
+            MType_OK C m.
 
 
 Inductive CType_OK: ClassName -> Prop :=
   | T_Class : forall C D Fs noDupfs K Ms noDupMds Cfargs Dfargs fdecl,
             K = KDecl C (Cfargs ++ Dfargs) (map Arg (refs Cfargs)) (zipWith Assgnmt (map (ExpFieldAccess (ExpVar this)) (refs Fs)) (map ExpVar (refs Fs))) ->
             fields D fdecl ->
-            Forall (MType_OK C) Ms ->
+            Forall (MType_OK C) (refs Ms) ->
             find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
             CType_OK C.
 

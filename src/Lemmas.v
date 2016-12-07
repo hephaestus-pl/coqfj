@@ -31,16 +31,24 @@ Proof with eauto.
     inversion H; eauto.
 Qed.
 
-Lemma A14: forall D D0 m C0 xs Ds e,
+Lemma A14: forall D m C0 xs Ds e,
   mtype(m,C0) = Ds ~> D ->
   mbody(m,C0) = xs o e ->
-  C0 <: D0 -> 
-  exists C, C <: D /\
-  nil extds (this :: xs) : (C0 :: Ds) |- e : C.
+  exists D0 C,  C0 <: D0 /\ C <: D /\
+  nil extds (this :: xs) : (D0 :: Ds) |- e : C.
 Proof.
   intros.
   mbdy_cases (induction H0) Case.
   Case "mbdy_ok".
+    sort. destruct ClassesOK with C. sort.
+    rewrite H6 in H0. inversion H0. sort. rewrite H11 in H5.
+    rewrite Forall_forall in H5. assert (In m (refs Ms)). assumption.
+    apply nth_error_In' in H7. destruct H5 with m; auto. sort. SearchAbout C.
+    exists C E0; split; auto. rewrite H14 in H6. inversion H6. rewrite H23 in H18. 
+    SearchAbout fargs.
+split.
+    exists E0; split; auto. 
+    SearchAbout D0.
 (*
     Print T_Method.*)
 Admitted.

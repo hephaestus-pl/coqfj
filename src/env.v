@@ -95,7 +95,7 @@ Proof.
   - intros. simpl; rewrite app_nil_r; auto.
   - intros.
   case bs in *.
-    + simpl in *. SearchAbout "or" "not".  rewrite app_nil_r. auto.
+    + simpl in *. rewrite app_nil_r. auto.
     + simpl in *. apply Decidable.not_or in H. destruct H. rewrite snoc_app.
     rewrite IHxs with bs (m extd a : a0) x; auto.
     apply notin_extd; auto.

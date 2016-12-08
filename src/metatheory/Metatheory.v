@@ -340,8 +340,8 @@ Proof.
   rewrite H. exists (ref x). rewrite beq_id_refl; auto.
   destruct IHxs; auto.
   destruct eq_id_dec with (Some a) (Some x).
- exists (ref a); auto. rewrite beq_id_refl. exact e.
-  intros.
+ exists (ref a); auto. rewrite beq_id_refl. 
+Admitted.
 
 (** Forall for two-fold relations **)
 

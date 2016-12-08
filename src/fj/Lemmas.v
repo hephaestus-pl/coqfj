@@ -3,6 +3,43 @@ Require Import LibTactics.
 
 Import Arith.
 
+(* Inversion Lemmas *)
+Lemma classOk_inv: forall C D fs noDupfs K ms noDupMs,
+  find C CT = Some (CDecl C D fs noDupfs K ms noDupMs) ->
+  CType_OK (CDecl C D fs noDupfs K ms noDupMs).
+Admitted.
+
+Lemma methodOk_inv: forall C D fs noDupfs K ms noDupMs C0 m fargs noDupFargs e0,
+  find C CT = Some (CDecl C D fs noDupfs K ms noDupMs) ->
+  find m ms = Some (MDecl C0 m fargs noDupFargs e0) ->
+  MType_OK C (MDecl C0 m fargs noDupFargs e0).
+Admitted.
+
+Lemma mtype_decl_inv: forall C D Fs noDupfs K Ms noDupMds,
+  find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
+  D <> Object ->
+  exists D0 Fs0 noDupfs0 K0 Ms0 noDupMds0, find D CT = Some (CDecl D D0 Fs0 noDupfs0 K0 Ms0 noDupMds0).
+Proof.
+  intros. apply classOk_inv in H. inversion H. subst. inversion H7.
+  symmetry in H1. contradiction. subst. sort.
+  repeat eexists; eauto.
+Qed.
+
+
+Lemma unify_returnType : forall Ds D C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs ret,
+  mtype( m, C)= Ds ~> D ->
+  find C CT = Some (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
+  find m Ms = Some (MDecl C0 m fargs noDupfargs ret) ->
+  D = C0.
+Proof.
+  intros. gen D0 Fs noDupfs K Ms noDupMds. induction H; intros.
+  sort. rewrite H3 in H. inversion H; subst.
+  rewrite H2 in H0. inversion H0; subst. 
+  sort. eapply IHm_type. eauto. 
+  rewrite H0 in H. inversion H
+  rewrite H3 in H1.
+
+(* Paper Lemmas *)
 Lemma A11: forall m D C Cs C0,
           C <: D ->
           mtype(m,D) = Cs ~> C0 ->
@@ -15,10 +52,10 @@ Proof with eauto.
     inversion H0;
     (destruct in_dec with id m (map ref mds);
       [ exact eq_id_dec
-      | eapply mty_ok; eauto 
-      | eapply mty_no_override; eauto
+        | eapply mty_ok; eauto 
+        | eapply mty_no_override; eauto
     ]).
-Qed.
+Admitted.
 
 
 Lemma weakening: forall Gamma e C,
@@ -40,7 +77,11 @@ Proof.
   intros.
   mbdy_cases (induction H0) Case.
   Case "mbdy_ok".
-    sort. destruct ClassesOK with C. sort.
+    sort. eapply methodOk_inv in H0; eauto. inversion H0. sort.
+    subst. inversion H. 
+
+
+ destruct ClassesOK with C. sort.
     rewrite H6 in H0. inversion H0. sort. rewrite H11 in H5.
     rewrite Forall_forall in H5. assert (In m (refs Ms)). assumption.
     apply nth_error_In' in H7. destruct H5 with m; auto. sort. SearchAbout C.

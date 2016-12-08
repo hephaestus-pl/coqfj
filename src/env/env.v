@@ -1,3 +1,5 @@
+Add LoadPath "../metatheory".
+
 Require Import Metatheory.
 Import List.
 Import ListNotations.

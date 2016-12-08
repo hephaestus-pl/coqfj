@@ -1,3 +1,7 @@
+(* Add loadpath to CoqIde *)
+Add LoadPath "../metatheory".
+Add LoadPath "../env".
+(* To add loadpath while compiling, compile using coqc <file-path> *)
 Require Export List.
 Require Export Metatheory.
 Require Import String.
@@ -8,9 +12,9 @@ Notation "'refs' x":= (map ref x) (at level 30).
 End Refs.
 Export Refs.
 
-Notation "'[' X ']'" := (list X) (at level 40).
 (* We will use Notation to make automation easier
  * This will be the notation to be similar with haskell *)
+Notation "'[' X ']'" := (list X) (at level 40).
 
 Definition ClassName := id.
 Parameter Object: ClassName.
@@ -281,15 +285,16 @@ Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
             MType_OK C (MDecl C0 m fargs noDupFargs e0).
 
 
-Inductive CType_OK: ClassName -> Prop :=
+Inductive CType_OK: ClassDecl -> Prop :=
   | T_Class : forall C D Fs noDupfs K Ms noDupMds Cfargs Dfargs fdecl,
             K = KDecl C (Cfargs ++ Dfargs) (map Arg (refs Cfargs)) (zipWith Assgnmt (map (ExpFieldAccess (ExpVar this)) (refs Fs)) (map ExpVar (refs Fs))) ->
             fields D fdecl ->
             Forall (MType_OK C) (Ms) ->
             find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
-            CType_OK C.
+            CType_OK (CDecl C D Fs noDupfs K Ms noDupMds).
 
-Axiom ClassesOK: forall C, CType_OK C.
+Axiom ClassesOK: forall C D Fs noDupfs K Ms noDupMds, 
+  CType_OK (CDecl C D Fs noDupfs K Ms noDupMds).
 
 Definition ExpTyping_ind' := 
   fun (Gamma : env ClassName) (P : Exp -> ClassName -> Prop)

@@ -1,11 +1,11 @@
-Add LoadPath "../Metatheory".
+Add LoadPath "../".
 Add LoadPath "../Lists".
 
 Require Import List.
-Require Import Arith.
-Require Import NPeano.
-Require Import nth_error.
-Require Import Metatheory.
+Require Export Arith.
+Require Export NPeano.
+Require Export Tactics.
+Require Export Lists.
 Import ListNotations.
 
 (* Identifiers and polymorphic partial maps. *)
@@ -139,12 +139,12 @@ Lemma findwhere_ntherror : forall xs x i,
 Proof. 
   induction xs. intros; rewrite nth_error_nil in H0; inversion H0.
   intros.
-  inversion H. clear H. subst. sort.
+  inversion H. clear H. subst.
   unfold find_where; simpl in *.
   case i in *.
     - inversion H0.  rewrite beq_id_refl. auto.
     - simpl in *. case beq_id eqn:Beq. apply beq_id_eq in Beq.
-  rewrite Beq in H0. false.
+  rewrite Beq in H0. apply False_ind.
   apply H3. apply nth_error_In with i; auto. apply find_w_S. eapply IHxs; auto.
 Qed.
 

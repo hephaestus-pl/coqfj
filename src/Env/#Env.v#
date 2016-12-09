@@ -1,5 +1,6 @@
 Add LoadPath "../metatheory".
 Add LoadPath "../referable".
+Add LoadPath "../lists".
 
 Require Import Metatheory.
 Require Import Referable.

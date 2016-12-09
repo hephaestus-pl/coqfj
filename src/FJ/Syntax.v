@@ -133,9 +133,9 @@ Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:
 
 
 Inductive m_body (m: id) (C: ClassName) (xs: [ClassName]) (e: Exp) : Prop:=
-  | mbdy_ok : forall D Fs K Ms noDupfs noDupMds C0 fargs noDupfargs ret,
+  | mbdy_ok : forall D Fs K Ms noDupfs noDupMds C0 fargs noDupfargs,
               find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds)->
-              find m Ms = Some (MDecl C0 m fargs noDupfargs ret) ->
+              find m Ms = Some (MDecl C0 m fargs noDupfargs e) ->
               refs fargs = xs ->
               m_body m C xs e
   | mbdy_no_override: forall D Fs K Ms noDupfs noDupMds,

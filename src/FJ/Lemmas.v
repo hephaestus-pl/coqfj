@@ -12,8 +12,8 @@ Lemma classOk_inv: forall C D fs noDupfs K ms noDupMs,
 Admitted.
 
 Lemma methodOk_inv: forall C D fs noDupfs K ms noDupMs C0 m fargs noDupFargs e0,
-  find C CT = Some (CDecl C D fs noDupfs K ms noDupMs) ->
   find m ms = Some (MDecl C0 m fargs noDupFargs e0) ->
+  find C CT = Some (CDecl C D fs noDupfs K ms noDupMs) ->
   MType_OK C (MDecl C0 m fargs noDupFargs e0).
 Admitted.
 
@@ -38,6 +38,15 @@ Proof.
   sort. rewrite H3 in H. inversion H; subst.
   rewrite H2 in H0. inversion H0; subst. 
 Admitted.
+
+Lemma unify_fargsType : forall Ds D C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs ret,
+  mtype( m, C)= Ds ~> D ->
+  find C CT = Some (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
+  find m Ms = Some (MDecl C0 m fargs noDupfargs ret) ->
+  Ds = map fargType fargs.
+Proof.
+Admitted.
+
 
 (* Paper Lemmas *)
 Lemma A11: forall m D C Cs C0,
@@ -77,9 +86,17 @@ Proof.
   intros.
   mbdy_cases (induction H0) Case.
   Case "mbdy_ok".
-    sort. eapply methodOk_inv in H0; eauto. inversion H0. sort.
-    subst. inversion H. 
+    sort. assert (find m Ms = Some (MDecl C0 m fargs noDupfargs e)); auto.
+    eapply methodOk_inv in H1; eauto. 
+    inversion H1. clear H1; sort. subst.
+    exists C E0. split; auto.  clear H11.
+    erewrite unify_returnType with (D := D) (C0 := C0); eauto.
+    split. assumption.
+    erewrite unify_fargsType with (Ds := Ds) (fargs := fargs); eauto.
 
+  Case "mbdy_no_override".
+    apply IHm_body. eauto.
+admit. admit.
 Admitted.
 
 Lemma fields_obj_nil: forall f,
@@ -168,7 +185,7 @@ Proof with eauto.
   typing_cases (induction H using ExpTyping_ind') Case; sort.
   Case "T_Var".
     destruct (In_dec (eq_id_dec) x xs) as [xIn|xNIn].
-    SCase "In x xs". rename C into Bi. SearchAbout Forall2.
+    SCase "In x xs". rename C into Bi.
       assert (In x xs); eauto.
       apply nth_error_In' in xIn as [i]. symmetry in H3.
       edestruct (@nth_error_same_len id Exp) as [di]...

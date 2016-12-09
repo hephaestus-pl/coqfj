@@ -1,5 +1,7 @@
-Require Export Syntax.
-Require Import LibTactics.
+Require Import Tactics.
+Require Import Lists.
+Require Import Base.
+Require Import FJ.Syntax.
 
 Import Arith.
 
@@ -35,9 +37,7 @@ Proof.
   intros. gen D0 Fs noDupfs K Ms noDupMds. induction H; intros.
   sort. rewrite H3 in H. inversion H; subst.
   rewrite H2 in H0. inversion H0; subst. 
-  sort. eapply IHm_type. eauto. 
-  rewrite H0 in H. inversion H
-  rewrite H3 in H1.
+Admitted.
 
 (* Paper Lemmas *)
 Lemma A11: forall m D C Cs C0,
@@ -80,18 +80,6 @@ Proof.
     sort. eapply methodOk_inv in H0; eauto. inversion H0. sort.
     subst. inversion H. 
 
-
- destruct ClassesOK with C. sort.
-    rewrite H6 in H0. inversion H0. sort. rewrite H11 in H5.
-    rewrite Forall_forall in H5. assert (In m (refs Ms)). assumption.
-    apply nth_error_In' in H7. destruct H5 with m; auto. sort. SearchAbout C.
-    exists C E0; split; auto. rewrite H14 in H6. inversion H6. rewrite H23 in H18. 
-    SearchAbout fargs.
-split.
-    exists E0; split; auto. 
-    SearchAbout D0.
-(*
-    Print T_Method.*)
 Admitted.
 
 Lemma fields_obj_nil: forall f,
@@ -154,23 +142,6 @@ Lemma subtype_fields: forall C D fs ,
   fields D fs ->
   exists fs', fields C (fs ++ fs').
 Proof.
-Admitted.
-
-Lemma Forall2_exi: forall (A B: Type) (P: A -> B -> Prop) (Q: B -> B -> Prop) xs ys,
-  Forall2 (fun x y => exists y', Q y' y /\ P x y') xs ys ->
-  exists ys', Forall2 Q ys' ys /\ Forall2 P xs ys'.
-Admitted.
-
-Lemma Forall2_map: forall (A B: Type) (P: A -> B -> Prop) (f: A -> A) xs ys,  
-  Forall2 (fun x => P (f x)) xs ys ->
-  Forall2 P (map f xs) ys.
-Admitted.
-
-Lemma Forall2_trans: forall (A: Type) (P: A -> A -> Prop) xs ys zs,
-  Forall2 P xs ys ->
-  Forall2 P ys zs ->
-  (forall x y z, P x y -> P y z -> P x z) (* P is transitive *) ->
-  Forall2 P xs zs.
 Admitted.
 
 Lemma subtype_not_sub: forall C D E,
@@ -298,9 +269,9 @@ Proof with eauto.
     inversion H. subst. inversion H6; subst; sort.
     rename C2 into C0.
     eapply A14 in H7... 
-    destruct H7 as [B]. destruct H3.
-    eapply term_subst_preserv_typing with (ds := ExpNew C0 es :: ds) in H4...
-    destruct H4 as [E]. destruct H4.
+    destruct H7 as [B]. destruct H3. destruct H3. destruct H4.
+    eapply term_subst_preserv_typing with (ds := ExpNew C0 es :: ds) in H7...
+    destruct H7 as [E]. destruct H7.
     exists E; split; eauto.
     apply eq_S; auto.
   Case "R_Cast".

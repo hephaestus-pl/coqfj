@@ -1,9 +1,8 @@
 
-Require Import List.
 Require Import String.
 Require Import Tactics.
-Require Import Base.
 Require Import Lists.
+Require Import Base.
 
 (* We will use Notation to make automation easier
  * This will be the notation to be similar with haskell *)

@@ -223,6 +223,7 @@ Qed.
 
 End Ref.
 
+
 Instance Referable_id : Referable id :={
   ref id := id
 }.
@@ -239,3 +240,8 @@ Proof.
   destruct eq_id_dec with (Some a) (Some x).
  exists (ref a); auto. rewrite beq_id_refl. 
 Admitted.
+
+Module Refs.
+Notation "'refs' x":= (map ref x) (at level 30).
+End Refs.
+Export Refs.

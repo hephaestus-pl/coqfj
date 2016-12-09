@@ -5,11 +5,6 @@ Require Import Tactics.
 Require Import Base.
 Require Import Lists.
 
-Module Refs.
-Notation "'refs' x":= (map ref x) (at level 30).
-End Refs.
-Export Refs.
-
 (* We will use Notation to make automation easier
  * This will be the notation to be similar with haskell *)
 Notation "'[' X ']'" := (list X) (at level 40).
@@ -122,9 +117,7 @@ Tactic Notation "fields_cases" tactic(first) ident(c) :=
   [ Case_aux c "F_Obj" | Case_aux c "F_Decl"].
 
 Reserved Notation "'mtype(' m ',' D ')' '=' c '~>' c0" (at level 40, c at next level).
-(*
-  | MDecl : ClassName -> id -> forall (fargs: [FormalArg]), NoDup (this :: refs fargs) -> Exp -> MethodDecl.
-*)
+
 Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:=
   | mty_ok : forall D Fs K Ms noDupfs noDupMds C0 fargs noDupfargs ret,
               find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds)->
@@ -172,16 +165,16 @@ Fixpoint subst (e: Exp) (ds: [Exp]) (xs: [Var]): Exp :=
   end.
 Notation " [; ds '\' xs ;] e " := (subst e ds xs) (at level 30).
 
-Eval compute in ([;(ExpVar this) :: ExpFieldAccess (ExpVar this) (Id 2) :: nil \ Id 2 :: Id 1 :: nil;] ExpVar (Id 1)).
-Check (subst (ExpVar (Id 1)) ((ExpFieldAccess (ExpVar this) (Id 2))::nil)) ((Id 1)::nil).
-
 
 Inductive Warning (s: string) : Prop :=
   | w_str : Warning s.
 Notation stupid_warning := (Warning "stupid warning").
+
+(* We can make a stupid cas at anytime, but that rule must be flagged. *)
+
 Axiom STUPID_STEP : stupid_warning.
 
-Reserved Notation "Gamma '|-' x ':' C" (at level 60, x at next level). Print get.
+Reserved Notation "Gamma '|-' x ':' C" (at level 60, x at next level).
 Inductive ExpTyping (Gamma: env ClassName) : Exp -> ClassName -> Prop :=
   | T_Var : forall x C, get Gamma x = Some C -> 
                 Gamma |- ExpVar x : C
@@ -281,7 +274,6 @@ Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
             map fargType fargs = Cs ->
             refs fargs = xs ->
             MType_OK C (MDecl C0 m fargs noDupFargs e0).
-
 
 Inductive CType_OK: ClassDecl -> Prop :=
   | T_Class : forall C D Fs noDupfs K Ms noDupMds Cfargs Dfargs fdecl,

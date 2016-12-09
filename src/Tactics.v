@@ -8,6 +8,7 @@ Require Export Tactics.Nope.
 Require Export Tactics.Rewrite1.
 Require Export Tactics.Burn.
 Require Export Tactics.Break.
+Require Export Tactics.Crush.
 Require Export Omega.
 
 

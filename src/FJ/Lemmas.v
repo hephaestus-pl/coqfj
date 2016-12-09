@@ -97,7 +97,7 @@ Proof.
   Case "mbdy_no_override".
     inversion H. subst. sort. rewrite H3 in H0; inversion H0; subst. 
     rewrite H4 in H1; inversion H1. rewrite H3 in H0; inversion H0; subst; clear H0.
-    eapply IHm_body in H5.
+    eapply IHm_body in H5. 
     destruct H5 as [C1]. destruct H0 as [E0]. destruct H0. destruct H5.
     exists C1 E0. split; eauto; split; eauto.
 Qed.

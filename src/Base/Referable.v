@@ -1,11 +1,9 @@
-Add LoadPath "../".
-Add LoadPath "../Lists".
 
 Require Import List.
-Require Export Arith.
-Require Export NPeano.
-Require Export Tactics.
-Require Export Lists.
+Require Import Arith.
+Require Import NPeano.
+Require Import Tactics.
+Require Import Lists.
 Import ListNotations.
 
 (* Identifiers and polymorphic partial maps. *)

@@ -1,4 +1,4 @@
 
 Require Export Lists.Forall2.
-Require Export Lists.nth_error.
-Require Export Lists.zipWith.
+Require Export Lists.Nth_error.
+Require Export Lists.ZipWith.

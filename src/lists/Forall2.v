@@ -1,5 +1,5 @@
 Require Import List.
-Require Import nth_error.
+Require Import Nth_error.
 Require Import RelationClasses.
 (** Forall for two-fold relations **)
 

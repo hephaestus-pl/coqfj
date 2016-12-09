@@ -1,11 +1,9 @@
-(* Add loadpath to CoqIde *)
-Add LoadPath "../metatheory".
-Add LoadPath "../env".
-(* To add loadpath while compiling, compile using coqc <file-path> *)
-Require Export List.
-Require Export Metatheory.
+
+Require Import List.
 Require Import String.
-Require Export env.
+Require Import Tactics.
+Require Import Base.
+Require Import Lists.
 
 Module Refs.
 Notation "'refs' x":= (map ref x) (at level 30).

@@ -1,10 +1,8 @@
-Add LoadPath "../metatheory".
-Add LoadPath "../referable".
-
-Require Import Metatheory.
 Require Import Referable.
 Import List.
 Import ListNotations.
+Require Import Tactics.
+Require Import Lists.
 
 (* Add a single element to the end of the list *)
 Fixpoint snoc {A: Type} (x: A) (xx: list A) : list A :=
@@ -12,8 +10,6 @@ Fixpoint snoc {A: Type} (x: A) (xx: list A) : list A :=
  | nil       => x :: nil
  | y :: xs'  => y :: snoc x xs'
  end.
-
-
 
 Definition env (A:Type) := list (id * A).
 

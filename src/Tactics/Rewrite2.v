@@ -1,5 +1,5 @@
 
-Require Import Iron.Tactics.Have.
+Require Import Tactics.Have.
 
 
 (* Apply matching rewrites from the hypothesis. *)

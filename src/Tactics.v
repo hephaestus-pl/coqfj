@@ -1,13 +1,13 @@
-Add LoadPath "./Tactics".
-Require Export LibTactics.
-Require Export Short.
-Require Export Rip.
-Require Export Exists.
-Require Export Case.
-Require Export Nope.
-Require Export Rewrite1.
-Require Export Burn.
-Require Export Break.
+
+Require Export Tactics.LibTactics.
+Require Export Tactics.Short.
+Require Export Tactics.Rip.
+Require Export Tactics.Exists.
+Require Export Tactics.Case.
+Require Export Tactics.Nope.
+Require Export Tactics.Rewrite1.
+Require Export Tactics.Burn.
+Require Export Tactics.Break.
 Require Export Omega.
 
 

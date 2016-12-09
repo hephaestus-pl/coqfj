@@ -79,6 +79,6 @@ Lemma nth_error_fst: forall {A: Type} {a: A} l i,
 Proof.
   intros.
   induction i. auto.
-  inversion H. subst. simpl in H0. SearchAbout nth_error.
+  inversion H. subst. simpl in H0.
   apply nth_error_In in H0. contradiction.
 Qed.

@@ -118,9 +118,9 @@ Tactic Notation "fields_cases" tactic(first) ident(c) :=
 Reserved Notation "'mtype(' m ',' D ')' '=' c '~>' c0" (at level 40, c at next level).
 
 Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:=
-  | mty_ok : forall D Fs K Ms noDupfs noDupMds C0 fargs noDupfargs ret,
+  | mty_ok : forall D Fs K Ms noDupfs noDupMds fargs noDupfargs ret,
               find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds)->
-              find m Ms = Some (MDecl C0 m fargs noDupfargs ret) ->
+              find m Ms = Some (MDecl B m fargs noDupfargs ret) ->
               map fargType fargs = Bs ->
               mtype(m, C) = Bs ~> B
   | mty_no_override: forall D Fs K Ms noDupfs noDupMds,
@@ -131,6 +131,9 @@ Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:
   where "'mtype(' m ',' D ')' '=' cs '~>' c0"
         := (m_type m D cs c0).
 
+Tactic Notation "mtype_cases" tactic(first) ident(c) :=
+  first;
+  [ Case_aux c "mty_ok" | Case_aux c "mty_no_override"].
 
 Inductive m_body (m: id) (C: ClassName) (xs: [ClassName]) (e: Exp) : Prop:=
   | mbdy_ok : forall D Fs K Ms noDupfs noDupMds C0 fargs noDupfargs,

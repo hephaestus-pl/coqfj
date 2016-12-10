@@ -148,7 +148,7 @@ Qed.
 
 Section Ref.
 
-Class Referable (a: Type) :={
+Class Referable (a: Set) :={
 ref : a -> id;
 find: id -> list a -> option a := 
 let fix f (key: id) (l: list a) :=
@@ -161,14 +161,14 @@ end in f;
 }.
 
 
-Inductive findi {A: Type} {R: @Referable A} : id -> list A -> A -> Prop:=
+Inductive findi {A: Set} {R: @Referable A} : id -> list A -> A -> Prop:=
 | find_head : forall x xs, findi (ref x) (x :: xs) (x)
 | find_step : forall k1 k2 l x, 
   k1 <> ref k2 -> findi k1 l x -> findi k1 (k2 :: l) x.
 
 
 
-Lemma find_deterministic: forall (A: Type) (R: @Referable A) d (k1: id) (x1 x2: option A),
+Lemma find_deterministic: forall (A: Set) (R: @Referable A) d (k1: id) (x1 x2: option A),
 find k1 d = x1 ->
 find k1 d = x2 ->
 x1 = x2.
@@ -182,7 +182,7 @@ Proof with eauto.
   inversion H.
 Qed.
 
-Lemma findi_diff: forall (A: Type) (R: @Referable A) k a v l,
+Lemma findi_diff: forall (A: Set) (R: @Referable A) k a v l,
 k = ref a -> a <> v -> ~findi k (a :: l) v.
 Proof.
   intros.
@@ -192,7 +192,7 @@ Proof.
   apply H5; auto.
 Qed.
 
-Lemma find_iff_findi: forall (A: Type) (R: @Referable A) d (k1: id) (x1: A),
+Lemma find_iff_findi: forall (A: Set) (R: @Referable A) d (k1: id) (x1: A),
 find k1 d = Some x1 <-> findi k1 d x1.
 Proof.
   intros. split.
@@ -221,6 +221,17 @@ Proof.
   rewrite not_eq_beq_id_false; auto.
 Qed.
 
+Lemma find_dec: forall {A: Set} {R: @Referable A} d (k: id),
+  {exists x, find k d = Some x} + {find k d = None}.
+Proof.
+  intros.
+  induction d. crush.
+  simpl.
+  destruct eq_id_dec with (ref a) k. 
+  rewrite e. rewrite beq_id_refl; eauto.
+  rewrite not_eq_beq_id_false; auto.
+Qed.
+
 End Ref.
 
 
@@ -228,7 +239,7 @@ Instance Referable_id : Referable id :={
   ref id := id
 }.
 
-Lemma nth_error_find {A: Prop} : forall {R: @Referable A} x xs,
+Lemma nth_error_find {A: Set} : forall {R: @Referable A} x xs,
   In x xs -> 
   (exists i, find i xs = Some x).
 Proof.

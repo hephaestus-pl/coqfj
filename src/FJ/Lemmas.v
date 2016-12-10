@@ -1,7 +1,7 @@
 Require Import Tactics.
 Require Import Lists.
 Require Import Base.
-Require Import FJ.Syntax.
+Require Import Syntax.
 
 Import Arith.
 
@@ -9,12 +9,15 @@ Import Arith.
 Lemma classOk_inv: forall C D fs noDupfs K ms noDupMs,
   find C CT = Some (CDecl C D fs noDupfs K ms noDupMs) ->
   CType_OK (CDecl C D fs noDupfs K ms noDupMs).
+Proof.
+  intros. 
 Admitted.
 
 Lemma methodOk_inv: forall C D fs noDupfs K ms noDupMs C0 m fargs noDupFargs e0,
   find m ms = Some (MDecl C0 m fargs noDupFargs e0) ->
   find C CT = Some (CDecl C D fs noDupfs K ms noDupMs) ->
   MType_OK C (MDecl C0 m fargs noDupFargs e0).
+Proof.
 Admitted.
 
 Lemma mtype_decl_inv: forall C D Fs noDupfs K Ms noDupMds,
@@ -22,22 +25,20 @@ Lemma mtype_decl_inv: forall C D Fs noDupfs K Ms noDupMds,
   D <> Object ->
   exists D0 Fs0 noDupfs0 K0 Ms0 noDupMds0, find D CT = Some (CDecl D D0 Fs0 noDupfs0 K0 Ms0 noDupMds0).
 Proof.
-  intros. apply classOk_inv in H. inversion H. subst. inversion H7.
-  symmetry in H1. contradiction. subst. sort.
+  intros.
+  apply classOk_inv in H; inversion H; subst.
+  inversion H7; crush.
   repeat eexists; eauto.
 Qed.
-
-
+  
 Lemma unify_returnType : forall Ds D C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs ret,
   mtype( m, C)= Ds ~> D ->
   find C CT = Some (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
   find m Ms = Some (MDecl C0 m fargs noDupfargs ret) ->
   D = C0.
 Proof.
-  intros. gen D0 Fs noDupfs K Ms noDupMds. induction H; intros.
-  sort. rewrite H3 in H. inversion H; subst.
-  rewrite H2 in H0. inversion H0; subst. 
-Admitted.
+  intros; induction H; crush.
+Qed.
 
 Lemma unify_fargsType : forall Ds D C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs ret,
   mtype( m, C)= Ds ~> D ->
@@ -45,7 +46,8 @@ Lemma unify_fargsType : forall Ds D C D0 Fs noDupfs K Ms noDupMds C0 m fargs noD
   find m Ms = Some (MDecl C0 m fargs noDupfargs ret) ->
   Ds = map fargType fargs.
 Proof.
-Admitted.
+  intros; induction H; crush.
+Qed.
 
 
 (* Paper Lemmas *)
@@ -58,12 +60,12 @@ Proof with eauto.
   subtype_cases (induction H) Case...
   Case "S_Decl".
     intro H0.
-    inversion H0;
-    (destruct in_dec with id m (refs mds);
-      [ exact eq_id_dec
-        | eapply mty_ok; eauto 
+    inversion H0.
+    destruct (@find_dec MethodDecl) with MDeclRef mds (ref m).
+    destruct e. destruct x.
+        eapply mty_ok. eauto.
         | eapply mty_no_override; eauto
-    ]).
+    ].
 Admitted.
 
 

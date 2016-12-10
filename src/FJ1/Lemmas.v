@@ -63,9 +63,6 @@ Proof with eauto.
     inversion H0.
     destruct (@find_dec MethodDecl) with MDeclRef mds (ref m).
     destruct e. destruct x.
-        eapply mty_ok. eauto.
-        | eapply mty_no_override; eauto
-    ].
 Admitted.
 
 

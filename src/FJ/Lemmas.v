@@ -24,11 +24,13 @@ Proof.
 Qed.
 
 Lemma methodDecl_OK :forall C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs ret,
-  find C CT = Some (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
   find m Ms = Some (MDecl C0 m fargs noDupfargs ret) ->
+  find C CT = Some (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
   CType_OK (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
   MType_OK C (MDecl C0 m fargs noDupfargs ret).
-Admitted.
+Proof.
+  intros. inversion H1. eapply Forall_find in H9; eauto.
+Qed.
 
 (* Paper Lemmas *)
 Lemma A11: forall m D C Cs C0,
@@ -66,7 +68,7 @@ Proof.
   mbdy_cases (induction H0) Case.
   Case "mbdy_ok".
     sort. assert (find m Ms = Some (MDecl C0 m fargs noDupfargs e)); auto.
-    eapply methodDecl_OK in H1; eauto. 
+    eapply methodDecl_OK with (C:=C) in H1; eauto. 
     inversion H1. clear H1; sort. subst.
     exists C E0. split; auto.  clear H11.
     erewrite unify_returnType with (D := D) (C0 := C0); eauto.

@@ -239,6 +239,13 @@ Instance Referable_id : Referable id :={
   ref id := id
 }.
 
+Lemma Forall_find: forall {A: Set} {R: @Referable A} P xs id x,
+  Forall P xs ->
+  find id xs = Some x ->
+  P x.
+Proof.
+Admitted.
+
 Lemma nth_error_find {A: Set} : forall {R: @Referable A} x xs,
   In x xs -> 
   (exists i, find i xs = Some x).

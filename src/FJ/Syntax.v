@@ -82,7 +82,6 @@ Inductive Program :=
   | CProgram : forall (cDecls: [ClassDecl]), NoDup (refs cDecls) -> Exp -> Program.
 
 Parameter CT: [ClassDecl].
-Axiom sane_CT: find Object CT = None.
 
 Reserved Notation "C '<:' D " (at level 40).
 Inductive Subtype : id -> ClassName -> Prop :=
@@ -285,8 +284,6 @@ Inductive CType_OK: ClassDecl -> Prop :=
             find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
             CType_OK (CDecl C D Fs noDupfs K Ms noDupMds).
 
-Axiom ClassesOK: forall C D Fs noDupfs K Ms noDupMds, 
-  CType_OK (CDecl C D Fs noDupfs K Ms noDupMds).
 
 Definition ExpTyping_ind' := 
   fun (Gamma : env ClassName) (P : Exp -> ClassName -> Prop)
@@ -342,3 +339,17 @@ fix F (e : Exp) (c : ClassName) (e0 : Gamma |- e : c) {struct e0} : P e c :=
   | T_DCast _ e1 C D e2 s n => f4 e1 C D e2 (F e1 D e2) s n
   | T_SCast _ e1 D C e2 s s0 w => f5 e1 D C e2 (F e1 D e2) s s0 w
   end.
+
+
+(* Axioms for ClassTable sanity *)
+
+Axiom ClassesOK: forall C D Fs noDupfs K Ms noDupMds, 
+  CType_OK (CDecl C D Fs noDupfs K Ms noDupMds).
+Hint Resolve ClassesOK.
+
+Axiom obj_notin_dom: find Object CT = None.
+
+Axiom superClass_in_dom: forall C D Fs noDupfs K Ms noDupMds,
+  find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
+  D <> Object ->
+  exists D0 Fs0 noDupfs0 K0 Ms0 noDupMds0, find D CT = Some (CDecl D D0 Fs0 noDupfs0 K0 Ms0 noDupMds0).

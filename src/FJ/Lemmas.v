@@ -5,32 +5,6 @@ Require Import Syntax.
 
 Import Arith.
 
-(* Inversion Lemmas *)
-Lemma classOk_inv: forall C D fs noDupfs K ms noDupMs,
-  find C CT = Some (CDecl C D fs noDupfs K ms noDupMs) ->
-  CType_OK (CDecl C D fs noDupfs K ms noDupMs).
-Proof.
-  intros. 
-Admitted.
-
-Lemma methodOk_inv: forall C D fs noDupfs K ms noDupMs C0 m fargs noDupFargs e0,
-  find m ms = Some (MDecl C0 m fargs noDupFargs e0) ->
-  find C CT = Some (CDecl C D fs noDupfs K ms noDupMs) ->
-  MType_OK C (MDecl C0 m fargs noDupFargs e0).
-Proof.
-Admitted.
-
-Lemma mtype_decl_inv: forall C D Fs noDupfs K Ms noDupMds,
-  find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
-  D <> Object ->
-  exists D0 Fs0 noDupfs0 K0 Ms0 noDupMds0, find D CT = Some (CDecl D D0 Fs0 noDupfs0 K0 Ms0 noDupMds0).
-Proof.
-  intros.
-  apply classOk_inv in H; inversion H; subst.
-  inversion H7; crush.
-  repeat eexists; eauto.
-Qed.
-  
 Lemma unify_returnType : forall Ds D C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs ret,
   mtype( m, C)= Ds ~> D ->
   find C CT = Some (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
@@ -49,6 +23,12 @@ Proof.
   intros; induction H; crush.
 Qed.
 
+Lemma methodDecl_OK :forall C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs ret,
+  find C CT = Some (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
+  find m Ms = Some (MDecl C0 m fargs noDupfargs ret) ->
+  CType_OK (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
+  MType_OK C (MDecl C0 m fargs noDupfargs ret).
+Admitted.
 
 (* Paper Lemmas *)
 Lemma A11: forall m D C Cs C0,
@@ -71,7 +51,7 @@ Lemma weakening: forall Gamma e C,
   Gamma |- e : C.
 Proof with eauto.
   intros.
-  typing_cases (induction H using ExpTyping_ind') Case; try (solve [econstructor; eauto]).
+  typing_cases (induction H using ExpTyping_ind') Case;  try (solve [econstructor; eauto]).
   Case "T_Var".
     inversion H; eauto.
 Qed.
@@ -86,7 +66,7 @@ Proof.
   mbdy_cases (induction H0) Case.
   Case "mbdy_ok".
     sort. assert (find m Ms = Some (MDecl C0 m fargs noDupfargs e)); auto.
-    eapply methodOk_inv in H1; eauto. 
+    eapply methodDecl_OK in H1; eauto. 
     inversion H1. clear H1; sort. subst.
     exists C E0. split; auto.  clear H11.
     erewrite unify_returnType with (D := D) (C0 := C0); eauto.
@@ -108,7 +88,7 @@ Proof.
   remember Object.
   induction H; auto.
   rewrite Heqc in H.
-  rewrite sane_CT in H.
+  rewrite obj_notin_dom in H.
   inversion H.
 Qed.
 
@@ -133,7 +113,7 @@ Proof.
   Case "F_Decl".
     inversion H4.
     subst. sort.
-    rewrite sane_CT in H. inversion H.
+    rewrite obj_notin_dom in H. inversion H.
     subst.
     rewrite H in H5.
     inversion H5. subst.

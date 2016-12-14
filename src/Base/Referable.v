@@ -72,27 +72,21 @@ Qed.
 
 Section Ref.
 
-Class Referable (a: Set) :={
-ref : a -> id;
-find: id -> list a -> option a := 
-let fix f (key: id) (l: list a) :=
-match l with
-  | [] => None
-  | (x :: xs) => if beq_id key (ref x) 
-                  then Some x
-                  else f key xs
-end in f;
+Class Referable (A: Set) :={
+ref : A -> id;
+find: id -> list A -> option A := 
+  let fix f (key: id) (l: list A) :=
+  match l with
+    | [] => None
+    | (x :: xs) => if beq_id key (ref x) 
+                    then Some x
+                    else f key xs
+  end in f;
 }.
 
 
-Inductive findi {A: Set} {R: @Referable A} : id -> list A -> A -> Prop:=
-| find_head : forall x xs, findi (ref x) (x :: xs) (x)
-| find_step : forall k1 k2 l x, 
-  k1 <> ref k2 -> findi k1 l x -> findi k1 (k2 :: l) x.
 
-
-
-Lemma find_deterministic: forall (A: Set) (R: @Referable A) d (k1: id) (x1 x2: option A),
+Lemma find_deterministic: forall `{R: Referable} d (k1: id) x1 x2,
 find k1 d = x1 ->
 find k1 d = x2 ->
 x1 = x2.
@@ -105,6 +99,55 @@ Proof with eauto.
   inversion H0.
   inversion H.
 Qed.
+
+Lemma find_dec: forall `{R: Referable} d (k: id),
+  {exists x, find k d = Some x} + {find k d = None}.
+Proof.
+  intros.
+  induction d. crush.
+  simpl.
+  destruct beq_id_dec with (ref a) k. 
+  rewrite e. rewrite beq_id_refl; eauto.
+  rewrite not_eq_beq_id_false; auto.
+Qed.
+
+Lemma Forall_find: forall `{R: Referable} P xs id x,
+  Forall P xs ->
+  find id xs = Some x ->
+  P x.
+Proof.
+Admitted.
+
+Lemma nth_error_find: forall `{R: Referable} xs x,
+  In x xs -> 
+  NoDup xs ->
+  find (ref x) xs = Some x.
+Proof.
+  induction xs.
+  intros; inversion H.
+  simpl in *; intros. inversion_clear H0.
+  destruct H.
+  rewrite H. rewrite beq_id_refl; auto.
+  apply IHxs in H; auto.
+  unfold find in H. 
+Admitted.
+End Ref.
+
+
+Module Refs.
+Notation "'refs' x":= (map ref x) (at level 30).
+End Refs.
+Export Refs.
+
+
+Section Findi.
+
+Inductive findi {A: Set} {R: @Referable A} : id -> list A -> A -> Prop:=
+| find_head : forall x xs, findi (ref x) (x :: xs) (x)
+| find_step : forall k1 k2 l x, 
+  k1 <> ref k2 -> findi k1 l x -> findi k1 (k2 :: l) x.
+
+
 
 Lemma findi_diff: forall (A: Set) (R: @Referable A) k a v l,
 k = ref a -> a <> v -> ~findi k (a :: l) v.
@@ -144,42 +187,4 @@ Proof.
   unfold find.
   rewrite not_eq_beq_id_false; auto.
 Qed.
-
-Lemma find_dec: forall {A: Set} {R: @Referable A} d (k: id),
-  {exists x, find k d = Some x} + {find k d = None}.
-Proof.
-  intros.
-  induction d. crush.
-  simpl.
-  destruct beq_id_dec with (ref a) k. 
-  rewrite e. rewrite beq_id_refl; eauto.
-  rewrite not_eq_beq_id_false; auto.
-Qed.
-
-End Ref.
-
-
-Lemma Forall_find: forall {A: Set} {R: @Referable A} P xs id x,
-  Forall P xs ->
-  find id xs = Some x ->
-  P x.
-Proof.
-Admitted.
-
-Lemma nth_error_find {A: Set} : forall {R: @Referable A} x xs,
-  In x xs -> 
-  (exists i, find i xs = Some x).
-Proof.
-  induction xs.
-  intros; inversion H.
-  simpl; intros. destruct H.
-  rewrite H. exists (ref x). rewrite beq_id_refl; auto.
-  destruct IHxs; auto.
-  destruct beq_id_dec with (Some a) (Some x).
- exists (ref a); auto. rewrite beq_id_refl. 
-Admitted.
-
-Module Refs.
-Notation "'refs' x":= (map ref x) (at level 30).
-End Refs.
-Export Refs.
+End Findi.

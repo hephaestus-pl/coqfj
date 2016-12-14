@@ -118,19 +118,6 @@ Lemma Forall_find: forall `{R: Referable} P xs id x,
 Proof.
 Admitted.
 
-Lemma nth_error_find: forall `{R: Referable} xs x,
-  In x xs -> 
-  NoDup xs ->
-  find (ref x) xs = Some x.
-Proof.
-  induction xs.
-  intros; inversion H.
-  simpl in *; intros. inversion_clear H0.
-  destruct H.
-  rewrite H. rewrite beq_id_refl; auto.
-  apply IHxs in H; auto.
-  unfold find in H. 
-Admitted.
 End Ref.
 
 

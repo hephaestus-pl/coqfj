@@ -161,6 +161,7 @@ Lemma order: forall {A: Type} R a x y,
   ~ R a x.
 Proof.
   intros.
+Admitted.
 
 Lemma subtype_not_sub: forall C D E,
   ~ C <: D ->
@@ -169,7 +170,7 @@ Lemma subtype_not_sub: forall C D E,
   ~ E <: C.
 Proof.
   intros.
-  intro. specialize antisym_subtype. SearchAbout Relation_Definitions.order. 
+  intro. specialize antisym_subtype. 
   destruct H2.
 Admitted.
 

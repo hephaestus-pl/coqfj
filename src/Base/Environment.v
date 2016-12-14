@@ -3,6 +3,7 @@ Import List.
 Import ListNotations.
 Require Import Tactics.
 Require Import Lists.
+Require Import Id.
 
 (* Add a single element to the end of the list *)
 Fixpoint snoc {A: Type} (x: A) (xx: list A) : list A :=

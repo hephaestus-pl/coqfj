@@ -25,7 +25,7 @@ Proof.
   apply beq_nat_eq in H. subst.
   reflexivity.  Qed.
 
-Theorem beq_id_false_not_eq : forall i1 i2,
+Theorem beq_id_false_neq : forall i1 i2,
   beq_id i1 i2 = false -> i1 <> i2.
 Proof.
   intros i1 i2 H.
@@ -42,7 +42,7 @@ Proof.
     intros C. subst. apply H. reflexivity.
   apply beq_nat_false_iff. assumption.  Qed.
 
-Hint Resolve beq_id_false_not_eq.
+Hint Resolve beq_id_false_neq.
 Hint Rewrite beq_id_refl.
 
 

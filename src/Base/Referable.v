@@ -47,7 +47,7 @@ Proof.
   induction xs, n; intros; try (inversion H; auto).
   case beq_id eqn:Beq. inversion H1. simpl in *. 
   apply beq_id_eq in Beq; rewrite Beq. rewrite beq_id_refl; auto.
-  simpl. apply beq_id_false_not_eq in Beq.
+  simpl. apply beq_id_false_neq in Beq.
   rewrite not_eq_beq_id_false in *; auto.
   clear H.
   simpl.

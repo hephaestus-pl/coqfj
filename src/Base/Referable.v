@@ -125,7 +125,7 @@ Proof.
   inversion H.
 
   remember (ref a) as r.
-  destruct eq_id_dec with (i1:= k1) (i2:= r); rewrite Heqr in *; clear Heqr.
+  destruct beq_id_dec with (i1:= k1) (i2:= r); rewrite Heqr in *; clear Heqr.
   rewrite e in H; simpl in H. rewrite beq_id_refl in H.
   inversion H.
   rewrite e. rewrite H1.
@@ -151,7 +151,7 @@ Proof.
   intros.
   induction d. crush.
   simpl.
-  destruct eq_id_dec with (ref a) k. 
+  destruct beq_id_dec with (ref a) k. 
   rewrite e. rewrite beq_id_refl; eauto.
   rewrite not_eq_beq_id_false; auto.
 Qed.
@@ -179,7 +179,7 @@ Proof.
   simpl; intros. destruct H.
   rewrite H. exists (ref x). rewrite beq_id_refl; auto.
   destruct IHxs; auto.
-  destruct eq_id_dec with (Some a) (Some x).
+  destruct beq_id_dec with (Some a) (Some x).
  exists (ref a); auto. rewrite beq_id_refl. 
 Admitted.
 

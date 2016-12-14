@@ -51,7 +51,7 @@ Theorem beq_id_sym: forall i1 i2,
 Proof.
   intros i1 i2. destruct i1. destruct i2. apply NPeano.Nat.eqb_sym. Qed.
 
-Theorem eq_id_dec: forall (i1 i2: id),
+Theorem beq_id_dec: forall (i1 i2: id),
   {i1 = i2} + {i1 <> i2}.
 Proof.
   intros.

@@ -138,7 +138,7 @@ Proof.
   destruct a.
   intros.
   unfold Dom. simpl.
-  destruct eq_id_dec with x i. left; auto.
+  destruct beq_id_dec with x i. left; auto.
   right.
   apply IHm.
   rewrite get_nHead in H; auto.

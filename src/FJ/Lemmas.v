@@ -185,7 +185,7 @@ Proof with eauto.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case; sort.
   Case "T_Var".
-    destruct (In_dec (eq_id_dec) x xs) as [xIn|xNIn].
+    destruct (In_dec (beq_id_dec) x xs) as [xIn|xNIn].
     SCase "In x xs". rename C into Bi.
       assert (In x xs); eauto.
       apply nth_error_In' in xIn as [i]. symmetry in H3.
@@ -231,7 +231,7 @@ Proof with eauto.
     destruct IHExpTyping as [E]. destruct H6.
     destruct dec_subtype with E C.
     eapply T_UCast in H7...
-    destruct eq_id_dec with E C. rewrite e in H8; false; apply H8; auto.
+    destruct beq_id_dec with E C. rewrite e in H8; false; apply H8; auto.
     destruct dec_subtype with C E.
     eapply T_DCast in H7...
     eapply T_SCast in H7...

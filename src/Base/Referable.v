@@ -159,10 +159,6 @@ Qed.
 End Ref.
 
 
-Instance Referable_id : Referable id :={
-  ref id := id
-}.
-
 Lemma Forall_find: forall {A: Set} {R: @Referable A} P xs id x,
   Forall P xs ->
   find id xs = Some x ->

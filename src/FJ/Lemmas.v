@@ -1,3 +1,4 @@
+Require Import Relation_Definitions.
 Require Import Tactics.
 Require Import Lists.
 Require Import Base.
@@ -43,8 +44,8 @@ Proof with eauto.
   Case "S_Decl".
     intro H0.
     inversion H0.
-    destruct (@find_dec MethodDecl) with MDeclRef mds (ref m).
-    destruct e. destruct x.
+    destruct (@find_dec MethodDecl) with MDeclRef mds m.
+    destruct e. destruct x. sort. eapply mty_ok...
 Admitted.
 
 
@@ -145,16 +146,30 @@ Lemma subtype_fields: forall C D fs ,
 Proof.
 Admitted.
 
+Lemma subtype_order:
+  order _ Subtype.
+Proof.
+  refine {| ord_refl:= (S_Refl); ord_trans:= (S_Trans); ord_antisym:=antisym_subtype|}.
+Qed.
+
+Lemma order: forall {A: Type} R a x y,
+  order A R ->
+  ~ R x y ->
+  ~ R y x ->
+  R a y ->
+  ~ R a x.
+Proof.
+  intros.
+
 Lemma subtype_not_sub: forall C D E,
   ~ C <: D ->
   ~ D <: C ->
     E <: D ->
   ~ E <: C.
-Admitted.
-
-Lemma subtype_LEM: forall C D,
-  C <: D \/ ~ C <: D.
 Proof.
+  intros.
+  intro. specialize antisym_subtype. SearchAbout Relation_Definitions.order. 
+  destruct H2.
 Admitted.
 
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
@@ -212,10 +227,10 @@ Proof with eauto.
   Case "T_DCast".
     exists C; split; auto. simpl.
     destruct IHExpTyping as [E]. destruct H6.
-    destruct subtype_LEM with E C.
+    destruct dec_subtype with E C.
     eapply T_UCast in H7...
     destruct eq_id_dec with E C. rewrite e in H8; false; apply H8; auto.
-    destruct subtype_LEM with C E.
+    destruct dec_subtype with C E.
     eapply T_DCast in H7...
     eapply T_SCast in H7...
     apply STUPID_STEP.

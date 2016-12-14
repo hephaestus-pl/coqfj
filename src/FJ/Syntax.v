@@ -1,4 +1,5 @@
-
+Require Import Decidable.
+Require Import Relations.
 Require Import String.
 Require Import Tactics.
 Require Import Lists.
@@ -340,8 +341,12 @@ fix F (e : Exp) (c : ClassName) (e0 : Gamma |- e : c) {struct e0} : P e c :=
   | T_SCast _ e1 D C e2 s s0 w => f5 e1 D C e2 (F e1 D e2) s s0 w
   end.
 
-
 (* Axioms for ClassTable sanity *)
+Axiom dec_subtype: forall C D,
+  decidable (Subtype C D).
+
+Axiom antisym_subtype:
+  antisymmetric _ Subtype.
 
 Axiom ClassesOK: forall C D Fs noDupfs K Ms noDupMds, 
   CType_OK (CDecl C D Fs noDupfs K Ms noDupMds).

@@ -68,7 +68,8 @@ Proof.
   intros.
   mbdy_cases (induction H0) Case.
   Case "mbdy_ok".
-    sort. assert (find m Ms = Some (MDecl C0 m fargs noDupfargs e)); auto.
+    sort.
+    lets: H1.
     eapply methodDecl_OK with (C:=C) in H1; eauto. 
     inversion H1. clear H1; sort. subst.
     exists C E0. split; auto.  clear H11.

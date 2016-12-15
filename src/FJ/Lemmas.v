@@ -45,7 +45,11 @@ Proof with eauto.
     intro H0.
     inversion H0.
     destruct (@find_dec MethodDecl) with MDeclRef mds m.
-    destruct e. destruct x. sort. eapply mty_ok...
+    destruct e. destruct x. eapply mty_ok. eexact H.
+    assert (i = m). 
+    assert (i = ref (MDecl c i fargs0 n e)); auto. rewrite H5.
+    apply find_ref_inv with (d:=mds); auto. sort.
+    
 Admitted.
 
 
@@ -163,25 +167,27 @@ Proof.
   intros.
 Admitted.
 
+Lemma subtype_not_sub': forall C D E,
+  E <: C ->
+  E <: D ->
+  C <: D \/ D <: C.
+Proof.
+  intros. induction H; auto. destruct IHSubtype1; auto. right. apply S_Trans with D0; auto.
+  gen noDupfs mds K D0; gen fs.
+  induction H0; intros; auto. apply S_Decl in H. right; assumption.
+  Focus 2.
+  rewrite H0 in H; inversion H; auto.
+  edestruct IHSubtype1; eauto.
+Admitted.
 Lemma subtype_not_sub: forall C D E,
     E <: D ->
   ~ C <: D ->
   ~ D <: C ->
   ~ E <: C.
 Proof.
-  intros. induction H; auto. 
-  apply IHSubtype1; auto. intro. Print S_Trans.
-  apply S_Trans with (E:=E) in H3. contradiction. auto.
-  intro.
-
- gen fs mds D K. induction H2; intros. 
-    - apply S_Decl in H; auto.
-    - eapply IHSubtype1; eauto. intro.
-      eapply superClass_in_dom in H. crush. 
-      eapply IHSubtype2; eauto.
-    admit. eapply IHSubtype2; eauto.
-    - rewrite H2 in H. inversion H. rewrite H4 in H1. apply H1; auto.
-Admitted.
+  intros.
+  intro. apply subtype_not_sub' with (D:=D) in H2; eauto. destruct H2; auto.
+Qed.
 
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
   nil extds xs : Bs |- e : D ->

@@ -164,14 +164,23 @@ Proof.
 Admitted.
 
 Lemma subtype_not_sub: forall C D E,
+    E <: D ->
   ~ C <: D ->
   ~ D <: C ->
-    E <: D ->
   ~ E <: C.
 Proof.
-  intros.
-  intro. specialize antisym_subtype. 
-  destruct H2.
+  intros. induction H; auto. 
+  apply IHSubtype1; auto. intro. Print S_Trans.
+  apply S_Trans with (E:=E) in H3. contradiction. auto.
+  intro.
+
+ gen fs mds D K. induction H2; intros. 
+    - apply S_Decl in H; auto.
+    - eapply IHSubtype1; eauto. intro.
+      eapply superClass_in_dom in H. crush. 
+      eapply IHSubtype2; eauto.
+    admit. eapply IHSubtype2; eauto.
+    - rewrite H2 in H. inversion H. rewrite H4 in H1. apply H1; auto.
 Admitted.
 
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,

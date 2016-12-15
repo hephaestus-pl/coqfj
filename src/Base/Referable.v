@@ -111,15 +111,14 @@ Proof.
   rewrite not_eq_beq_id_false; auto.
 Qed.
 
+
 Lemma Forall_find: forall `{R: Referable} P xs id x,
   Forall P xs ->
   find id xs = Some x ->
   P x.
 Proof.
 Admitted.
-
 End Ref.
-
 
 Module Refs.
 Notation "'refs' x":= (map ref x) (at level 30).
@@ -175,3 +174,11 @@ Proof.
   rewrite not_eq_beq_id_false; auto.
 Qed.
 End Findi.
+
+
+Lemma find_ref_inv: forall `{R: Referable} d (k: id) x,
+  find k d = Some x ->
+  ref x = k.
+Proof.
+  intros. apply find_iff_findi in H. induction H; crush.
+Qed.

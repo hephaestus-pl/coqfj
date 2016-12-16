@@ -157,16 +157,6 @@ Proof.
   refine {| ord_refl:= (S_Refl); ord_trans:= (S_Trans); ord_antisym:=antisym_subtype|}.
 Qed.
 
-Lemma order: forall {A: Type} R a x y,
-  order A R ->
-  ~ R x y ->
-  ~ R y x ->
-  R a y ->
-  ~ R a x.
-Proof.
-  intros.
-Admitted.
-
 Lemma super_class_subtype: forall C D D0 fs noDupfs K mds noDupMds,
  C <: D -> C <> D ->
  find C CT = Some (CDecl C D0 fs noDupfs K mds noDupMds) ->
@@ -175,10 +165,9 @@ Proof.
   intros C D D0 fs noDupfs K mds noDupMds H.
   gen D0 fs noDupfs K mds noDupMds.
   induction H; intros; auto. false; apply H; auto. sort.
-  Focus 2.
-  rewrite H1 in H; crush.
   destruct beq_id_dec with C D. rewrite e in H2; auto. eapply IHSubtype2; eauto. rewrite <- e; auto.
   edestruct IHSubtype1; eauto.
+  rewrite H1 in H; crush.
 Qed.
 
 Lemma subtype_not_sub': forall C D E,
@@ -186,18 +175,12 @@ Lemma subtype_not_sub': forall C D E,
   E <: D ->
   C <: D \/ D <: C.
 Proof.
-  intros. induction H, H0; auto.
-  - left; apply S_Trans with D; auto.
-  - left; apply S_Decl in H; auto.
-  - right; apply S_Trans with D0; auto.
-  - destruct IHSubtype1; auto. apply S_Trans with D; auto.
-    right; apply S_Trans with D0; auto.
-  - apply S_Decl in H0. apply IHSubtype1 in H0. destruct H0. apply IHSubtype2; auto.
-    right. apply S_Trans with D0; auto.
-  - apply S_Decl in H; right; auto.
-  - eapply super_class_subtype in H0_; eauto. intro; subst. admit.
-  - rewrite H0 in H; crush.
-Admitted.
+  intros C D E H. gen D. induction H; auto.
+  intros.
+  edestruct IHSubtype1; eauto.
+  intros. destruct beq_id_dec with C D0. subst. apply S_Decl in H. right; auto.
+  eapply super_class_subtype in H0; eauto.
+Qed.
 
 Lemma subtype_not_sub: forall C D E,
     E <: D ->

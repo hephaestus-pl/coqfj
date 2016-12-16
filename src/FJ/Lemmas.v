@@ -167,18 +167,38 @@ Proof.
   intros.
 Admitted.
 
+Lemma super_class_subtype: forall C D D0 fs noDupfs K mds noDupMds,
+ C <: D -> C <> D ->
+ find C CT = Some (CDecl C D0 fs noDupfs K mds noDupMds) ->
+ D0 <: D.
+Proof.
+  intros C D D0 fs noDupfs K mds noDupMds H.
+  gen D0 fs noDupfs K mds noDupMds.
+  induction H; intros; auto. false; apply H; auto. sort.
+  Focus 2.
+  rewrite H1 in H; crush.
+  destruct beq_id_dec with C D. rewrite e in H2; auto. eapply IHSubtype2; eauto. rewrite <- e; auto.
+  edestruct IHSubtype1; eauto.
+Qed.
+
 Lemma subtype_not_sub': forall C D E,
   E <: C ->
   E <: D ->
   C <: D \/ D <: C.
 Proof.
-  intros. induction H; auto. destruct IHSubtype1; auto. right. apply S_Trans with D0; auto.
-  gen noDupfs mds K D0; gen fs.
-  induction H0; intros; auto. apply S_Decl in H. right; assumption.
-  Focus 2.
-  rewrite H0 in H; inversion H; auto.
-  edestruct IHSubtype1; eauto.
+  intros. induction H, H0; auto.
+  - left; apply S_Trans with D; auto.
+  - left; apply S_Decl in H; auto.
+  - right; apply S_Trans with D0; auto.
+  - destruct IHSubtype1; auto. apply S_Trans with D; auto.
+    right; apply S_Trans with D0; auto.
+  - apply S_Decl in H0. apply IHSubtype1 in H0. destruct H0. apply IHSubtype2; auto.
+    right. apply S_Trans with D0; auto.
+  - apply S_Decl in H; right; auto.
+  - eapply super_class_subtype in H0_; eauto. intro; subst. admit.
+  - rewrite H0 in H; crush.
 Admitted.
+
 Lemma subtype_not_sub: forall C D E,
     E <: D ->
   ~ C <: D ->

@@ -83,6 +83,30 @@ Lemma subtype_fields: forall C D fs ,
 Proof.
 Admitted.
 
+Lemma subtype_method_same_type: forall C D D0 d_fs d_noDupfs d_K d_mds d_noDupMds 
+              m B d_fargs d_noDupfargs d_e c_fs c_noDupfs c_K c_mds c_noDupMds
+              c_fargs c_noDupfargs c_e B',
+  find D CT = Some (CDecl D D0 d_fs d_noDupfs d_K d_mds d_noDupMds) ->
+  find C CT = Some (CDecl C D c_fs c_noDupfs c_K c_mds c_noDupMds) ->
+  find m d_mds = Some (MDecl B m d_fargs d_noDupfargs d_e) ->
+  find m c_mds = Some (MDecl B' m c_fargs c_noDupfargs c_e) ->
+  B = B'.
+Proof.
+Admitted.
+  
+
+Lemma subtype_method_same_type': forall C D D0 d_fs d_noDupfs d_K d_mds d_noDupMds 
+              m B d_fargs d_noDupfargs d_e c_fs c_noDupfs c_K c_mds c_noDupMds
+              c_fargs c_noDupfargs c_e B',
+  find D CT = Some (CDecl D D0 d_fs d_noDupfs d_K d_mds d_noDupMds) ->
+  find C CT = Some (CDecl C D c_fs c_noDupfs c_K c_mds c_noDupMds) ->
+  find m d_mds = Some (MDecl B m d_fargs d_noDupfargs d_e) ->
+  find m c_mds = Some (MDecl B' m c_fargs c_noDupfargs c_e) ->
+  map fargType d_fargs = map fargType c_fargs.
+Proof.
+Admitted.
+
+
 Lemma subtype_order:
   order _ Subtype.
 Proof.
@@ -149,13 +173,24 @@ Proof with eauto.
   intros m D C Cs C0 H.
   subtype_cases (induction H) Case...
   Case "S_Decl".
-    intro H0.
-    inversion H0.
+    intros.
+    inversion H0; sort.
     destruct (@find_dec MethodDecl) with MDeclRef mds m.
-    destruct e. destruct x. eapply mty_ok. eexact H.
+    destruct e0. destruct x. eapply mty_ok. eexact H. 
     assert (i = m). 
-    assert (i = ref (MDecl c i fargs0 n e)); auto. rewrite H5.
-    apply find_ref_inv with (d:=mds); auto. subst.
+    assert (i = ref (MDecl c i fargs0 n e0)); auto. rewrite H5.
+    apply find_ref_inv with (d:=mds); eauto.
+    rewrite H5 in H4. clear H5.
+    assert (C0 = c). eapply subtype_method_same_type; eauto. crush.
+    rewrite <- H3. symmetry. eapply subtype_method_same_type'; eauto.
+    
+    assert (i = m). 
+    assert (i = ref (MDecl c i fargs0 n e0)); auto. rewrite H5.
+    apply find_ref_inv with (d:=mds); auto.
+    crush.
+    eapply mty_no_override; eauto.
+    
+    
     
 Admitted.
 

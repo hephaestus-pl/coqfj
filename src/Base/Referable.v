@@ -194,3 +194,13 @@ Proof.
   eapply Forall_forall in H; eauto. 
   eapply find_in; eauto.
 Qed.
+
+
+Lemma ref_noDup_nth_error: forall {T} {H: Referable T} (xs:list T) i i1 x x1,
+  nth_error xs i = Some x ->
+  nth_error xs i1 = Some x1 ->
+  NoDup (refs xs) ->
+  ref x = ref x1 ->
+  x = x1.
+Proof.
+Admitted.

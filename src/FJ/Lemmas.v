@@ -7,6 +7,7 @@ Require Import Syntax.
 Import Arith.
 
 (* Auxiliary Lemmas *)
+(* mtype / MType_OK lemmas *)
 Lemma unify_returnType : forall Ds D C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs ret,
   mtype( m, C)= Ds ~> D ->
   find C CT = Some (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
@@ -34,7 +35,7 @@ Proof.
   intros. inversion H1. eapply Forall_find in H9; eauto.
 Qed.
 
-
+(* fields Lemmas *)
 Lemma fields_obj_nil: forall f,
   fields Object f -> f = nil.
 Proof.
@@ -74,22 +75,7 @@ Proof.
     rewrite IHfields with fs'0; auto.
 Qed.
 
-
-Lemma var_subst_in: forall ds xs x i di,
-  nth_error xs i = Some x ->
-  nth_error ds i = Some di ->
-  NoDup xs ->
-  [; ds \ xs ;] (ExpVar x) = di.
-Proof.
-  intros. gen ds xs i.
-  induction ds, xs; intros.
-  rewrite nth_error_nil in H; inversion H.
-  rewrite nth_error_nil in H0; inversion H0.
-  rewrite nth_error_nil in H; inversion H.
-  apply findwhere_ntherror in H; auto. unfold subst.
-  rewrite H; simpl. rewrite H0. auto.
-Qed.
-
+(* Subtype Lemmas *)
 Lemma subtype_fields: forall C D fs ,
   C <: D ->
   fields D fs ->
@@ -136,6 +122,22 @@ Lemma subtype_not_sub: forall C D E,
 Proof.
   intros.
   intro. apply subtype_not_sub' with (D:=D) in H2; eauto. destruct H2; auto.
+Qed.
+
+(* subst Lemmas *)
+Lemma var_subst_in: forall ds xs x i di,
+  nth_error xs i = Some x ->
+  nth_error ds i = Some di ->
+  NoDup xs ->
+  [; ds \ xs ;] (ExpVar x) = di.
+Proof.
+  intros. gen ds xs i.
+  induction ds, xs; intros.
+  rewrite nth_error_nil in H; inversion H.
+  rewrite nth_error_nil in H0; inversion H0.
+  rewrite nth_error_nil in H; inversion H.
+  apply findwhere_ntherror in H; auto. unfold subst.
+  rewrite H; simpl. rewrite H0. auto.
 Qed.
 
 (* Paper Lemmas *)
@@ -264,15 +266,6 @@ Proof with eauto.
     eapply subtype_not_sub...
 Qed. 
 
-
-Lemma ref_noDup_nth_error: forall {T} {H: Referable T} (xs:list T) i i1 x x1,
-  nth_error xs i = Some x ->
-  nth_error xs i1 = Some x1 ->
-  NoDup (refs xs) ->
-  ref x = ref x1 ->
-  x = x1.
-Proof.
-Admitted.
 
 Theorem subject_reduction : forall Gamma e e' C,
   Gamma |- e : C ->

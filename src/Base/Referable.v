@@ -111,13 +111,6 @@ Proof.
   rewrite not_eq_beq_id_false; auto.
 Qed.
 
-
-Lemma Forall_find: forall `{R: Referable} P xs id x,
-  Forall P xs ->
-  find id xs = Some x ->
-  P x.
-Proof.
-Admitted.
 End Ref.
 
 Module Refs.
@@ -181,4 +174,23 @@ Lemma find_ref_inv: forall `{R: Referable} d (k: id) x,
   ref x = k.
 Proof.
   intros. apply find_iff_findi in H. induction H; crush.
+Qed.
+
+
+Lemma find_in: forall `{R: Referable} id xs x,
+  find id xs = Some x ->
+  In x xs.
+Proof.
+  intros. 
+  apply find_iff_findi in H. induction H; crush.
+Qed.
+
+Lemma Forall_find: forall `{R: Referable} P xs id x,
+  Forall P xs ->
+  find id xs = Some x ->
+  P x.
+Proof.
+  intros. 
+  eapply Forall_forall in H; eauto. 
+  eapply find_in; eauto.
 Qed.

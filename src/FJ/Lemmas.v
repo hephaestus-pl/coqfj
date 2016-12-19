@@ -6,6 +6,7 @@ Require Import Syntax.
 
 Import Arith.
 
+(* Auxiliary Lemmas *)
 Lemma unify_returnType : forall Ds D C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs ret,
   mtype( m, C)= Ds ~> D ->
   find C CT = Some (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
@@ -33,61 +34,6 @@ Proof.
   intros. inversion H1. eapply Forall_find in H9; eauto.
 Qed.
 
-(* Paper Lemmas *)
-Lemma A11: forall m D C Cs C0,
-          C <: D ->
-          mtype(m,D) = Cs ~> C0 ->
-          mtype(m,C) = Cs ~> C0.
-Proof with eauto.
-  intros m D C Cs C0 H.
-  subtype_cases (induction H) Case...
-  Case "S_Decl".
-    intro H0.
-    inversion H0.
-    destruct (@find_dec MethodDecl) with MDeclRef mds m.
-    destruct e. destruct x. eapply mty_ok. eexact H.
-    assert (i = m). 
-    assert (i = ref (MDecl c i fargs0 n e)); auto. rewrite H5.
-    apply find_ref_inv with (d:=mds); auto. sort.
-    
-Admitted.
-
-
-Lemma weakening: forall Gamma e C,
-  nil |- e : C ->
-  Gamma |- e : C.
-Proof with eauto.
-  intros.
-  typing_cases (induction H using ExpTyping_ind') Case;  try (solve [econstructor; eauto]).
-  Case "T_Var".
-    inversion H; eauto.
-Qed.
-
-Lemma A14: forall D m C0 xs Ds e,
-  mtype(m,C0) = Ds ~> D ->
-  mbody(m,C0) = xs o e ->
-  exists D0 C,  C0 <: D0 /\ C <: D /\
-  nil extds (this :: xs) : (D0 :: Ds) |- e : C.
-Proof.
-  intros.
-  mbdy_cases (induction H0) Case.
-  Case "mbdy_ok".
-    sort.
-    lets: H1.
-    eapply methodDecl_OK with (C:=C) in H1; eauto. 
-    inversion H1. clear H1; sort. subst.
-    exists C E0. split; auto.  clear H11.
-    erewrite unify_returnType with (D := D) (C0 := C0); eauto.
-    split. assumption.
-    erewrite unify_fargsType with (Ds := Ds) (fargs := fargs); eauto.
-
-  Case "mbdy_no_override".
-    inversion H. subst. sort. rewrite H3 in H0; inversion H0; subst. 
-    rewrite H4 in H1; inversion H1. rewrite H3 in H0; inversion H0; subst; clear H0.
-    eapply IHm_body in H5. 
-    destruct H5 as [C1]. destruct H0 as [E0]. destruct H0. destruct H5.
-    exists C1 E0. split; eauto; split; eauto.
-Qed.
 
 Lemma fields_obj_nil: forall f,
   fields Object f -> f = nil.
@@ -191,6 +137,63 @@ Proof.
   intros.
   intro. apply subtype_not_sub' with (D:=D) in H2; eauto. destruct H2; auto.
 Qed.
+
+(* Paper Lemmas *)
+Lemma A11: forall m D C Cs C0,
+          C <: D ->
+          mtype(m,D) = Cs ~> C0 ->
+          mtype(m,C) = Cs ~> C0.
+Proof with eauto.
+  intros m D C Cs C0 H.
+  subtype_cases (induction H) Case...
+  Case "S_Decl".
+    intro H0.
+    inversion H0.
+    destruct (@find_dec MethodDecl) with MDeclRef mds m.
+    destruct e. destruct x. eapply mty_ok. eexact H.
+    assert (i = m). 
+    assert (i = ref (MDecl c i fargs0 n e)); auto. rewrite H5.
+    apply find_ref_inv with (d:=mds); auto. subst.
+    
+Admitted.
+
+
+Lemma weakening: forall Gamma e C,
+  nil |- e : C ->
+  Gamma |- e : C.
+Proof with eauto.
+  intros.
+  typing_cases (induction H using ExpTyping_ind') Case;  try (solve [econstructor; eauto]).
+  Case "T_Var".
+    inversion H; eauto.
+Qed.
+
+Lemma A14: forall D m C0 xs Ds e,
+  mtype(m,C0) = Ds ~> D ->
+  mbody(m,C0) = xs o e ->
+  exists D0 C,  C0 <: D0 /\ C <: D /\
+  nil extds (this :: xs) : (D0 :: Ds) |- e : C.
+Proof.
+  intros.
+  mbdy_cases (induction H0) Case.
+  Case "mbdy_ok".
+    sort.
+    lets: H1.
+    eapply methodDecl_OK with (C:=C) in H1; eauto. 
+    inversion H1. clear H1; sort. subst.
+    exists C E0. split; auto.  clear H11.
+    erewrite unify_returnType with (D := D) (C0 := C0); eauto.
+    split. assumption.
+    erewrite unify_fargsType with (Ds := Ds) (fargs := fargs); eauto.
+
+  Case "mbdy_no_override".
+    inversion H. subst. sort. rewrite H3 in H0; inversion H0; subst. 
+    rewrite H4 in H1; inversion H1. rewrite H3 in H0; inversion H0; subst; clear H0.
+    eapply IHm_body in H5. 
+    destruct H5 as [C1]. destruct H0 as [E0]. destruct H0. destruct H5.
+    exists C1 E0. split; eauto; split; eauto.
+Qed.
+
 
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
   nil extds xs : Bs |- e : D ->

@@ -32,7 +32,7 @@ Lemma methodDecl_OK :forall C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs 
   CType_OK (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
   MType_OK C (MDecl C0 m fargs noDupfargs ret).
 Proof.
-  intros. inversion H1. eapply Forall_find in H10; eauto.
+  inversion 3. eapply Forall_find in H10; eauto.
 Qed.
 
 (* fields Lemmas *)

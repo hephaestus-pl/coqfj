@@ -147,7 +147,8 @@ Lemma super_obj_or_defined: forall C D Fs noDupfs K Ms noDupMds,
     D = Object \/ exists D0 Fs0 noDupfs0 K0 Ms0 noDupMds0, 
                     find D CT = Some (CDecl D D0 Fs0 noDupfs0 K0 Ms0 noDupMds0).
 Proof.
-  intros. destruct beq_id_dec with D Object; subst. left; auto.
+  intros. destruct beq_id_dec with D Object; subst. 
+  left; auto.
   right. eapply superClass_in_dom; eauto.
 Qed.
 
@@ -155,8 +156,17 @@ Lemma mtype_obj_False: forall m Cs C,
   mtype(m, Object) = Cs ~> C ->
   False.
 Proof.
-  Hint Rewrite obj_notin_dom. intros.
-  inversion H; crush.
+  Hint Rewrite obj_notin_dom.
+  inversion 1; crush.
+Qed.
+
+Lemma unify_find_mname: forall m Ms c i fargs n e,
+  find m Ms = Some (MDecl c i fargs n e) ->
+  find m Ms = Some (MDecl c m fargs n e) /\ m = i.
+Proof.
+  intros.
+  assert (ref (MDecl c i fargs n e) = m). 
+  eapply find_ref_inv; eauto. crush.
 Qed.
 
 Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
@@ -170,15 +180,11 @@ Proof.
   destruct H as (?D & Fs1 & noDupfs0 & K0 & Ms0 & noDupMds0 & H).
   destruct (@find_dec MethodDecl) with MDeclRef Ms m.
   destruct e. destruct x. sort.
-  assert (i = m). change (ref (MDecl c i fargs n e) = m). 
-    apply find_ref_inv with (d:=Ms); eauto.
-  rewrite H2 in H1.
+  apply unify_find_mname in H1. destruct H1. subst.
   eapply Forall_find in H8; [|eexact H1].
   destruct H8; subst; sort. assert (D2 = D) by crush; subst.
-  assert (m0 = m). change (ref (MDecl C0 m0 fargs0 noDupFargs e0) = m).  eapply find_ref_inv; eauto.
-  subst.
-  destruct H6 with Ds D0; auto. subst. eapply mty_ok. eapply H9. eapply H1. reflexivity.
-  sort.
+  apply unify_find_mname in H1. destruct H1; subst.
+  destruct H5 with Ds D0; subst; auto. eapply mty_ok. eapply H9. eapply H1. reflexivity.
   eapply mty_no_override; eauto.
 Qed.
 

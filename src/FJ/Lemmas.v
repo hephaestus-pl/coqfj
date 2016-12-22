@@ -14,7 +14,7 @@ Lemma unify_returnType : forall Ds D C D0 Fs noDupfs K Ms noDupMds C0 m fargs no
   find m Ms = Some (MDecl C0 m fargs noDupfargs ret) ->
   D = C0.
 Proof.
-  intros; induction H; crush.
+  induction 1; crush.
 Qed.
 
 Lemma unify_fargsType : forall Ds D C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs ret,
@@ -23,7 +23,7 @@ Lemma unify_fargsType : forall Ds D C D0 Fs noDupfs K Ms noDupMds C0 m fargs noD
   find m Ms = Some (MDecl C0 m fargs noDupfargs ret) ->
   Ds = map fargType fargs.
 Proof.
-  intros; induction H; crush.
+  induction 1; crush.
 Qed.
 
 Lemma methodDecl_OK :forall C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs ret,

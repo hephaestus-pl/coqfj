@@ -66,12 +66,12 @@ Proof.
   Case "F_Obj".
     apply fields_obj_nil; auto.
   Case "F_Decl".
-    inversion H4.
+    inversion H2.
     subst. sort.
     rewrite obj_notin_dom in H. inversion H.
     subst.
-    rewrite H in H5.
-    inversion H5. subst.
+    rewrite H in H3.
+    inversion H3. subst.
     rewrite IHfields with fs'0; auto.
 Qed.
 
@@ -81,6 +81,13 @@ Lemma subtype_fields: forall C D fs ,
   fields D fs ->
   exists fs', fields C (fs ++ fs').
 Proof.
+  intros. gen H0. gen fs.
+  induction H; intros.
+  exists (@nil FieldDecl). rewrite app_nil_r; auto.
+  edestruct IHSubtype2; eauto.
+  edestruct IHSubtype1; eauto. exists (x ++ x0). 
+  rewrite app_assoc; auto.
+  exists (fs); auto. eapply F_Decl; eauto.
 Admitted.
 
 Lemma subtype_order:
@@ -203,7 +210,8 @@ Lemma weakening: forall Gamma e C,
   nil |- e : C ->
   Gamma |- e : C.
 Proof.
-  induction 1 using ExpTyping_ind'; solve [econstructor; eauto | crush].
+  induction 1 using ExpTyping_ind'; eauto.
+  crush.
 Qed.
 
 Lemma A14: forall D m C0 xs Ds e,

@@ -268,11 +268,11 @@ Tactic Notation "computation_cases" tactic(first) ident(c) :=
 
 
 Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
-  | T_Method : forall C D C0 D0 E0 xs Cs Ds e0 Fs noDupfs K Ms noDupMds fargs m noDupFargs,
+  | T_Method : forall C D C0 E0 xs Cs e0 Fs noDupfs K Ms noDupMds fargs m noDupFargs,
             nil extds (this :: xs) : (C :: Cs) |- e0 : E0 ->
             E0 <: C0 ->
             find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
-            (mtype(m, D) = Ds ~> D0 -> Cs = Ds /\ C0 = D0) ->
+            (exists Ds D0, mtype(m, D) = Ds ~> D0 -> Cs = Ds /\ C0 = D0) ->
             map fargType fargs = Cs ->
             refs fargs = xs ->
             MType_OK C (MDecl C0 m fargs noDupFargs e0).

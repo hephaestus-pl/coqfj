@@ -142,20 +142,33 @@ Qed.
 
 (* Paper Lemmas *)
 
-Lemma A11_step: forall C D c_fs c_noDupfs c_K c_mds c_noDupMds m Cs C0,
-  mtype(m,D) = Cs ~> C0 ->
-  find C CT = Some (CDecl C D c_fs c_noDupfs c_K c_mds c_noDupMds) ->
-  mtype(m,C) = Cs ~> C0.
+Lemma super_obj_or_defined: forall C D Fs noDupfs K Ms noDupMds,
+    find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
+    D = Object \/ exists D0 Fs0 noDupfs0 K0 Ms0 noDupMds0, find D CT = Some (CDecl D D0 Fs0 noDupfs0 K0 Ms0 noDupMds0).
 Proof.
-  intros C D c_fs c_noDupfs c_K c_mds c_noDupMds m Cs C0 H. 
-  gen c_fs c_noDupfs c_K c_mds c_noDupMds. gen C.
-  induction H; intros. Focus 2.
-  destruct (@find_dec MethodDecl) with MDeclRef c_mds m.
-  destruct e. destruct x. sort.
+  intros. destruct beq_id_dec with D Object; subst. left; auto.
+  right. eapply superClass_in_dom; eauto.
+Qed.
 
+Lemma mtype_obj_False: forall m Cs C,
+  mtype(m, Object) = Cs ~> C ->
+  False.
+Proof.
+  Hint Rewrite obj_notin_dom. intros.
+  inversion H; crush.
+Qed.
 
- eapply IHm_type in H.
+Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
+    find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
+    mtype(m, D) = Ds ~> D0 ->
+    mtype(m, C) = Ds ~> D0.
+Proof.
+  intros. apply ClassesOK in H. inversion H. subst; sort. clear H.
+  edestruct super_obj_or_defined; eauto. subst.
+  false. eapply mtype_obj_False; eauto.
+  destruct H as (?D & Fs1 & noDupfs0 & K0 & Ms0 & noDupMds0 & H).
 Admitted.
+
 
 Lemma A11: forall m D C Cs C0,
           C <: D ->

@@ -349,6 +349,7 @@ Axiom antisym_subtype:
   antisymmetric _ Subtype.
 
 Axiom ClassesOK: forall C D Fs noDupfs K Ms noDupMds, 
+  find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
   CType_OK (CDecl C D Fs noDupfs K Ms noDupMds).
 Hint Resolve ClassesOK.
 

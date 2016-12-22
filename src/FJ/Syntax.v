@@ -280,6 +280,7 @@ Inductive CType_OK: ClassDecl -> Prop :=
   | T_Class : forall C D Fs noDupfs K Ms noDupMds Cfargs Dfargs fdecl,
             K = KDecl C (Cfargs ++ Dfargs) (map Arg (refs Cfargs)) (zipWith Assgnmt (map (ExpFieldAccess (ExpVar this)) (refs Fs)) (map ExpVar (refs Fs))) ->
             fields D fdecl ->
+            NoDup (refs (fdecl ++ Fs)) ->
             Forall (MType_OK C) (Ms) ->
             find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
             CType_OK (CDecl C D Fs noDupfs K Ms noDupMds).

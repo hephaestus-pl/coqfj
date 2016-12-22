@@ -32,7 +32,7 @@ Lemma methodDecl_OK :forall C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs 
   CType_OK (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
   MType_OK C (MDecl C0 m fargs noDupfargs ret).
 Proof.
-  intros. inversion H1. eapply Forall_find in H9; eauto.
+  intros. inversion H1. eapply Forall_find in H10; eauto.
 Qed.
 
 (* fields Lemmas *)
@@ -60,18 +60,18 @@ Lemma fields_det: forall C f1 f2,
   fields C f2 ->
   f1 = f2.
 Proof.
+  Hint Resolve fields_obj_nil.
+  Hint Rewrite obj_notin_dom.
   intros.
-  generalize dependent f1.
+  gen f1.
   fields_cases (induction H0) Case; intros.
   Case "F_Obj".
-    apply fields_obj_nil; auto.
+    crush.
   Case "F_Decl".
-    inversion H2.
-    subst. sort.
-    rewrite obj_notin_dom in H. inversion H.
+    inversion H2. crush.
     subst.
     rewrite H in H3.
-    inversion H3. subst.
+    inversion H3; subst; clear H3.
     rewrite IHfields with fs'0; auto.
 Qed.
 
@@ -81,14 +81,21 @@ Lemma subtype_fields: forall C D fs ,
   fields D fs ->
   exists fs', fields C (fs ++ fs').
 Proof.
+  Hint Rewrite app_nil_r app_assoc.
   intros. gen H0. gen fs.
-  induction H; intros.
-  exists (@nil FieldDecl). rewrite app_nil_r; auto.
-  edestruct IHSubtype2; eauto.
-  edestruct IHSubtype1; eauto. exists (x ++ x0). 
-  rewrite app_assoc; auto.
-  exists (fs); auto. eapply F_Decl; eauto.
-Admitted.
+  subtype_cases (induction H) Case; intros.
+  Case "S_Refl".
+    exists (@nil FieldDecl); crush.
+  Case "S_Trans".
+    edestruct IHSubtype2; eauto.
+    edestruct IHSubtype1; eauto.
+    exists (x ++ x0); crush.
+  Case "S_Decl".
+    exists (fs); auto. eapply F_Decl; eauto.
+    apply ClassesOK in H. inversion H; subst; auto.
+    assert (fs0 = fdecl) by (apply fields_det with D; auto).
+    crush.
+Qed.
 
 Lemma subtype_order:
   order _ Subtype.
@@ -188,10 +195,10 @@ Proof.
   destruct (@find_dec MethodDecl) with MDeclRef Ms m.
   destruct e. destruct x. sort.
   apply unify_find_mname in H1. destruct H1. subst.
-  eapply Forall_find in H8; [|eexact H1].
-  destruct H8; subst; sort. assert (D2 = D) by crush; subst.
+  eapply Forall_find in H9; [|eexact H1].
+  destruct H9; subst; sort. assert (D2 = D) by crush; subst.
   apply unify_find_mname in H1. destruct H1; subst.
-  destruct H5 with Ds D0; subst; auto. eapply mty_ok. eapply H9. eapply H1. reflexivity.
+  destruct H5 with Ds D0; subst; auto. eapply mty_ok. eapply H10. eapply H1. reflexivity.
   eapply mty_no_override; eauto.
 Qed.
 

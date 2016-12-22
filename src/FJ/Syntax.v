@@ -106,8 +106,6 @@ Inductive fields : id -> [FieldDecl] -> Prop :=
  | F_Obj : fields Object nil
  | F_Decl : forall C D fs  noDupfs K mds noDupMds fs', 
      find C CT = Some (CDecl C D fs noDupfs K mds noDupMds) ->
-     NoDup (refs fs') ->
-     NoDup (refs fs) ->
      fields D fs' ->
      NoDup (refs (fs' ++ fs)) ->
      fields C (fs'++fs).
@@ -259,6 +257,7 @@ Inductive Computation : Exp -> Exp -> Prop :=
             ExpCast C e0 ~> ExpCast C e0'
   where "e '~>' e1" := (Computation e e1).
 
+Hint Constructors Computation ExpTyping.
 Tactic Notation "computation_cases" tactic(first) ident(c) :=
   first;
   [ Case_aux c "R_Field" | Case_aux c "R_Invk" 

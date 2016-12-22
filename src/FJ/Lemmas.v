@@ -145,13 +145,10 @@ Lemma var_subst_in: forall ds xs x i di,
   NoDup xs ->
   [; ds \ xs ;] (ExpVar x) = di.
 Proof.
+  Hint Rewrite nth_error_nil.
   intros. gen ds xs i.
-  induction ds, xs; intros.
-  rewrite nth_error_nil in H; inversion H.
-  rewrite nth_error_nil in H0; inversion H0.
-  rewrite nth_error_nil in H; inversion H.
-  apply findwhere_ntherror in H; auto. unfold subst.
-  rewrite H; simpl. rewrite H0. auto.
+  induction ds, xs; crush.
+  apply findwhere_ntherror in H; crush.
 Qed.
 
 (* Paper Lemmas *)

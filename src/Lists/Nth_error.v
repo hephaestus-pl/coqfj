@@ -10,7 +10,7 @@ Proof.
   exfalso; auto.
 Qed.
 
-Lemma nth_error_nil : forall {A: Type} n,
+Lemma nth_error_nil : forall (A: Type) n,
   nth_error [] n = @None A.
 Proof.
   intros; induction n; auto.

@@ -144,7 +144,8 @@ Qed.
 
 Lemma super_obj_or_defined: forall C D Fs noDupfs K Ms noDupMds,
     find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
-    D = Object \/ exists D0 Fs0 noDupfs0 K0 Ms0 noDupMds0, find D CT = Some (CDecl D D0 Fs0 noDupfs0 K0 Ms0 noDupMds0).
+    D = Object \/ exists D0 Fs0 noDupfs0 K0 Ms0 noDupMds0, 
+                    find D CT = Some (CDecl D D0 Fs0 noDupfs0 K0 Ms0 noDupMds0).
 Proof.
   intros. destruct beq_id_dec with D Object; subst. left; auto.
   right. eapply superClass_in_dom; eauto.
@@ -167,47 +168,36 @@ Proof.
   edestruct super_obj_or_defined; eauto. subst.
   false. eapply mtype_obj_False; eauto.
   destruct H as (?D & Fs1 & noDupfs0 & K0 & Ms0 & noDupMds0 & H).
-Admitted.
+  destruct (@find_dec MethodDecl) with MDeclRef Ms m.
+  destruct e. destruct x. sort.
+  assert (i = m). change (ref (MDecl c i fargs n e) = m). 
+    apply find_ref_inv with (d:=Ms); eauto.
+  rewrite H2 in H1.
+  eapply Forall_find in H8; [|eexact H1].
+  destruct H8; subst; sort. assert (D2 = D) by crush; subst.
+  assert (m0 = m). change (ref (MDecl C0 m0 fargs0 noDupFargs e0) = m).  eapply find_ref_inv; eauto.
+  subst.
+  destruct H6 with Ds D0; auto. subst. eapply mty_ok. eapply H9. eapply H1. reflexivity.
+  sort.
+  eapply mty_no_override; eauto.
+Qed.
 
 
 Lemma A11: forall m D C Cs C0,
           C <: D ->
           mtype(m,D) = Cs ~> C0 ->
           mtype(m,C) = Cs ~> C0.
-Proof with eauto.
-  intros m D C Cs C0 H.
-  subtype_cases (induction H) Case...
-  Case "S_Decl".
-    intros.
-    inversion H0; sort.
-    destruct (@find_dec MethodDecl) with MDeclRef mds m.
-    destruct e0. destruct x. eapply mty_ok. eexact H. 
-    assert (i = m).
-    change (ref (MDecl c i fargs0 n e0) = m). 
-    apply find_ref_inv with (d:=mds); eauto.
-    rewrite H5 in H4. clear H5. (*
-    assert (C0 = c). eapply subtype_method_same_type; eauto. crush.
-    rewrite <- H3. symmetry. eapply subtype_method_same_type'; eauto.
-    
-    assert (i = m). 
-    assert (i = ref (MDecl c i fargs0 n e0)); auto. rewrite H5.
-    apply find_ref_inv with (d:=mds); auto.
-    crush.
-    eapply mty_no_override; eauto. *)
-    
-    
-    
-Admitted.
+Proof.
+  Hint Resolve methods_same_signature.
+  induction 1; eauto.
+Qed.
 
 
 Lemma weakening: forall Gamma e C,
   nil |- e : C ->
   Gamma |- e : C.
-Proof with eauto.
-  intros.
-  typing_cases (induction H using ExpTyping_ind') Case;  try (solve [econstructor; eauto]).
-  Case "T_Var".
-    inversion H; eauto.
+Proof.
+  induction 1 using ExpTyping_ind'; solve [econstructor; eauto | crush].
 Qed.
 
 Lemma A14: forall D m C0 xs Ds e,

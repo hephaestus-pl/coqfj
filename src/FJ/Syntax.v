@@ -272,7 +272,7 @@ Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
             nil extds (this :: xs) : (C :: Cs) |- e0 : E0 ->
             E0 <: C0 ->
             find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
-            (exists Ds D0, mtype(m, D) = Ds ~> D0 -> Cs = Ds /\ C0 = D0) ->
+            (forall Ds D0, mtype(m, D) = Ds ~> D0 -> Cs = Ds /\ C0 = D0) ->
             map fargType fargs = Cs ->
             refs fargs = xs ->
             MType_OK C (MDecl C0 m fargs noDupFargs e0).

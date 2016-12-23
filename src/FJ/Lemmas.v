@@ -32,7 +32,7 @@ Lemma methodDecl_OK :forall C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs 
 Proof.
   inversion 3. 
   match goal with
-  [ H: Forall _ _ |- _ ] =>  eapply Forall_find in H10; eauto
+  [ H: Forall _ _ |- _ ] =>  eapply Forall_find in H; eauto
   end.
 Qed.
 
@@ -40,12 +40,8 @@ Qed.
 Lemma fields_obj_nil: forall f,
   fields Object f -> f = nil.
 Proof.
-  intros.
   remember Object.
-  induction H; auto.
-  rewrite Heqc in H.
-  rewrite obj_notin_dom in H.
-  inversion H.
+  induction 1; crush.
 Qed.
 
 Lemma fields_NoDup : forall C fs,
@@ -61,18 +57,18 @@ Lemma fields_det: forall C f1 f2,
   f1 = f2.
 Proof.
   Hint Resolve fields_obj_nil.
-  Hint Rewrite obj_notin_dom.
   intros.
   gen f1.
   fields_cases (induction H0) Case; intros.
   Case "F_Obj".
     crush.
   Case "F_Decl".
-    inversion H2. crush.
-    subst.
-    rewrite H in H3.
-    inversion H3; subst; clear H3.
-    rewrite IHfields with fs'0; auto.
+    match goal with 
+    [ H: fields _ _ |- _ ] => destruct H; [crush |]
+    end.
+    match goal with
+    [ H: fields _ ?fs |- _] => specialize IHfields with fs; crush
+    end.
 Qed.
 
 (* Subtype Lemmas *)
@@ -167,7 +163,6 @@ Lemma mtype_obj_False: forall m Cs C,
   mtype(m, Object) = Cs ~> C ->
   False.
 Proof.
-  Hint Rewrite obj_notin_dom.
   inversion 1; crush.
 Qed.
 

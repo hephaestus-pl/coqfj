@@ -354,6 +354,7 @@ Axiom ClassesOK: forall C D Fs noDupfs K Ms noDupMds,
 Hint Resolve ClassesOK.
 
 Axiom obj_notin_dom: find Object CT = None.
+Hint Rewrite obj_notin_dom.
 
 Axiom superClass_in_dom: forall C D Fs noDupfs K Ms noDupMds,
   find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->

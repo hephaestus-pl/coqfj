@@ -117,10 +117,10 @@ Lemma subtype_not_sub': forall C D E,
   E <: D ->
   C <: D \/ D <: C.
 Proof.
-  intros C D E H. gen D. induction H; auto.
-  intros.
+  intros C D E H. gen D.
+  induction H; auto; intros.
   edestruct IHSubtype1; eauto.
-  intros. destruct beq_id_dec with C D0. subst. apply S_Decl in H. right; auto.
+  destruct beq_id_dec with C D0. subst. apply S_Decl in H. auto.
   eapply super_class_subtype in H0; eauto.
 Qed.
 
@@ -130,8 +130,9 @@ Lemma subtype_not_sub: forall C D E,
   ~ D <: C ->
   ~ E <: C.
 Proof.
-  intros.
-  intro. apply subtype_not_sub' with (D:=D) in H2; eauto. destruct H2; auto.
+  intros C D E H H0 H1 H2.
+  apply subtype_not_sub' with (D:=D) in H2; eauto.
+  destruct H2; auto.
 Qed.
 
 (* subst Lemmas *)
@@ -180,17 +181,18 @@ Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     mtype(m, D) = Ds ~> D0 ->
     mtype(m, C) = Ds ~> D0.
 Proof.
-  intros. apply ClassesOK in H. inversion H. subst; sort. clear H.
-  edestruct super_obj_or_defined; eauto. subst.
-  false. eapply mtype_obj_False; eauto.
+  Hint Resolve mtype_obj_False.  
+  intros. apply ClassesOK in H.
+  inversion H; subst; sort; clear H.
+  edestruct super_obj_or_defined; eauto; subst.
+  false; eapply mtype_obj_False; eauto.
   destruct H as (?D & Fs1 & noDupfs0 & K0 & Ms0 & noDupMds0 & H).
-  destruct (@find_dec MethodDecl) with MDeclRef Ms m.
-  destruct e. destruct x. sort.
-  apply unify_find_mname in H1. destruct H1. subst.
+  destruct (@find_dec MethodDecl) with MDeclRef Ms m. destruct e. destruct x. sort.
+  apply unify_find_mname in H1; destruct H1; subst.
   eapply Forall_find in H9; [|eexact H1].
   destruct H9; subst; sort. assert (D2 = D) by crush; subst.
   apply unify_find_mname in H1. destruct H1; subst.
-  destruct H5 with Ds D0; subst; auto. eapply mty_ok. eapply H10. eapply H1. reflexivity.
+  destruct H5 with Ds D0; subst; auto. eapply mty_ok; crush.
   eapply mty_no_override; eauto.
 Qed.
 
@@ -221,22 +223,21 @@ Lemma A14: forall D m C0 xs Ds e,
 Proof.
   intros.
   mbdy_cases (induction H0) Case.
-  Case "mbdy_ok".
-    sort.
+  Case "mbdy_ok". 
     lets: H1.
     eapply methodDecl_OK with (C:=C) in H1; eauto. 
-    inversion H1. clear H1; sort. subst.
+    inversion H1; clear H1; sort; subst.
     exists C E0. split; auto.  clear H11.
     erewrite unify_returnType with (D := D) (C0 := C0); eauto.
     split. assumption.
     erewrite unify_fargsType with (Ds := Ds) (fargs := fargs); eauto.
 
   Case "mbdy_no_override".
-    inversion H. subst. sort. rewrite H3 in H0; inversion H0; subst. 
-    rewrite H4 in H1; inversion H1. rewrite H3 in H0; inversion H0; subst; clear H0.
-    eapply IHm_body in H5. 
-    destruct H5 as [C1]. destruct H0 as [E0]. destruct H0. destruct H5.
-    exists C1 E0. split; eauto; split; eauto.
+    inversion H; [crush|]. 
+    assert (D1 = D0) by crush; subst.
+    eapply IHm_body in H5.
+    destruct H5 as (C1 & E0 & ?H & ?H & ?H).
+    exists C1 E0; eauto.
 Qed.
 
 

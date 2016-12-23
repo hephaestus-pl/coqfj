@@ -30,7 +30,10 @@ Lemma methodDecl_OK :forall C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs 
   CType_OK (CDecl C D0 Fs noDupfs K Ms noDupMds) ->
   MType_OK C (MDecl C0 m fargs noDupfargs ret).
 Proof.
-  inversion 3. eapply Forall_find in H10; eauto.
+  inversion 3. 
+  match goal with
+  [ H: Forall _ _ |- _ ] =>  eapply Forall_find in H10; eauto
+  end.
 Qed.
 
 (* fields Lemmas *)
@@ -209,8 +212,8 @@ Qed.
 
 
 Lemma weakening: forall Gamma e C,
-  nil |- e : C ->
-  Gamma |- e : C.
+  nil |-- e : C ->
+  Gamma |-- e : C.
 Proof.
   induction 1 using ExpTyping_ind'; eauto.
   crush.
@@ -220,7 +223,7 @@ Lemma A14: forall D m C0 xs Ds e,
   mtype(m,C0) = Ds ~> D ->
   mbody(m,C0) = xs o e ->
   exists D0 C,  C0 <: D0 /\ C <: D /\
-  nil extds (this :: xs) : (D0 :: Ds) |- e : C.
+  nil extds (this :: xs) : (D0 :: Ds) |-- e : C.
 Proof.
   intros.
   mbdy_cases (induction H0) Case.
@@ -244,12 +247,12 @@ Qed.
 
 
 Theorem term_subst_preserv_typing : forall Gamma xs (Bs: list ClassName) D ds As e,
-  nil extds xs : Bs |- e : D ->
+  nil extds xs : Bs |-- e : D ->
   NoDup xs ->
   Forall2 (ExpTyping Gamma) ds As ->
   Forall2 Subtype As Bs ->
   length ds = length xs ->
-  exists C, (C <:D /\ Gamma |- [; ds \ xs ;] e : C).
+  exists C, (C <:D /\ Gamma |-- [; ds \ xs ;] e : C).
 Proof with eauto.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case; sort.
@@ -314,9 +317,9 @@ Qed.
 
 
 Theorem subject_reduction : forall Gamma e e' C,
-  Gamma |- e : C ->
+  Gamma |-- e : C ->
   e ~> e' ->
-  exists C', C' <: C /\ Gamma |- e' : C'.
+  exists C', C' <: C /\ Gamma |-- e' : C'.
 Proof with eauto.
   intros.
   computation_cases (induction H0) Case.

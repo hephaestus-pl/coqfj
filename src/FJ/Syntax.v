@@ -174,45 +174,45 @@ Notation stupid_warning := (Warning "stupid warning").
 
 Axiom STUPID_STEP : stupid_warning.
 
-Reserved Notation "Gamma '|-' x ':' C" (at level 60, x at next level).
+Reserved Notation "Gamma '|--' x ':' C" (at level 60, x at next level).
 Inductive ExpTyping (Gamma: env ClassName) : Exp -> ClassName -> Prop :=
   | T_Var : forall x C, get Gamma x = Some C -> 
-                Gamma |- ExpVar x : C
+                Gamma |-- ExpVar x : C
   | T_Field: forall e0 C0 fs i Fi Ci fi,
-                Gamma |- e0 : C0 ->
+                Gamma |-- e0 : C0 ->
                 fields C0 fs ->
                 nth_error fs i = Some Fi ->
                 Ci = fieldType Fi ->
                 fi = ref Fi ->
-                Gamma |- ExpFieldAccess e0 fi : Ci
+                Gamma |-- ExpFieldAccess e0 fi : Ci
   | T_Invk : forall e0 C Cs C0 Ds m es,
-                Gamma |- e0 : C0 ->
+                Gamma |-- e0 : C0 ->
                 mtype(m, C0) = Ds ~> C ->
                 Forall2 (ExpTyping Gamma) es Cs ->
                 Forall2 Subtype Cs Ds ->
-                Gamma |- ExpMethodInvoc e0 m es : C
+                Gamma |-- ExpMethodInvoc e0 m es : C
   | T_New : forall C Ds Cs fs es,
                 fields C fs ->
                 Ds = map fieldType fs ->
                 Forall2 (ExpTyping Gamma) es Cs ->
                 Forall2 Subtype Cs Ds ->
-                Gamma |- ExpNew C es : C
+                Gamma |-- ExpNew C es : C
   | T_UCast : forall e0 D C,
-                Gamma |- e0 : D ->
+                Gamma |-- e0 : D ->
                 D <: C ->
-                Gamma |- ExpCast C e0 : C
+                Gamma |-- ExpCast C e0 : C
   | T_DCast : forall e0 C D,
-                Gamma |- e0 : D ->
+                Gamma |-- e0 : D ->
                 C <: D ->
                 C <> D ->
-                Gamma |- ExpCast C e0 : C
+                Gamma |-- ExpCast C e0 : C
   | T_SCast : forall e0 D C,
-                Gamma |- e0 : D ->
+                Gamma |-- e0 : D ->
                 ~ D <: C ->
                 ~ C <: D ->
                 stupid_warning ->
-                Gamma |- ExpCast C e0 : C
-  where " Gamma '|-' e ':' C " := (ExpTyping Gamma e C).
+                Gamma |-- ExpCast C e0 : C
+  where " Gamma '|--' e ':' C " := (ExpTyping Gamma e C).
 
 Tactic Notation "typing_cases" tactic(first) ident(c) :=
   first;
@@ -268,7 +268,7 @@ Tactic Notation "computation_cases" tactic(first) ident(c) :=
 
 Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
   | T_Method : forall C D C0 E0 xs Cs e0 Fs noDupfs K Ms noDupMds fargs m noDupFargs,
-            nil extds (this :: xs) : (C :: Cs) |- e0 : E0 ->
+            nil extds (this :: xs) : (C :: Cs) |-- e0 : E0 ->
             E0 <: C0 ->
             find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
             (forall Ds D0, mtype(m, D) = Ds ~> D0 -> Cs = Ds /\ C0 = D0) ->
@@ -291,13 +291,13 @@ Definition ExpTyping_ind' :=
   (f : forall (x : id) (C : ClassName), get Gamma x = Some C -> P (ExpVar x) C)
   (f0 : forall (e0 : Exp) (C0 : ClassName) (fs : [FieldDecl]) (i : nat) (Fi : FieldDecl)
           (Ci : ClassName) (fi : id),
-        Gamma |- e0 : C0 ->
+        Gamma |-- e0 : C0 ->
         P e0 C0 ->
         fields C0 fs ->
         nth_error fs i = Some Fi -> Ci = fieldType Fi -> fi = ref Fi -> P (ExpFieldAccess e0 fi) Ci)
   (f1 : forall (e0 : Exp) (C : ClassName) (Cs : [ClassName]) (C0 : ClassName) (Ds : [ClassName]) 
           (m : id) (es : [Exp]),
-        Gamma |- e0 : C0 ->
+        Gamma |-- e0 : C0 ->
         P e0 C0 ->
         mtype( m, C0)= Ds ~> C ->
         Forall2 (ExpTyping Gamma) es Cs ->
@@ -311,13 +311,13 @@ Definition ExpTyping_ind' :=
         Forall2 Subtype Cs Ds -> 
         Forall2 P es Cs ->
         P (ExpNew C es) C)
-  (f3 : forall (e0 : Exp) (D C : ClassName), Gamma |- e0 : D -> P e0 D -> D <: C -> P (ExpCast C e0) C)
+  (f3 : forall (e0 : Exp) (D C : ClassName), Gamma |-- e0 : D -> P e0 D -> D <: C -> P (ExpCast C e0) C)
   (f4 : forall (e0 : Exp) (C : id) (D : ClassName),
-        Gamma |- e0 : D -> P e0 D -> C <: D -> C <> D -> P (ExpCast C e0) C)
+        Gamma |-- e0 : D -> P e0 D -> C <: D -> C <> D -> P (ExpCast C e0) C)
   (f5 : forall (e0 : Exp) (D C : ClassName),
-        Gamma |- e0 : D -> P e0 D -> ~ D <: C -> ~ C <: D -> stupid_warning -> P (ExpCast C e0) C) =>
-fix F (e : Exp) (c : ClassName) (e0 : Gamma |- e : c) {struct e0} : P e c :=
-  match e0 in (_ |- e1 : c0) return (P e1 c0) with
+        Gamma |-- e0 : D -> P e0 D -> ~ D <: C -> ~ C <: D -> stupid_warning -> P (ExpCast C e0) C) =>
+fix F (e : Exp) (c : ClassName) (e0 : Gamma |-- e : c) {struct e0} : P e c :=
+  match e0 in (_ |-- e1 : c0) return (P e1 c0) with
   | T_Var _ x C e1 => f x C e1
   | T_Field _ e1 C0 fs i Fi Ci fi e2 f6 e3 e4 e5 => f0 e1 C0 fs i Fi Ci fi e2 (F e1 C0 e2) f6 e3 e4 e5
   | T_Invk _ e1 C Cs C0 Ds m es e2 m0 f6 f7 => f1 e1 C Cs C0 Ds m es e2 (F e1 C0 e2) m0 f6 f7 

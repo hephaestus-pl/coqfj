@@ -365,7 +365,15 @@ Proof with eauto.
     admit.
   Case "RC_Cast".
     assert (C0 = C) by (inversion H; crush); subst.
-    inversion H; subst.
-    eapply (IHComputation) in H3.
+    inversion H; subst; eapply (IHComputation) in H3; destruct H3 as [C0']; destruct H1. eauto.
+    rename D into C0. clear H5.
+    destruct dec_subtype with C0' C.
+    eapply T_UCast in H2; eauto.
+    destruct dec_subtype with C C0'.
+    eapply T_DCast in H2; eauto. crush.
+    eapply T_SCast in H2; eauto. apply STUPID_STEP.
+    rename D into C0. clear H6.
+    exists C; split; eauto. eapply T_SCast; eauto. 
+    eapply subtype_not_sub...
 Admitted.
 

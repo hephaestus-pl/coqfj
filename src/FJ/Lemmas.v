@@ -374,6 +374,12 @@ Proof with eauto.
     destruct H4 as (C' & ?H & ?H).
     eapply A11 in H1; eauto.
   Case "RC_Invk_Arg".
+    inversion H3; subst.    
+    exists C; split; eauto. econstructor; eauto.
+    lets ?H: Forall2_nth_error H10 H. destruct H4 as [?C].
+    lets ?H: Forall2_nth_error H11 H4. destruct H5 as [?D].
+    admit.
+apply IHComputation in H6.
     admit.
   Case "RC_New_Arg".
     admit.

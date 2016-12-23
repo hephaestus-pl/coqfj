@@ -85,7 +85,7 @@ Proof.
   Case "S_Trans".
     edestruct IHSubtype2; eauto.
     edestruct IHSubtype1; eauto.
-    exists (x ++ x0); crush.
+    eexists ; crush; eassumption.
   Case "S_Decl".
     exists (fs); auto. eapply F_Decl; eauto.
     apply ClassesOK in H. inversion H; subst; auto.
@@ -106,11 +106,10 @@ Lemma super_class_subtype: forall C D D0 fs noDupfs K mds noDupMds,
 Proof.
   intros C D D0 fs noDupfs K mds noDupMds H.
   gen D0 fs noDupfs K mds noDupMds.
-  induction H; intros; auto. crush.
+  induction H; [crush | intros | crush].
   destruct beq_id_dec with C D.
   eapply IHSubtype2; crush.
   edestruct IHSubtype1; eauto.
-  rewrite H1 in H; crush.
 Qed.
 
 Lemma subtype_not_sub': forall C D E,

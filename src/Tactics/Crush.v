@@ -185,6 +185,8 @@ Ltac crush' lemmas invOne :=
                   | context[JMeq] => fail 1 (** JMeq is too fancy to deal with here. *)
                   | _ => rewrite H by crush' lemmas invOne
                 end
+              | [ H : ?P = _
+                , H1: ?P = _ |- _ ] => rewrite H1 in H; clear H1
             end; autorewrite with core in *) in
 
   (** Now the main sequence of heuristics: *)

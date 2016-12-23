@@ -106,8 +106,9 @@ Lemma super_class_subtype: forall C D D0 fs noDupfs K mds noDupMds,
 Proof.
   intros C D D0 fs noDupfs K mds noDupMds H.
   gen D0 fs noDupfs K mds noDupMds.
-  induction H; intros; auto. false; apply H; auto. sort.
-  destruct beq_id_dec with C D. rewrite e in H2; auto. eapply IHSubtype2; eauto. rewrite <- e; auto.
+  induction H; intros; auto. crush.
+  destruct beq_id_dec with C D.
+  eapply IHSubtype2; crush.
   edestruct IHSubtype1; eauto.
   rewrite H1 in H; crush.
 Qed.

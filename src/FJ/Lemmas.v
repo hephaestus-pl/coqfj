@@ -350,7 +350,23 @@ Proof with eauto.
     destruct H7 as [E]. destruct H7.
     exists E; split; eauto.
     apply eq_S; auto.
-  Case "R_Cast".
-    
+  Case "R_Cast". 
+    assert (D = C) by (inversion H; crush); subst. 
+    inversion_clear H. repeat eexists; eauto. 
+    assert (C0 = D) by (inversion H1; crush); subst.
+    false. apply antisym_subtype in H2. auto.
+    assert (C0 = D) by (inversion H1; crush); subst. contradiction.
+  Case "RC_Field".
+    admit.
+  Case "RC_Invk_Recv".
+    admit.
+  Case "RC_Invk_Arg".
+    admit.
+  Case "RC_New_Arg".
+    admit.
+  Case "RC_Cast".
+    assert (C0 = C) by (inversion H; crush); subst.
+    inversion H; subst.
+  
 Admitted.
 

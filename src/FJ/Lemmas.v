@@ -368,11 +368,11 @@ Proof with eauto.
   Case "RC_Field".
     inversion H; subst. eapply IHComputation in H3. 
     destruct H3 as (C' & ?H & ?H).
-    eexists. split. admit. 
-    destruct (subtype_fields C' C0 fs); auto. inversion H3. subst. 
-    econstructor. eapply H2. eapply H3.
-  Case "RC_Invk_Recv".
     admit.
+  Case "RC_Invk_Recv".
+    inversion H; subst. apply IHComputation in H4. 
+    destruct H4 as (C' & ?H & ?H).
+    eapply A11 in H1; eauto.
   Case "RC_Invk_Arg".
     admit.
   Case "RC_New_Arg".

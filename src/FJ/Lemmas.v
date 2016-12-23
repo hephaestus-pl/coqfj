@@ -310,52 +310,51 @@ Proof with eauto.
     eapply subtype_not_sub...
 Qed. 
 
-
+(* This is Theorem 2.4.1 at the paper *)
 Theorem subject_reduction : forall Gamma e e' C,
   Gamma |-- e : C ->
   e ~> e' ->
   exists C', C' <: C /\ Gamma |-- e' : C'.
 Proof with eauto.
-  intros.
-  computation_cases (induction H0) Case.
+  intros. gen C.
+  computation_cases (induction H0) Case; intros.
   Case "R_Field".
-    subst. destruct fi; simpl in *. 
-    inversion H. subst. simpl in *. destruct Fi in *. simpl in *. subst. 
-    rename C1 into D0. sort. assert (C0 = D0). inversion H5. reflexivity. subst.
+    subst. destruct fi; simpl in *.
+    inversion H2; subst. simpl in *. destruct Fi in *. simpl in *. subst. 
+    rename C1 into D0. sort. assert (C = D0). inversion H5. reflexivity. subst.
     rewrite (fields_det D0 fs Fs) in H7 by auto.
     clear H6 fs. assert ((FDecl c0 i0) = (FDecl c i0)).
     eapply ref_noDup_nth_error; eauto.  eapply fields_NoDup; eauto. inversion H3.
     inversion H5. subst. sort.
-    rewrite (fields_det D0 Fs fs) in H1 by auto.
+    rewrite (fields_det D0 Fs fs) in H0 by auto.
     rewrite (fields_det D0 Fs fs) in H7 by auto.
-    clear H0 H12 H7 Fs. 
-    assert (nth_error es i <> None). intro. rewrite H0 in H2. inversion H2.
+    clear H H3 H12 H7 Fs. 
+    assert (nth_error es i <> None). intro. crush.
     assert (List.length es = List.length Cs) by (apply (Forall2_len _ _ _ _ _ H11)).
-    apply -> (nth_error_Some) in H0. rewrite H4 in H0.
+    apply -> (nth_error_Some) in H. rewrite H3 in H.
     assert (exists Ci, nth_error Cs i = Some Ci). 
     apply nth_error_Some'. assumption.
-    destruct H6 as [Ci].
+    destruct H4 as [Ci].
      destruct (Forall2_nth_error _ _ (Subtype) Cs (map fieldType fs) i Ci) as [fi']...
     exists Ci.
-    split. sort.
-    apply map_nth_error with (B:=ClassName) (f:=fieldType) in H1; simpl in *.
+    split. sort. 
+    apply map_nth_error with (B:=ClassName) (f:=fieldType) in H0; simpl in *.
     eapply Forall2_forall...
     apply (Forall2_forall _ _ (ExpTyping Gamma) es Cs i ei Ci); auto.
   Case "R_Invk".
-    inversion H. subst. inversion H6; subst; sort.
-    rename C2 into C0.
+    inversion H2. subst. inversion H6; subst; sort.
     eapply A14 in H7... 
     destruct H7 as [B]. destruct H3. destruct H3. destruct H4.
-    eapply term_subst_preserv_typing with (ds := ExpNew C0 es :: ds) in H7...
+    eapply term_subst_preserv_typing with (ds := ExpNew C2 es :: ds) in H7...
     destruct H7 as [E]. destruct H7.
     exists E; split; eauto.
     apply eq_S; auto.
   Case "R_Cast". 
-    assert (D = C) by (inversion H; crush); subst. 
-    inversion_clear H. repeat eexists; eauto. 
-    assert (C0 = D) by (inversion H1; crush); subst.
+    assert (D = C0) by (inversion H0; crush); subst. 
+    inversion_clear H0. repeat eexists; eauto. 
+    assert (C = D) by (inversion H1; crush); subst.
     false. apply antisym_subtype in H2. auto.
-    assert (C0 = D) by (inversion H1; crush); subst. contradiction.
+    assert (C = D) by (inversion H1; crush); subst. contradiction.
   Case "RC_Field".
     admit.
   Case "RC_Invk_Recv".
@@ -367,6 +366,6 @@ Proof with eauto.
   Case "RC_Cast".
     assert (C0 = C) by (inversion H; crush); subst.
     inversion H; subst.
-  
+    eapply (IHComputation) in H3.
 Admitted.
 

@@ -4,6 +4,7 @@ Require Import Tactics.
 Require Import Lists.
 Require Import Id.
 Import ListNotations.
+Hint Constructors NoDup.
 
 
 Fixpoint find_w (n: nat) (key: id) (l: list id) :=

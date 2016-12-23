@@ -52,8 +52,7 @@ Lemma fields_NoDup : forall C fs,
   fields C fs ->
   NoDup (refs fs).
 Proof.
-  intros.
-  inversion H; [simpl; constructor | assumption].
+  inversion 1; crush.
 Qed.
 
 Lemma fields_det: forall C f1 f2,

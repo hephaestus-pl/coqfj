@@ -4,8 +4,6 @@ Require Import Lists.
 Require Import Base.
 Require Import Syntax.
 
-Import Arith.
-
 (* Auxiliary Lemmas *)
 (* mtype / MType_OK lemmas *)
 Lemma unify_returnType : forall Ds D C D0 Fs noDupfs K Ms noDupMds C0 m fargs noDupfargs ret,
@@ -245,7 +243,7 @@ Proof.
 Qed.
 
 
-Theorem term_subst_preserv_typing : forall Gamma xs (Bs: [ClassName]) D ds As e,
+Theorem term_subst_preserv_typing : forall Gamma xs (Bs: list ClassName) D ds As e,
   nil extds xs : Bs |- e : D ->
   NoDup xs ->
   Forall2 (ExpTyping Gamma) ds As ->

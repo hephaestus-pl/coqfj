@@ -72,6 +72,16 @@ Proof.
 Qed.
 
 (* Subtype Lemmas *)
+
+Lemma obj_not_subtype: forall C,
+  C <> Object -> ~ Object <: C.
+Proof.
+  intros; intro. 
+  remember Object. induction H0; [auto | | crush].
+  subst. destruct beq_id_dec with D Object; subst; auto.
+Qed.
+
+
 Lemma subtype_fields: forall C D fs ,
   C <: D ->
   fields D fs ->
@@ -356,7 +366,11 @@ Proof with eauto.
     false. apply antisym_subtype in H2. auto.
     assert (C = D) by (inversion H1; crush); subst. contradiction.
   Case "RC_Field".
-    admit.
+    inversion H; subst. eapply IHComputation in H3. 
+    destruct H3 as (C' & ?H & ?H).
+    eexists. split. admit. 
+    destruct (subtype_fields C' C0 fs); auto. inversion H3. subst. 
+    econstructor. eapply H2. eapply H3.
   Case "RC_Invk_Recv".
     admit.
   Case "RC_Invk_Arg".

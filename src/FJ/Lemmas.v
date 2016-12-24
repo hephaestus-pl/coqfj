@@ -320,6 +320,41 @@ Proof with eauto.
     eapply subtype_not_sub...
 Qed. 
 
+
+Lemma exists_subtyping : forall Gamma es es' Cs Ds i ei ei' C D C0,
+  nth_error es i = Some ei ->
+  nth_error es' i = Some ei' ->
+  nth_error Cs i = Some C ->
+  nth_error Ds i = Some D ->
+  Forall2 Subtype Cs Ds ->
+  C0 <: C ->
+  Gamma |-- ei' : C0 ->
+  Forall2 (ExpTyping Gamma) es Cs ->
+  (forall j, j <> i -> nth_error es j = nth_error es' j) ->
+  exists Cs', Forall2 Subtype Cs' Ds /\
+             Forall2 (ExpTyping Gamma) es' Cs'.
+Proof.
+  intros. 
+  exists (firstn i Cs ++ cons C0 nil ++ skipn (S i) Cs).
+  gen i ei' H H0 H1 H2 H3 H5. gen es' Ds. induction H6 as [| ?e ?C ?es ?Cs].
+  intros. crush.
+  intros. 
+  destruct es' as [| es']; [rewrite nth_error_nil in H1; inversion H1|].
+  destruct Ds as [| Ds]; [rewrite nth_error_nil in H3; inversion H3|].
+  destruct i. simpl in *. crush. inversion H5; constructor; auto. subst. apply S_Trans with C; auto.
+  constructor; auto.
+  assert (forall i, nth_error es i = nth_error es'0 i). intro.
+  lets ?H: H7 (S i). 
+ simpl in H0. apply H0; intuition.
+  apply nth_error_same with (xs' := es'0) in H0. rewrite <- H0; auto. 
+  edestruct IHForall2 with (es':= es'0); eauto; intros.
+  lets ?H: H7 (S j); crush. inversion H5; auto.
+  clear IHForall2.
+  split. crush. constructor; auto. inversion H5; auto.
+  crush. constructor; auto.
+  lets ?H: H7 0. simpl in H11. assert (e = es'); crush.
+Qed.
+
 (* This is Theorem 2.4.1 at the paper *)
 Theorem subject_reduction : forall Gamma e e' C,
   Gamma |-- e : C ->
@@ -381,22 +416,7 @@ Proof with eauto.
     lets: H10.
     eapply Forall2_forall with (n:=i) (x:=ei) in H10; eauto. 
     eapply IHComputation in H10. destruct H10 as (?C' & ?H & ?H).
-    assert (exists Cs', Forall2 Subtype Cs' Ds /\ Forall2 (ExpTyping Gamma) es' Cs').
-   (* let Cs':=Cs.
-H9 : C' <: C0
-H10 : Gamma |-- ei' : C'
-H4 : nth_error Cs i = Some C0
-H5 : nth_error Ds i = Some D
-H11 : Forall2 Subtype Cs Ds
-H : nth_error es i = Some ei
-H1 : nth_error es' i = Some ei'
-H2 : j <> i -> nth_error es j = nth_error es' j
-H6 : Forall2 (ExpTyping Gamma) es Cs
-(exists Cs', Forall2 Subtype Cs' Ds /\ Forall2 (ExpTyping Gamma) es' Cs')
-*)
- admit.
-    destruct H12 as (Cs' & ?H & ?H).
-     econstructor. eexact H7. eexact H8. eexact H13. eexact H12.
+    edestruct exists_subtyping with (es := es) (Cs := Cs) (es':= es') (Ds:= Ds) as (Cs' & ?H & ?H); eauto.
   Case "RC_New_Arg".
     admit.
   Case "RC_Cast".

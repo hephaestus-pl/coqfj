@@ -242,17 +242,17 @@ Inductive Computation : Exp -> Exp -> Prop :=
   | RC_Invk_Recv : forall e0 e0' m es,
             e0 ~> e0' ->
             ExpMethodInvoc e0 m es ~> ExpMethodInvoc e0' m es
-  | RC_Invk_Arg : forall e0 ei' m es es' ei i j,
+  | RC_Invk_Arg : forall e0 ei' m es es' ei i,
             ei ~> ei' ->
             nth_error es i = Some ei ->
             nth_error es' i = Some ei' ->
-            (j <> i -> nth_error es j = nth_error es' j) ->
+            (forall j, j <> i -> nth_error es j = nth_error es' j) ->
             ExpMethodInvoc e0 m es ~> ExpMethodInvoc e0 m es'
-  | RC_New_Arg : forall C ei' es es' ei i j,
+  | RC_New_Arg : forall C ei' es es' ei i,
             ei ~> ei' ->
             nth_error es i = Some ei ->
             nth_error es' i = Some ei' ->
-            (j <> i -> nth_error es j = nth_error es' j) ->
+            (forall j, j <> i -> nth_error es j = nth_error es' j) ->
             ExpNew C es ~> ExpNew C es'
   | RC_Cast : forall C e0 e0',
             e0 ~> e0' ->

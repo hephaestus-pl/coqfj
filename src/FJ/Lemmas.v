@@ -403,7 +403,8 @@ Proof with eauto.
   Case "RC_Field".
     inversion H; subst. eapply IHComputation in H3. 
     destruct H3 as (C' & ?H & ?H).
-    admit.
+    lets ?H: subtype_fields H1 H4; eauto. destruct H3.
+    apply nth_error_app_app with (l':=x) in H5. eauto.
   Case "RC_Invk_Recv".
     inversion H; subst. apply IHComputation in H4. 
     destruct H4 as (C' & ?H & ?H).
@@ -438,5 +439,5 @@ Proof with eauto.
     rename D into C0. clear H6.
     exists C; split; eauto. eapply T_SCast; eauto. 
     eapply subtype_not_sub...
-Admitted.
+Qed.
 

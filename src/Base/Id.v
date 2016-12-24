@@ -53,11 +53,6 @@ Proof.
 
 Theorem beq_id_dec: forall (i1 i2: id),
   {i1 = i2} + {i1 <> i2}.
-Proof.
-  intros.
-  destruct i1, i2.
-  destruct eq_nat_dec with n n0.
-  left; auto.
-  right; intro.
-  apply n1; inversion H; auto.
-Qed.
+Proof. 
+  repeat decide equality.
+Defined.

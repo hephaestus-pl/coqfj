@@ -374,13 +374,29 @@ Proof with eauto.
     destruct H4 as (C' & ?H & ?H).
     eapply A11 in H1; eauto.
   Case "RC_Invk_Arg".
-    inversion H3; subst.    
-    exists C; split; eauto. econstructor; eauto.
+    inversion H3; subst.
+    exists C; split; eauto.
     lets ?H: Forall2_nth_error H10 H. destruct H4 as [?C].
     lets ?H: Forall2_nth_error H11 H4. destruct H5 as [?D].
-    admit.
-apply IHComputation in H6.
-    admit.
+    lets: H10.
+    eapply Forall2_forall with (n:=i) (x:=ei) in H10; eauto. 
+    eapply IHComputation in H10. destruct H10 as (?C' & ?H & ?H).
+    assert (exists Cs', Forall2 Subtype Cs' Ds /\ Forall2 (ExpTyping Gamma) es' Cs').
+   (* let Cs':=Cs.
+H9 : C' <: C0
+H10 : Gamma |-- ei' : C'
+H4 : nth_error Cs i = Some C0
+H5 : nth_error Ds i = Some D
+H11 : Forall2 Subtype Cs Ds
+H : nth_error es i = Some ei
+H1 : nth_error es' i = Some ei'
+H2 : j <> i -> nth_error es j = nth_error es' j
+H6 : Forall2 (ExpTyping Gamma) es Cs
+(exists Cs', Forall2 Subtype Cs' Ds /\ Forall2 (ExpTyping Gamma) es' Cs')
+*)
+ admit.
+    destruct H12 as (Cs' & ?H & ?H).
+     econstructor. eexact H7. eexact H8. eexact H13. eexact H12.
   Case "RC_New_Arg".
     admit.
   Case "RC_Cast".

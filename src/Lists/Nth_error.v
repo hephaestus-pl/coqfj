@@ -1,4 +1,5 @@
 Require Import List.
+Require Import Tactics.
 Import ListNotations.
 
 Lemma none_ex_Some: forall {A: Type} x,
@@ -81,4 +82,15 @@ Proof.
   induction i. auto.
   inversion H. subst. simpl in H0.
   apply nth_error_In in H0. contradiction.
+Qed.
+
+Lemma nth_error_same: forall {A: Type} (xs xs': list A),
+  (forall i, nth_error xs i = nth_error xs' i) ->
+  xs = xs'.
+Proof.
+  induction xs, xs'; crush. 
+  lets ?H: H 0; inversion H0.
+  lets ?H: H 0; inversion H0.
+  lets ?H: H 0. crush. apply f_equal. apply IHxs. intro i.
+  lets ?H: H (S i). crush.
 Qed.

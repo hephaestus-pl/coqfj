@@ -4,8 +4,9 @@ Require Import RelationClasses.
 Require Import Tactics.
 (** Forall for two-fold relations **)
 
-
+Hint Constructors Forall2.
 Section Two_predicate.
+
 
 Variables A B: Type.
 Variable P: A -> B -> Prop.
@@ -92,14 +93,14 @@ Lemma Forall2_trans: forall (A: Type) (P: A -> A -> Prop) xs ys zs,
   Forall2 P ys zs ->
   Forall2 P xs zs.
 Proof.
-  induction xs, ys, zs; intros; auto.
-  (* Trivial Cases solved by inversion *)
-  - inversion H0. 
-  - inversion H1. 
-  - inversion H1.
-
-  - inversion H0; inversion H1. subst.
-  constructor. transitivity a0; auto.
+  induction xs, ys, zs; intros; 
+  match goal with
+  | [ |- Forall2 _ nil nil ] => apply Forall2_nil
+  | [ H : Forall2 _ nil (?a :: ?b) |- _] => inversion H
+  | [ H : Forall2 _ (?a :: ?b) nil |- _] => inversion H
+  | [ |- _ ] => idtac
+  end.
+  constructor; inverts H0; inverts H1. transitivity a0; auto.
   eapply IHxs; eauto.
 Qed.
 
@@ -111,7 +112,6 @@ Lemma nth_error_Forall2: forall (A B: Type)(P: A -> B -> Prop) xs ys i x y,
   Forall2 P xs ys.
 Proof.
   Hint Rewrite nth_error_nil.
-  Hint Constructors Forall2.
   intros. gen i ys x y H1. induction xs, ys; crush.
   destruct i; crush. constructor; auto.
   eapply IHxs.

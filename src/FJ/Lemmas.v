@@ -418,7 +418,14 @@ Proof with eauto.
     eapply IHComputation in H10. destruct H10 as (?C' & ?H & ?H).
     edestruct exists_subtyping with (es := es) (Cs := Cs) (es':= es') (Ds:= Ds) as (Cs' & ?H & ?H); eauto.
   Case "RC_New_Arg".
-    admit.
+    inversion H3; subst.
+    lets ?H: Forall2_nth_error H8 H. destruct H4 as [?C].
+    lets ?H: Forall2_nth_error H10 H4. destruct H5 as [?D].
+    exists C0; split; auto. 
+    lets ?H: H8.
+    eapply Forall2_forall with (n:=i) (x:=ei) in H8; eauto. 
+    eapply IHComputation in H8. destruct H8 as (?C' & ?H & ?H).
+    edestruct exists_subtyping with (es := es) (Cs := Cs) (es':= es') (Ds:= map fieldType fs) as (Cs' & ?H & ?H); eauto.
   Case "RC_Cast".
     assert (C0 = C) by (inversion H; crush); subst.
     inversion H; subst; eapply (IHComputation) in H3; destruct H3 as [C0']; destruct H1. eauto.

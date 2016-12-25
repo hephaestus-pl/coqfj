@@ -259,7 +259,6 @@ Inductive Computation : Exp -> Exp -> Prop :=
             ExpCast C e0 ~> ExpCast C e0'
   where "e '~>' e1" := (Computation e e1).
 
-Hint Constructors Computation ExpTyping.
 Tactic Notation "computation_cases" tactic(first) ident(c) :=
   first;
   [ Case_aux c "R_Field" | Case_aux c "R_Invk" 
@@ -267,6 +266,10 @@ Tactic Notation "computation_cases" tactic(first) ident(c) :=
   | Case_aux c "RC_Invk_Recv" | Case_aux c "RC_Invk_Arg" 
   | Case_aux c "RC_New_Arg" | Case_aux c "RC_Cast"].
 
+Inductive Value : Exp -> Prop :=
+  v_new: forall C es, Value (ExpNew C es).
+
+Hint Constructors Computation ExpTyping Value.
 
 Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
   | T_Method : forall C D C0 E0 xs Cs e0 Fs noDupfs K Ms noDupMds fargs m noDupFargs,

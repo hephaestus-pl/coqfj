@@ -458,6 +458,20 @@ Fixpoint contains_downCast (e: Exp): Prop :=
   | _ => False (*ExpNew and ExpVar *)
   end.
 
+Lemma closed_terms_form: forall e C,
+  nil |-- e : C ->
+  normal_form Computation e ->
+  (exists es, e = ExpNew C es) \/
+  (exists e', e = ExpCast C e').
+Proof.
+  typing_cases (induction 1 using ExpTyping_ind') Case; intros.
+  Case "T_Var".
+    inversion H.
+  Case "T_Field".
+    destruct e0; eauto. inversion H. inversion H6.
+    inversion H. subst.
+Admitted. 
+
 Lemma FJ_Type_Soundness: forall e e' C,
   nil |-- e : C ->
   e ~>* e' ->
@@ -465,6 +479,13 @@ Lemma FJ_Type_Soundness: forall e e' C,
   contains_downCast e' \/
   (exists D, Value e' /\ D <: C /\ nil |-- e' : D ).
 Proof.
+  intros. gen e'.
+  typing_cases (induction H using ExpTyping_ind') Case; intros.
+  Case "T_Var".
+    simpl in H; inversion H.
+  Case "T_Field".
+    inversion H4; subst. false. apply H5. exists (ExpVar (ref Fi)). constructor.
+  induction 1; crush.
 Admitted.
 (*
 Fixpoint Progress (e: Exp) (Gamma: env ClassName) (C: ClassName) (p : Gamma |-- e : C) : Prop := 

@@ -441,10 +441,28 @@ Proof with eauto.
     eapply subtype_not_sub...
 Qed.
 
+Fixpoint contains_downCast (e: Exp): Prop :=
+  let fix contains_downCast_list (es: [Exp]): Prop:=
+    match es with
+    | nil => False
+    | x :: xs => contains_downCast x \/ contains_downCast_list xs
+    end in
+  match e with
+  | ExpFieldAccess e' _ => contains_downCast e'
+  | ExpMethodInvoc e' _ es => contains_downCast e' \/ contains_downCast_list es
+  | ExpCast C e' => 
+    match e' with
+    | ExpNew D e'' => D <: C \/ contains_downCast e'
+    | _ => False
+    end
+  | _ => False (*ExpNew and ExpVar *)
+  end.
+
 Lemma FJ_Type_Soundness: forall e e' C,
   nil |-- e : C ->
   e ~>* e' ->
   normal_form Computation e' ->
+  contains_downCast e' \/
   (exists D, Value e' /\ D <: C /\ nil |-- e' : D ).
 Proof.
 Admitted.

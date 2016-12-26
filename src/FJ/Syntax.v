@@ -269,7 +269,20 @@ Tactic Notation "computation_cases" tactic(first) ident(c) :=
 Inductive Value : Exp -> Prop :=
   v_new: forall C es, Value (ExpNew C es).
 
-Hint Constructors Computation ExpTyping Value.
+
+Reserved Notation "e '~>*' e1" (at level 59).
+Inductive ComputationStar : Exp -> Exp -> Prop := 
+  | Comp_Refl : forall e,
+    e ~>* e
+  | Comp_Trans: forall e1 e2 e3,
+    e1 ~>* e2 ->
+    e2 ~>* e3 ->
+    e1 ~>* e2
+  where "e '~>*' e1" := (ComputationStar e e1).
+Hint Constructors Computation ExpTyping Value ComputationStar.
+Definition normal_form {X:Type} (R: relation X) (t: X) :=
+  ~exists t', R t t'.
+
 
 Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
   | T_Method : forall C D C0 E0 xs Cs e0 Fs noDupfs K Ms noDupMds fargs m noDupFargs,

@@ -441,3 +441,20 @@ Proof with eauto.
     eapply subtype_not_sub...
 Qed.
 
+Lemma FJ_Type_Soundness: forall e e' C,
+  nil |-- e : C ->
+  e ~>* e' ->
+  normal_form Computation e' ->
+  (exists D, Value e' /\ D <: C /\ nil |-- e' : D ).
+Proof.
+Admitted.
+(*
+Fixpoint Progress (e: Exp) (Gamma: env ClassName) (C: ClassName) (p : Gamma |-- e : C) : Prop := 
+  match e with
+  | ExpVar v => get Gamma v = Some C
+  | ExpFieldAccess e' id => True
+  | ExpCast C' e' => C = C' /\ exists D, Gamma |-- e : D
+  | ExpNew C' es => C = C' /\ exists Cs, Forall2 (fun e' C' => Progress e' Gamma C' (Gamma |-- e': C')) es Cs
+  | _ => True
+  end.
+*)

@@ -496,7 +496,15 @@ Proof.
     exists (C_cast C E). repeat eexists; crush.
 Qed.
 
-Lemma progress: forall e C,
+Lemma exists_mbody: forall C D Cs m,
+  mtype(m, C) = Cs ~> D ->
+  exists xs e, mbody(m, C) = xs o e.
+Proof.
+  induction 1; eauto.
+  destruct IHm_type as (xs & e & H2). exists xs e; eauto.
+Qed.
+
+Theorem progress: forall e C,
   nil |-- e : C ->
   normal_form Computation e ->
   Value e \/
@@ -508,8 +516,8 @@ Proof.
   Case "T_Field".
     Hint Rewrite fields_det.
     unfold normal_form in *. destruct IHExpTyping.
+    intro. apply H0. destruct H5 as [e0']. exists (ExpFieldAccess e0' fi); eauto.
     SCase "Value".
-      intro. apply H0. destruct H5 as [e0']. exists (ExpFieldAccess e0' fi); eauto.
       inversion H5; subst. inversion H; subst.
       assert (fs = fs0) by (eapply fields_det; eauto). subst. clear H1.
       false; apply H0. 
@@ -521,4 +529,9 @@ Proof.
       destruct H5 as (E & C & D & es & H5 & H6).
       right. exists (C_field_invk E fi);  repeat eexists; subst; simpl ; eauto.
   Case "T_Invk".
+    unfold normal_form in *. destruct IHExpTyping.
+    intro. apply H0. destruct H5 as [e0']. exists (ExpMethodInvoc e0' m es); eauto.
+    SCase "Value".
+      inversion H5; subst. inversion H; subst. sort.
+      false. apply H0. 
 Admitted.

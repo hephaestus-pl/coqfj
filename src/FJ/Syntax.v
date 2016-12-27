@@ -221,21 +221,30 @@ Tactic Notation "typing_cases" tactic(first) ident(c) :=
   | Case_aux c "T_UCast" | Case_aux c "T_DCast" 
   | Case_aux c "T_SCast"].
 
-Reserved Notation "e '~>' e1" (at level 60).
-Inductive Computation : Exp -> Exp -> Prop :=
+Reserved Notation "e '~>!' e1" (at level 59).
+Inductive Computation_step : Exp -> Exp -> Prop :=
   | R_Field : forall C Fs es fi ei i,
             fields C Fs ->
             nth_error Fs i = Some fi ->
             nth_error es i = Some ei-> 
-            ExpFieldAccess (ExpNew C es) (ref fi) ~> ei
+            ExpFieldAccess (ExpNew C es) (ref fi) ~>! ei
   | R_Invk : forall C m xs ds es e0,
             mbody(m, C) = xs o e0 ->
             NoDup (this :: xs) ->
             List.length ds = List.length xs ->
-            ExpMethodInvoc (ExpNew C es) m ds ~> [; ExpNew C es :: ds \ this :: xs;] e0
+            ExpMethodInvoc (ExpNew C es) m ds ~>! [; ExpNew C es :: ds \ this :: xs;] e0
   | R_Cast : forall C D es,
             C <: D ->
-            ExpCast D (ExpNew C es) ~> ExpNew C es
+            ExpCast D (ExpNew C es) ~>! ExpNew C es
+  where "e '~>!' e1" := (Computation_step e e1).
+Tactic Notation "computation_step_cases" tactic(first) ident(c) :=
+  first;
+  [ Case_aux c "R_Field" | Case_aux c "R_Invk" 
+  | Case_aux c "R_Cast" ].
+
+Reserved Notation "e '~>' e1" (at level 60).
+Inductive Computation : Exp -> Exp -> Prop :=
+  | R_Step : forall e e1, e ~>! e1 -> e ~> e1
   | RC_Field : forall e0 e0' f,
             e0 ~> e0' ->
             ExpFieldAccess e0 f ~> ExpFieldAccess e0' f
@@ -261,8 +270,7 @@ Inductive Computation : Exp -> Exp -> Prop :=
 
 Tactic Notation "computation_cases" tactic(first) ident(c) :=
   first;
-  [ Case_aux c "R_Field" | Case_aux c "R_Invk" 
-  | Case_aux c "R_Cast" | Case_aux c "RC_Field"
+  [ Case_aux c "R_Step" | Case_aux c "RC_Field"
   | Case_aux c "RC_Invk_Recv" | Case_aux c "RC_Invk_Arg" 
   | Case_aux c "RC_New_Arg" | Case_aux c "RC_Cast"].
 
@@ -293,7 +301,7 @@ Inductive Eval_Ctx : Type :=
   | C_new: ClassName -> [Exp] -> Eval_Ctx -> [Exp] -> Eval_Ctx.
 
 (* It's Ctx which actually enforces standard call-by-value *)
-Inductive isCtx : Eval_Ctx -> Type :=
+Inductive isCtx : Eval_Ctx -> Prop :=
   | is_hole : isCtx C_hole
   | is_field_invk : forall ev id, isCtx (C_field_invk ev id)
   | is_minvk_recv: forall ev id es, isCtx (C_minvk_recv ev id es)
@@ -312,7 +320,9 @@ Fixpoint plug (ctx: Eval_Ctx) (e: Exp) : Exp :=
   | C_new C vs ctx' es => 
         ExpNew C (vs ++ cons (plug ctx' e) nil ++ es)
   end.
-Notation "E [| t |]" := (plug E t) (no associativity, at level 60).
+Notation "E [; t ;]" := (plug E t) (no associativity, at level 60).
+
+Eval compute in C_hole [; ExpVar (Id 1) ;].
 
 Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
   | T_Method : forall C D C0 E0 xs Cs e0 Fs noDupfs K Ms noDupMds fargs m noDupFargs,

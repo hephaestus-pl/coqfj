@@ -356,13 +356,13 @@ Proof.
 Qed.
 
 (* This is Theorem 2.4.1 at the paper *)
-Theorem preservation : forall Gamma e e' C,
+Theorem preservation_step : forall Gamma e e' C,
   Gamma |-- e : C ->
-  e ~> e' ->
+  e ~>! e' ->
   exists C', C' <: C /\ Gamma |-- e' : C'.
 Proof with eauto.
   intros. gen C.
-  computation_cases (induction H0) Case; intros.
+  computation_step_cases (induction H0) Case; intros.
   Case "R_Field".
     subst. destruct fi; simpl in *.
     inversion H2; subst. simpl in *. destruct Fi in *. simpl in *. subst. 
@@ -400,6 +400,17 @@ Proof with eauto.
     assert (C = D) by (inversion H1; crush); subst.
     false. apply antisym_subtype in H2. auto.
     assert (C = D) by (inversion H1; crush); subst. contradiction.
+Qed.
+
+Theorem preservation : forall Gamma e e' C,
+  Gamma |-- e : C ->
+  e ~> e' ->
+  exists C', C' <: C /\ Gamma |-- e' : C'.
+Proof with eauto.
+  intros. gen C.
+  computation_cases (induction H0) Case; intros.
+  Case "R_Step".
+    eapply preservation_step; eauto.
   Case "RC_Field".
     inversion H; subst. eapply IHComputation in H3. 
     destruct H3 as (C' & ?H & ?H).
@@ -446,7 +457,7 @@ Lemma ctx_next_subterm: forall e e',
   exists! E r r', isCtx E /\ 
                   e = E [; r ;] /\ 
                   e' = E [; r' ;] /\ 
-                  r ~> r'.
+                  r ~>! r'.
 Proof.
 Admitted.
 
@@ -481,7 +492,6 @@ Proof.
     simpl in H; inversion H.
   Case "T_Field".
     inversion H4; subst. false. apply H5. exists (ExpVar (ref Fi)). constructor.
-  induction 1; crush.
 Admitted.
 (*
 Fixpoint Progress (e: Exp) (Gamma: env ClassName) (C: ClassName) (p : Gamma |-- e : C) : Prop := 

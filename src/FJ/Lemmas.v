@@ -36,6 +36,66 @@ Proof.
   end.
 Qed.
 
+Lemma exists_mbody: forall C D Cs m,
+  mtype(m, C) = Cs ~> D ->
+  exists xs e, mbody(m, C) = xs o e /\ NoDup (this :: xs) /\ length Cs = length xs.
+Proof.
+  Hint Rewrite map_length.
+  induction 1; eauto.
+  exists (refs fargs) e. split; eauto. split; eauto. crush.
+  destruct IHm_type as (xs & e & H2 & H3). exists xs e; eauto.
+Qed.
+
+(* find C CT Lemmas *)
+
+Lemma mtype_obj_False: forall m Cs C,
+  mtype(m, Object) = Cs ~> C ->
+  False.
+Proof.
+  inversion 1; crush.
+Qed.
+
+Lemma unify_find_mname: forall m Ms c i fargs n e,
+  find m Ms = Some (MDecl c i fargs n e) ->
+  find m Ms = Some (MDecl c m fargs n e) /\ m = i.
+Proof.
+  intros.
+  assert (ref (MDecl c i fargs n e) = m). 
+  eapply find_ref_inv; eauto. crush.
+Qed.
+
+
+Lemma super_obj_or_defined: forall C D Fs noDupfs K Ms noDupMds,
+    find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
+    D = Object \/ exists D0 Fs0 noDupfs0 K0 Ms0 noDupMds0, 
+                    find D CT = Some (CDecl D D0 Fs0 noDupfs0 K0 Ms0 noDupMds0).
+Proof.
+  intros. destruct beq_id_dec with D Object; subst. 
+  left; auto.
+  right. eapply superClass_in_dom; eauto.
+Qed.
+
+
+Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
+    find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
+    mtype(m, D) = Ds ~> D0 ->
+    mtype(m, C) = Ds ~> D0.
+Proof.
+  Hint Resolve mtype_obj_False.  
+  intros. apply ClassesOK in H.
+  inversion H; subst; sort; clear H.
+  edestruct super_obj_or_defined; eauto; subst.
+  false; eapply mtype_obj_False; eauto.
+  destruct H as (?D & Fs1 & noDupfs0 & K0 & Ms0 & noDupMds0 & H).
+  destruct (@find_dec MethodDecl) with MDeclRef Ms m. destruct e. destruct x. sort.
+  apply unify_find_mname in H1; destruct H1; subst.
+  eapply Forall_find in H9; [|eexact H1].
+  destruct H9; subst; sort. assert (D2 = D) by crush; subst.
+  apply unify_find_mname in H1. destruct H1; subst.
+  destruct H5 with Ds D0; subst; auto. eapply mty_ok; crush.
+  eapply mty_no_override; eauto.
+Qed.
+
 (* fields Lemmas *)
 Lemma fields_obj_nil: forall f,
   fields Object f -> f = nil.
@@ -159,53 +219,6 @@ Proof.
 Qed.
 
 (* Paper Lemmas *)
-
-Lemma super_obj_or_defined: forall C D Fs noDupfs K Ms noDupMds,
-    find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
-    D = Object \/ exists D0 Fs0 noDupfs0 K0 Ms0 noDupMds0, 
-                    find D CT = Some (CDecl D D0 Fs0 noDupfs0 K0 Ms0 noDupMds0).
-Proof.
-  intros. destruct beq_id_dec with D Object; subst. 
-  left; auto.
-  right. eapply superClass_in_dom; eauto.
-Qed.
-
-Lemma mtype_obj_False: forall m Cs C,
-  mtype(m, Object) = Cs ~> C ->
-  False.
-Proof.
-  inversion 1; crush.
-Qed.
-
-Lemma unify_find_mname: forall m Ms c i fargs n e,
-  find m Ms = Some (MDecl c i fargs n e) ->
-  find m Ms = Some (MDecl c m fargs n e) /\ m = i.
-Proof.
-  intros.
-  assert (ref (MDecl c i fargs n e) = m). 
-  eapply find_ref_inv; eauto. crush.
-Qed.
-
-Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
-    find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
-    mtype(m, D) = Ds ~> D0 ->
-    mtype(m, C) = Ds ~> D0.
-Proof.
-  Hint Resolve mtype_obj_False.  
-  intros. apply ClassesOK in H.
-  inversion H; subst; sort; clear H.
-  edestruct super_obj_or_defined; eauto; subst.
-  false; eapply mtype_obj_False; eauto.
-  destruct H as (?D & Fs1 & noDupfs0 & K0 & Ms0 & noDupMds0 & H).
-  destruct (@find_dec MethodDecl) with MDeclRef Ms m. destruct e. destruct x. sort.
-  apply unify_find_mname in H1; destruct H1; subst.
-  eapply Forall_find in H9; [|eexact H1].
-  destruct H9; subst; sort. assert (D2 = D) by crush; subst.
-  apply unify_find_mname in H1. destruct H1; subst.
-  destruct H5 with Ds D0; subst; auto. eapply mty_ok; crush.
-  eapply mty_no_override; eauto.
-Qed.
-
 
 Lemma A11: forall m D C Cs C0,
           C <: D ->
@@ -496,16 +509,6 @@ Proof.
     exists (C_cast C E). repeat eexists; crush.
 Qed.
 
-Lemma exists_mbody: forall C D Cs m,
-  mtype(m, C) = Cs ~> D ->
-  exists xs e, mbody(m, C) = xs o e /\ NoDup (this :: xs) /\ length Cs = length xs.
-Proof.
-  Hint Rewrite map_length.
-  induction 1; eauto.
-  exists (refs fargs) e. split; eauto. split; eauto. crush.
-  destruct IHm_type as (xs & e & H2 & H3). exists xs e; eauto.
-Qed.
-
 Theorem progress: forall e C,
   nil |-- e : C ->
   normal_form Computation e ->
@@ -542,4 +545,32 @@ Proof.
       edestruct exists_mbody as (xs &e' & ?H & ?H & ?H); eauto.
       destruct H5 as (?E & ?C & ?D & ?es & ?H & ?H). sort.
       right. exists (C_minvk_recv E m es); repeat eexists; subst; simpl; eauto.
-Admitted.
+  Case "T_New". eauto.
+  Case "T_UCast".
+    unfold normal_form in *. destruct IHExpTyping.
+    intro. apply H0. destruct H2 as [e0']. eauto.
+    SCase "Value".
+      inversion H2; subst. inversion H; subst. sort.
+      false. apply H0. exists (ExpNew D es); eauto. constructor; eauto. constructor. eauto.
+    SCase "Stuck".
+      destruct H2 as (?E & ?C & ?D & ?es & ?H & ?H). sort.
+      right. exists (C_cast C E). repeat eexists; subst; simpl; eauto.
+  Case "T_DCast".
+    unfold normal_form in *. destruct IHExpTyping.
+    intro. apply H0. destruct H3 as [e0']. eexists; eauto.
+    SCase "Value".
+      inversion H3; subst. inversion H; subst.
+      right. exists (C_hole). simpl. repeat eexists; eauto. intro. apply antisym_subtype in H1. intuition.
+    SCase "Stuck".
+      destruct H3 as (?E & ?C & ?D & ?es & ?H & ?H). sort.
+      right. exists (C_cast C E). repeat eexists; subst; simpl; eauto.
+  Case "T_SCast".
+    unfold normal_form in *. destruct IHExpTyping.
+    intro. apply H0. destruct H4 as [e0']. eexists; eauto.
+    SCase "Value".
+      inversion H4; subst. inversion H; subst. sort.
+      right. exists C_hole. simpl. eauto.
+    SCase "Stuck".
+      destruct H4 as (?E & ?C & ?D & ?es & ?H & ?H). sort.
+      right. exists (C_cast C E); repeat eexists; subst; simpl; eauto.
+Qed.

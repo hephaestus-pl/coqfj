@@ -105,16 +105,3 @@ Proof.
   eapply IHxs; eauto.
 Qed.
 
-Lemma nth_error_Forall2: forall (A B: Type)(P: A -> B -> Prop) xs ys i x y,
-  nth_error xs i = Some x ->
-  nth_error ys i = Some y ->
-  length xs = length ys ->
-  P x y ->
-  Forall2 P xs ys.
-Proof.
-  Hint Rewrite nth_error_nil.
-  intros. gen i ys x y H1. induction xs, ys; crush.
-  destruct i; crush. constructor; auto.
-  eapply IHxs.
-Admitted.
-  

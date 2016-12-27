@@ -441,6 +441,16 @@ Proof with eauto.
     eapply subtype_not_sub...
 Qed.
 
+Lemma ctx_next_subterm: forall e e',
+  e ~> e' ->
+  exists! E r r', isCtx E /\ 
+                  e = E [; r ;] /\ 
+                  e' = E [; r' ;] /\ 
+                  r ~> r'.
+Proof.
+Admitted.
+
+
 Fixpoint contains_downCast (e: Exp): Prop :=
   let fix contains_downCast_list (es: [Exp]): Prop:=
     match es with

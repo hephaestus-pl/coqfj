@@ -2,6 +2,13 @@ Require Import FJ.Base.
 Require Import FJ.Syntax.
 Require Import FJ.Lemmas.
 
+(* 
+  The idea of Evaluation Contexts is to represent the next reduction to be applied.
+  This way we can represent easily which terms are expected to be stuck,
+  which are terms with downcasts or stupidcasts as subterms.
+  More details on the book Types and Programming Languages, Chapter 19 
+*)
+
 Inductive Eval_Ctx : Type :=
   | C_hole : Eval_Ctx
   | C_field_invk : Eval_Ctx -> id -> Eval_Ctx
@@ -10,7 +17,10 @@ Inductive Eval_Ctx : Type :=
   | C_cast: ClassName -> Eval_Ctx -> Eval_Ctx
   | C_new: ClassName -> [Exp] -> Eval_Ctx -> [Exp] -> Eval_Ctx.
 
-(* It's Ctx which actually enforces standard call-by-value *)
+(* It's isCtx which actually enforces standard call-by-value 
+   But since our implementation is a non deterministic reduciton, it wont be needed
+   I'll leave it here anyways
+*)
 Inductive isCtx : Eval_Ctx -> Prop :=
   | is_hole : isCtx C_hole
   | is_field_invk : forall ev id, isCtx (C_field_invk ev id)
@@ -19,6 +29,7 @@ Inductive isCtx : Eval_Ctx -> Prop :=
   | is_cast: forall c ctx, isCtx (C_cast c ctx)
   | is_new: forall c vs ctx es, Forall Value vs -> isCtx (C_new c vs ctx es).
 Hint Constructors Eval_Ctx isCtx.
+
 Fixpoint plug (ctx: Eval_Ctx) (e: Exp) : Exp :=
   match ctx with
   | C_hole => e
@@ -44,7 +55,7 @@ Proof.
   exists C_hole e e'. split; eauto.
 Qed.
 
-Lemma ctx_next_subterm: forall e e',
+Lemma ctx_next_correct: forall e e',
   e ~> e' ->
   exists E r r',  e = E [; r ;] /\ 
                   e' = E [; r' ;] /\ 

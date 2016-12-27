@@ -284,6 +284,14 @@ Definition normal_form {X:Type} (R: relation X) (t: X) :=
   ~exists t', R t t'.
 
 
+Inductive Ctx : Type :=
+  | C_hole : Ctx
+  | C_field_invk : Ctx -> id -> Ctx
+  | C_minvk_recv: Ctx -> id -> [Exp] -> Ctx
+  | C_minv_arg: forall e es, Value e -> id -> Forall Value es -> Ctx -> [Exp] -> Ctx
+  | C_new: forall es, ClassName -> Forall Value es -> Ctx -> [Exp] -> Ctx.
+
+
 Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
   | T_Method : forall C D C0 E0 xs Cs e0 Fs noDupfs K Ms noDupMds fargs m noDupFargs,
             nil extds (this :: xs) : (C :: Cs) |-- e0 : E0 ->

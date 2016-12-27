@@ -458,15 +458,6 @@ Fixpoint contains_downCast (e: Exp): Prop :=
   | _ => False (*ExpNew and ExpVar *)
   end.
 
-Definition Some_Value := fun e => Value e.
-
-Inductive Ctx : Type :=
-  | C_hole : Ctx
-  | C_field_invk : Ctx -> id -> Ctx
-  | C_minvk_recv: Ctx -> id -> [Exp] -> Ctx
-  | C_minv_arg: forall e es, Value e -> id -> Forall Value es -> Ctx -> [Exp] -> Ctx
-  | C_new: forall es, ClassName -> Forall Value es -> Ctx -> [Exp] -> Ctx.
-
 Lemma FJ_Type_Soundness: forall e e' C,
   nil |-- e : C ->
   e ~>* e' ->

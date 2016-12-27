@@ -506,14 +506,19 @@ Proof.
   typing_cases (induction H using ExpTyping_ind') Case; intros.
   Case "T_Var". inversion H.
   Case "T_Field".
+    Hint Rewrite fields_det.
+    unfold normal_form in *. destruct IHExpTyping.
+    SCase "Value".
+      intro. apply H0. destruct H5 as [e0']. exists (ExpFieldAccess e0' fi); eauto.
+      inversion H5; subst. inversion H; subst.
+      assert (fs = fs0) by (eapply fields_det; eauto). subst. clear H1.
+      false; apply H0. 
+      assert (nth_error (map fieldType fs0) i = Some (fieldType Fi)) by (apply map_nth_error; eauto).
+      lets ?H: Forall2_nth_error' Cs H10 H1. destruct H3 as [Ci].
+      lets ?H: Forall2_nth_error' Cs H8 H3. destruct H4 as [ei].
+      exists ei. constructor. econstructor; eauto.
+    SCase "Stuck".
+      destruct H5 as (E & C & D & es & H5 & H6).
+      right. exists (C_field_invk E fi);  repeat eexists; subst; simpl ; eauto.
+  Case "T_Invk".
 Admitted.
-(*
-Fixpoint Progress (e: Exp) (Gamma: env ClassName) (C: ClassName) (p : Gamma |-- e : C) : Prop := 
-  match e with
-  | ExpVar v => get Gamma v = Some C
-  | ExpFieldAccess e' id => True
-  | ExpCast C' e' => C = C' /\ exists D, Gamma |-- e : D
-  | ExpNew C' es => C = C' /\ exists Cs, Forall2 (fun e' C' => Progress e' Gamma C' (Gamma |-- e': C')) es Cs
-  | _ => True
-  end.
-*)

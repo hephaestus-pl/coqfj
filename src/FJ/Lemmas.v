@@ -452,14 +452,37 @@ Proof with eauto.
     eapply subtype_not_sub...
 Qed.
 
-Lemma ctx_next_subterm: forall e e',
-  e ~> e' ->
-  exists! E r r', isCtx E /\ 
+Lemma ctx_next_subterm': forall e e',
+  e ~>! e' ->
+  exists E r r', isCtx E /\ 
                   e = E [; r ;] /\ 
                   e' = E [; r' ;] /\ 
                   r ~>! r'.
 Proof.
-Admitted.
+  intros.
+  exists C_hole e e'. split; eauto.
+Qed.
+
+Lemma ctx_next_subterm: forall e e',
+  e ~> e' ->
+  exists E r r', isCtx E /\ 
+                  e = E [; r ;] /\ 
+                  e' = E [; r' ;] /\ 
+                  r ~>! r'.
+Proof.
+  Hint Resolve ctx_next_subterm'.
+  intros.
+  computation_cases (induction H) Case; eauto; destruct IHComputation as (E & r & r' & ?H & ?H & ?H & ?H).
+  Case "RC_Field".
+    exists (C_field_invk E f). 
+    repeat eexists; crush.
+  Case "RC_Invk_Recv".
+    exists (C_minvk_recv E m es).
+    repeat eexists; crush.
+  Case "RC_Invk_Arg".
+    exists (C_minv_arg e0 m es E es').
+    repeat eexists; crush. 
+Qed.
 
 
 Fixpoint contains_downCast (e: Exp): Prop :=

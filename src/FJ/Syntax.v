@@ -308,7 +308,7 @@ Inductive isCtx : Eval_Ctx -> Prop :=
   | is_minv_arg: forall v id vs es ctx, Value v -> Forall Value vs -> isCtx (C_minv_arg v id vs ctx es)
   | is_cast: forall c ctx, isCtx (C_cast c ctx)
   | is_new: forall c vs ctx es, Forall Value vs -> isCtx (C_new c vs ctx es).
-
+Hint Constructors Eval_Ctx isCtx.
 Fixpoint plug (ctx: Eval_Ctx) (e: Exp) : Exp :=
   match ctx with
   | C_hole => e
@@ -321,6 +321,7 @@ Fixpoint plug (ctx: Eval_Ctx) (e: Exp) : Exp :=
         ExpNew C (vs ++ cons (plug ctx' e) nil ++ es)
   end.
 Notation "E [; t ;]" := (plug E t) (no associativity, at level 60).
+Notation "[ . ]" := (C_hole) (no associativity, at level 59).
 
 Eval compute in C_hole [; ExpVar (Id 1) ;].
 

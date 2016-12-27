@@ -498,10 +498,12 @@ Qed.
 
 Lemma exists_mbody: forall C D Cs m,
   mtype(m, C) = Cs ~> D ->
-  exists xs e, mbody(m, C) = xs o e.
+  exists xs e, mbody(m, C) = xs o e /\ NoDup (this :: xs) /\ length Cs = length xs.
 Proof.
+  Hint Rewrite map_length.
   induction 1; eauto.
-  destruct IHm_type as (xs & e & H2). exists xs e; eauto.
+  exists (refs fargs) e. split; eauto. split; eauto. crush.
+  destruct IHm_type as (xs & e & H2 & H3). exists xs e; eauto.
 Qed.
 
 Theorem progress: forall e C,
@@ -533,5 +535,11 @@ Proof.
     intro. apply H0. destruct H5 as [e0']. exists (ExpMethodInvoc e0' m es); eauto.
     SCase "Value".
       inversion H5; subst. inversion H; subst. sort.
-      false. apply H0. 
+      false. apply H0. edestruct exists_mbody as (xs &e' & ?H & ?H & ?H); eauto.
+      exists ([; ExpNew C0 es0 :: es \ this :: xs;] e'); constructor. constructor; eauto.
+      apply Forall2_len in H2. apply Forall2_len in H3. rewrite <- H9. rewrite H2; auto.
+    SCase "Stuck".
+      edestruct exists_mbody as (xs &e' & ?H & ?H & ?H); eauto.
+      destruct H5 as (?E & ?C & ?D & ?es & ?H & ?H). sort.
+      right. exists (C_minvk_recv E m es); repeat eexists; subst; simpl; eauto.
 Admitted.

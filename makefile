@@ -102,6 +102,7 @@ VFILES:=src/Base.v\
   src/Base/Referable.v\
   src/FJ/Lemmas.v\
   src/FJ/Syntax.v\
+  src/FJ/TypeSafety.v\
   src/Lists/Forall2.v\
   src/Lists/In.v\
   src/Lists/Nth_error.v\

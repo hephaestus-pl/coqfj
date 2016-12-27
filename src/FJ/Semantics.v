@@ -1,3 +1,5 @@
+Require Import String.
+Require Import Relations.
 Require Import FJ.Base.
 Require Import FJ.Syntax.
 

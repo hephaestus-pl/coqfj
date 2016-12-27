@@ -1,5 +1,7 @@
 Require Import FJ.Base.
 Require Import FJ.Syntax.
+Require Import FJ.Semantics.
+Require Import FJ.Axioms.
 Require Import FJ.Lemmas.
 
 (* 

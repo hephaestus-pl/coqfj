@@ -50,9 +50,9 @@ vo_to_obj = $(addsuffix .o,\
 ##########################
 
 COQLIBS?=\
-  -R "./src" FJ
+  -R "src" FJ
 COQDOCLIBS?=\
-  -R "./src" FJ
+  -R "src" FJ
 
 ##########################
 #                        #
@@ -103,6 +103,7 @@ VFILES:=src/Base.v\
   src/FJ/Lemmas.v\
   src/FJ/Syntax.v\
   src/FJ/TypeSafety.v\
+  src/FJ/EvaluationContext.v\
   src/Lists/Forall2.v\
   src/Lists/In.v\
   src/Lists/Nth_error.v\
@@ -123,7 +124,7 @@ endif
 
 VO=vo
 VOFILES:=$(VFILES:.v=.$(VO))
-VOFILES1=$(patsubst ./src/%,%,$(filter ./src/%,$(VOFILES)))
+VOFILES1=$(patsubst src/%,%,$(filter src/%,$(VOFILES)))
 GLOBFILES:=$(VFILES:.v=.glob)
 GFILES:=$(VFILES:.v=.g)
 HTMLFILES:=$(VFILES:.v=.html)
@@ -131,7 +132,7 @@ GHTMLFILES:=$(VFILES:.v=.g.html)
 OBJFILES=$(call vo_to_obj,$(VOFILES))
 ALLNATIVEFILES=$(OBJFILES:.o=.cmi) $(OBJFILES:.o=.cmo) $(OBJFILES:.o=.cmx) $(OBJFILES:.o=.cmxs)
 NATIVEFILES=$(foreach f, $(ALLNATIVEFILES), $(wildcard $f))
-NATIVEFILES1=$(patsubst ./src/%,%,$(filter ./src/%,$(NATIVEFILES)))
+NATIVEFILES1=$(patsubst src/%,%,$(filter src/%,$(NATIVEFILES)))
 ifeq '$(HASNATDYNLINK)' 'true'
 HASNATDYNLINK_OR_EMPTY := yes
 else
@@ -200,7 +201,7 @@ userinstall:
 	+$(MAKE) USERINSTALL=true install
 
 install:
-	cd "./src" && for i in $(NATIVEFILES1) $(GLOBFILES1) $(VFILES1) $(VOFILES1); do \
+	cd "src" && for i in $(NATIVEFILES1) $(GLOBFILES1) $(VFILES1) $(VOFILES1); do \
 	 install -d "`dirname "$(DSTROOT)"$(COQLIBINSTALL)/FJ/$$i`"; \
 	 install -m 0644 $$i "$(DSTROOT)"$(COQLIBINSTALL)/FJ/$$i; \
 	done

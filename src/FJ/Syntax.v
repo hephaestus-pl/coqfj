@@ -293,37 +293,6 @@ Definition normal_form {X:Type} (R: relation X) (t: X) :=
   ~exists t', R t t'.
 
 
-Inductive Eval_Ctx : Type :=
-  | C_hole : Eval_Ctx
-  | C_field_invk : Eval_Ctx -> id -> Eval_Ctx
-  | C_minvk_recv: Eval_Ctx -> id -> [Exp] -> Eval_Ctx
-  | C_minv_arg: Exp -> id -> [Exp] -> Eval_Ctx -> [Exp] -> Eval_Ctx
-  | C_cast: ClassName -> Eval_Ctx -> Eval_Ctx
-  | C_new: ClassName -> [Exp] -> Eval_Ctx -> [Exp] -> Eval_Ctx.
-
-(* It's Ctx which actually enforces standard call-by-value *)
-Inductive isCtx : Eval_Ctx -> Prop :=
-  | is_hole : isCtx C_hole
-  | is_field_invk : forall ev id, isCtx (C_field_invk ev id)
-  | is_minvk_recv: forall ev id es, isCtx (C_minvk_recv ev id es)
-  | is_minv_arg: forall v id vs es ctx, Value v -> Forall Value vs -> isCtx (C_minv_arg v id vs ctx es)
-  | is_cast: forall c ctx, isCtx (C_cast c ctx)
-  | is_new: forall c vs ctx es, Forall Value vs -> isCtx (C_new c vs ctx es).
-Hint Constructors Eval_Ctx isCtx.
-Fixpoint plug (ctx: Eval_Ctx) (e: Exp) : Exp :=
-  match ctx with
-  | C_hole => e
-  | C_field_invk ctx' id => ExpFieldAccess (plug ctx' e) id
-  | C_minvk_recv ctx' id es => ExpMethodInvoc (plug ctx' e) id es
-  | C_minv_arg v id vs ctx' es => 
-        ExpMethodInvoc v id (vs ++ cons (plug ctx' e) nil ++ es)
-  | C_cast C ctx' => ExpCast C (plug ctx' e)
-  | C_new C vs ctx' es => 
-        ExpNew C (vs ++ cons (plug ctx' e) nil ++ es)
-  end.
-Notation "E [; t ;]" := (plug E t) (no associativity, at level 60).
-Notation "[ . ]" := (C_hole) (no associativity, at level 59).
-
 Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
   | T_Method : forall C D C0 E0 xs Cs e0 Fs noDupfs K Ms noDupMds fargs m noDupFargs,
             nil extds (this :: xs) : (C :: Cs) |-- e0 : E0 ->

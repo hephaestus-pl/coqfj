@@ -356,7 +356,7 @@ Proof.
 Qed.
 
 (* This is Theorem 2.4.1 at the paper *)
-Theorem subject_reduction : forall Gamma e e' C,
+Theorem preservation : forall Gamma e e' C,
   Gamma |-- e : C ->
   e ~> e' ->
   exists C', C' <: C /\ Gamma |-- e' : C'.
@@ -458,19 +458,6 @@ Fixpoint contains_downCast (e: Exp): Prop :=
   | _ => False (*ExpNew and ExpVar *)
   end.
 
-Lemma closed_terms_form: forall e C,
-  nil |-- e : C ->
-  normal_form Computation e ->
-  (exists es, e = ExpNew C es) \/
-  (exists e', e = ExpCast C e').
-Proof.
-  typing_cases (induction 1 using ExpTyping_ind') Case; intros.
-  Case "T_Var".
-    inversion H.
-  Case "T_Field".
-    destruct e0; eauto. inversion H. inversion H6.
-    inversion H. subst.
-Admitted. 
 
 Lemma FJ_Type_Soundness: forall e e' C,
   nil |-- e : C ->

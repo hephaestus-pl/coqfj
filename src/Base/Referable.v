@@ -196,6 +196,12 @@ Proof.
   eapply find_in; eauto.
 Qed.
 
+Lemma in_imp_inref: forall {T} {H: Referable T} (xs:list T) x,
+  In x xs ->
+  In (ref x) (refs xs).
+Proof.
+  induction xs; crush.
+Qed.
 
 Lemma ref_noDup_nth_error: forall {T} {H: Referable T} (xs:list T) i i1 x x1,
   nth_error xs i = Some x ->
@@ -204,4 +210,12 @@ Lemma ref_noDup_nth_error: forall {T} {H: Referable T} (xs:list T) i i1 x x1,
   ref x = ref x1 ->
   x = x1.
 Proof.
-Admitted.
+  induction xs; crush.
+  destruct i; destruct i1; simpl in *; crush.
+  rewrite H3 in H2. inversion H2. subst. clear H3.
+  false. apply H5. apply nth_error_In in H1. apply in_imp_inref; eauto.
+  rewrite <- H3 in H2. inversion H2. subst. false.
+  apply H5. apply nth_error_In in H0. apply in_imp_inref; eauto.
+  inversion H2.
+  eapply IHxs; eauto.
+Qed.

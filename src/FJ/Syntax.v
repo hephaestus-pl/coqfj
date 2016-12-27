@@ -1,10 +1,9 @@
 Require Import Decidable.
 Require Import Relations.
 Require Import String.
-Require Import Tactics.
-Require Import Lists.
-Require Import Base.
-
+Require Import FJ.Tactics.
+Require Import FJ.Lists.
+Require Import FJ.Base.
 (* We will use Notation to make automation easier
  * This will be the notation to be similar with haskell *)
 Notation "'[' X ']'" := (list X) (at level 40).

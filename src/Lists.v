@@ -1,5 +1,5 @@
 Require Export List.
-Require Export Lists.Forall2.
-Require Export Lists.In.
-Require Export Lists.Nth_error.
-Require Export Lists.ZipWith.
+Require Export FJ.Lists.Forall2.
+Require Export FJ.Lists.In.
+Require Export FJ.Lists.Nth_error.
+Require Export FJ.Lists.ZipWith.

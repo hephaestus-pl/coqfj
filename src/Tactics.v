@@ -1,14 +1,6 @@
-
-Require Export Tactics.LibTactics.
-Require Export Tactics.Short.
-Require Export Tactics.Rip.
-Require Export Tactics.Exists.
-Require Export Tactics.Case.
-Require Export Tactics.Nope.
-Require Export Tactics.Rewrite1.
-Require Export Tactics.Burn.
-Require Export Tactics.Break.
-Require Export Tactics.Crush.
+Require Export FJ.Tactics.LibTactics.
+Require Export FJ.Tactics.Crush.
+Require Export FJ.Tactics.Case.
 Require Export Omega.
 
 

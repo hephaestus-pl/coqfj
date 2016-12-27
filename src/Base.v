@@ -1,3 +1,3 @@
-Require Export Base.Environment.
-Require Export Base.Id.
-Require Export Base.Referable.
+Require Export FJ.Base.Environment.
+Require Export FJ.Base.Id.
+Require Export FJ.Base.Referable.

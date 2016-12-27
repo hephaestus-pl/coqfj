@@ -325,8 +325,6 @@ Fixpoint plug (ctx: Eval_Ctx) (e: Exp) : Exp :=
 Notation "E [; t ;]" := (plug E t) (no associativity, at level 60).
 Notation "[ . ]" := (C_hole) (no associativity, at level 59).
 
-Eval compute in C_hole [; ExpVar (Id 1) ;].
-
 Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
   | T_Method : forall C D C0 E0 xs Cs e0 Fs noDupfs K Ms noDupMds fargs m noDupFargs,
             nil extds (this :: xs) : (C :: Cs) |-- e0 : E0 ->

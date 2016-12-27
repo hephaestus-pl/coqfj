@@ -1,86 +1,5 @@
-Require Import Decidable.
-Require Import Relations.
-Require Import String.
 Require Import FJ.Base.
-
-(* We will use Notation to make automation easier
- * This will be the notation to be similar with haskell *)
-Notation "'[' X ']'" := (list X) (at level 40).
-
-Definition ClassName := id.
-Parameter Object: ClassName.
-
-Definition Var := id.
-Parameter this: Var.
-
-Inductive Argument :=
-  | Arg : id -> Argument.
-
-Inductive FormalArg :=
-  | FArg : ClassName -> id -> FormalArg.
-
-Instance FargRef : Referable FormalArg :={
-  ref farg := 
-    match farg with 
-   | FArg _ id => id end
-}.
-
-Definition fargType (f: FormalArg):ClassName := 
-  match f with FArg t _ => t end.
-
-Inductive FieldDecl :=
-  | FDecl : ClassName -> id -> FieldDecl.
-
-Instance FieldRef : Referable FieldDecl :={
-  ref fdecl := 
-    match fdecl with 
-   | FDecl _ id => id end
-}.
-
-Definition fieldType (f: FieldDecl): ClassName := 
-  match f with FDecl t _ => t end.
-
-Inductive Exp : Type :=
-  | ExpVar : Var -> Exp
-  | ExpFieldAccess : Exp -> id -> Exp
-  | ExpMethodInvoc : Exp -> id -> [Exp] -> Exp
-  | ExpCast : ClassName -> Exp -> Exp
-  | ExpNew : id -> [Exp] -> Exp.
-
-Inductive Assignment :=
-  | Assgnmt : Exp -> Exp -> Assignment.
-
-
-Inductive Constructor :=
-  | KDecl : id -> [FormalArg] -> [Argument] -> [Assignment] -> Constructor.
-
-
-(* Arguments cannot have duplicate names *)
-Inductive MethodDecl :=
-  | MDecl : ClassName -> id -> forall (fargs: [FormalArg]), NoDup (this :: refs fargs) -> Exp -> MethodDecl.
-
-
-Instance MDeclRef : Referable MethodDecl :={
-  ref mdecl := 
-    match mdecl with 
-   | MDecl _ id _ _ _ => id end
-}.
-
-Inductive ClassDecl:=
-  | CDecl: id -> ClassName -> 
-    forall (fDecls:[FieldDecl]), NoDup (refs fDecls) -> Constructor -> 
-    forall (mDecls:[MethodDecl]), NoDup (refs mDecls) -> ClassDecl.
-
-Instance CDeclRef : Referable ClassDecl :={
-  ref cdecl := 
-    match cdecl with 
-   | CDecl id _ _ _ _ _ _ => id end
-}.
-
-Inductive Program :=
-  | CProgram : forall (cDecls: [ClassDecl]), NoDup (refs cDecls) -> Exp -> Program.
-
-Parameter CT: [ClassDecl].
+Require Import FJ.Syntax.
 
 Reserved Notation "C '<:' D " (at level 40).
 Inductive Subtype : id -> ClassName -> Prop :=
@@ -89,7 +8,7 @@ Inductive Subtype : id -> ClassName -> Prop :=
     C <: D -> 
     D <: E -> 
     C <: E
-  | S_Decl: forall (C: ClassName) D fs noDupfs K mds noDupMds,
+  | S_Decl: forall C D fs noDupfs K mds noDupMds,
     find C CT = Some (CDecl C D fs noDupfs K mds noDupMds ) ->
     C <: D
 where "C '<:' D" := (Subtype C D).
@@ -366,23 +285,3 @@ fix F (e : Exp) (c : ClassName) (e0 : Gamma |-- e : c) {struct e0} : P e c :=
   | T_DCast _ e1 C D e2 s n => f4 e1 C D e2 (F e1 D e2) s n
   | T_SCast _ e1 D C e2 s s0 w => f5 e1 D C e2 (F e1 D e2) s s0 w
   end.
-
-(* Axioms for ClassTable sanity *)
-Axiom dec_subtype: forall C D,
-  decidable (Subtype C D).
-
-Axiom antisym_subtype:
-  antisymmetric _ Subtype.
-
-Axiom ClassesOK: forall C D Fs noDupfs K Ms noDupMds, 
-  find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
-  CType_OK (CDecl C D Fs noDupfs K Ms noDupMds).
-Hint Resolve ClassesOK.
-
-Axiom obj_notin_dom: find Object CT = None.
-Hint Rewrite obj_notin_dom.
-
-Axiom superClass_in_dom: forall C D Fs noDupfs K Ms noDupMds,
-  find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
-  D <> Object ->
-  exists D0 Fs0 noDupfs0 K0 Ms0 noDupMds0, find D CT = Some (CDecl D D0 Fs0 noDupfs0 K0 Ms0 noDupMds0).

@@ -1,8 +1,6 @@
-Require Import FJ.Tactics.
+Require Import FJ.Base.
 Require Import FJ.Syntax.
 Require Import FJ.Lemmas.
-Require Import FJ.Lists.
-Require Import FJ.Base.
 
 Inductive Eval_Ctx : Type :=
   | C_hole : Eval_Ctx

@@ -1,8 +1,6 @@
 Require Import Relation_Definitions.
-Require Import Tactics.
-Require Import Lists.
-Require Import Base.
-Require Import Syntax.
+Require Import FJ.Base.
+Require Import FJ.Syntax.
 
 (* Auxiliary Lemmas *)
 (* mtype / MType_OK lemmas *)

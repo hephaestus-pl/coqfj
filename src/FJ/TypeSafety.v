@@ -1,5 +1,3 @@
-Require Import FJ.Tactics.
-Require Import FJ.Lists.
 Require Import FJ.Base.
 Require Import FJ.Syntax.
 Require Import FJ.Lemmas.

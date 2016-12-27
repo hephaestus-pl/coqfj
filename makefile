@@ -97,9 +97,9 @@ endif
 VFILES:=src/Base.v\
   src/Lists.v\
   src/Tactics.v\
-  src/Base/Environment.v\
-  src/Base/Id.v\
-  src/Base/Referable.v\
+  src/Util/Environment.v\
+  src/Util/Id.v\
+  src/Util/Referable.v\
   src/FJ/Lemmas.v\
   src/FJ/Syntax.v\
   src/FJ/TypeSafety.v\

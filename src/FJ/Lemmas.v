@@ -496,36 +496,16 @@ Proof.
     exists (C_cast C E). repeat eexists; crush.
 Qed.
 
-Fixpoint contains_downCast (e: Exp): Prop :=
-  let fix contains_downCast_list (es: [Exp]): Prop:=
-    match es with
-    | nil => False
-    | x :: xs => contains_downCast x \/ contains_downCast_list xs
-    end in
-  match e with
-  | ExpFieldAccess e' _ => contains_downCast e'
-  | ExpMethodInvoc e' _ es => contains_downCast e' \/ contains_downCast_list es
-  | ExpCast C e' => 
-    match e' with
-    | ExpNew D e'' => D <: C \/ contains_downCast e'
-    | _ => False
-    end
-  | _ => False (*ExpNew and ExpVar *)
-  end.
-
-Lemma FJ_Type_Soundness: forall e e' C,
+Lemma progress: forall e C,
   nil |-- e : C ->
-  e ~>* e' ->
-  normal_form Computation e' ->
-  contains_downCast e' \/
-  (exists D, Value e' /\ D <: C /\ nil |-- e' : D ).
+  normal_form Computation e ->
+  Value e \/
+  (exists E C D es, e = E [; ExpCast C (ExpNew D es);] /\ ~ D <: C).
 Proof.
-  intros. gen e'.
+  intros.
   typing_cases (induction H using ExpTyping_ind') Case; intros.
-  Case "T_Var".
-    simpl in H; inversion H.
+  Case "T_Var". inversion H.
   Case "T_Field".
-    inversion H4; subst. false. apply H5. exists (ExpVar (ref Fi)). constructor.
 Admitted.
 (*
 Fixpoint Progress (e: Exp) (Gamma: env ClassName) (C: ClassName) (p : Gamma |-- e : C) : Prop := 

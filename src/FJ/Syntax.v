@@ -256,12 +256,14 @@ Inductive Computation : Exp -> Exp -> Prop :=
             nth_error es i = Some ei ->
             nth_error es' i = Some ei' ->
             (forall j, j <> i -> nth_error es j = nth_error es' j) ->
+            length es = length es' ->
             ExpMethodInvoc e0 m es ~> ExpMethodInvoc e0 m es'
   | RC_New_Arg : forall C ei' es es' ei i,
             ei ~> ei' ->
             nth_error es i = Some ei ->
             nth_error es' i = Some ei' ->
             (forall j, j <> i -> nth_error es j = nth_error es' j) ->
+            length es = length es' ->
             ExpNew C es ~> ExpNew C es'
   | RC_Cast : forall C e0 e0',
             e0 ~> e0' ->

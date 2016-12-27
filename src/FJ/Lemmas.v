@@ -421,20 +421,20 @@ Proof with eauto.
     destruct H4 as (C' & ?H & ?H).
     eapply A11 in H1; eauto.
   Case "RC_Invk_Arg".
-    inversion H3; subst.
+    inversion H4; subst.
     exists C; split; eauto.
-    lets ?H: Forall2_nth_error H10 H. destruct H4 as [?C].
-    lets ?H: Forall2_nth_error H11 H4. destruct H5 as [?D].
-    lets: H10.
-    eapply Forall2_forall with (n:=i) (x:=ei) in H10; eauto. 
-    eapply IHComputation in H10. destruct H10 as (?C' & ?H & ?H).
+    lets ?H: Forall2_nth_error H11 H. destruct H5 as [?C].
+    lets ?H: Forall2_nth_error H12 H5. destruct H6 as [?D].
+    lets: H11.
+    eapply Forall2_forall with (n:=i) (x:=ei) in H11; eauto. 
+    eapply IHComputation in H11. destruct H11 as (?C' & ?H & ?H).
     edestruct exists_subtyping with (es := es) (Cs := Cs) (es':= es') (Ds:= Ds) as (Cs' & ?H & ?H); eauto.
   Case "RC_New_Arg".
-    inversion H3; subst.
-    lets ?H: Forall2_nth_error H8 H. destruct H4 as [?C].
-    lets ?H: Forall2_nth_error H10 H4. destruct H5 as [?D].
+    inversion H4; subst.
+    lets ?H: Forall2_nth_error H9 H. destruct H5 as [?C].
+    lets ?H: Forall2_nth_error H11 H5. destruct H6 as [?D].
     exists C0; split; auto. 
-    lets ?H: H8.
+    lets ?H: H9.
     eapply Forall2_forall with (n:=i) (x:=ei) in H8; eauto. 
     eapply IHComputation in H8. destruct H8 as (?C' & ?H & ?H).
     edestruct exists_subtyping with (es := es) (Cs := Cs) (es':= es') (Ds:= map fieldType fs) as (Cs' & ?H & ?H); eauto.
@@ -454,8 +454,7 @@ Qed.
 
 Lemma ctx_next_subterm': forall e e',
   e ~>! e' ->
-  exists E r r', isCtx E /\ 
-                  e = E [; r ;] /\ 
+  exists E r r',  e = E [; r ;] /\ 
                   e' = E [; r' ;] /\ 
                   r ~>! r'.
 Proof.
@@ -465,14 +464,13 @@ Qed.
 
 Lemma ctx_next_subterm: forall e e',
   e ~> e' ->
-  exists E r r', isCtx E /\ 
-                  e = E [; r ;] /\ 
+  exists E r r',  e = E [; r ;] /\ 
                   e' = E [; r' ;] /\ 
                   r ~>! r'.
 Proof.
   Hint Resolve ctx_next_subterm'.
   intros.
-  computation_cases (induction H) Case; eauto; destruct IHComputation as (E & r & r' & ?H & ?H & ?H & ?H).
+  computation_cases (induction H) Case; eauto; destruct IHComputation as (E & r & r' & ?H & ?H & ?H).
   Case "RC_Field".
     exists (C_field_invk E f). 
     repeat eexists; crush.
@@ -480,10 +478,23 @@ Proof.
     exists (C_minvk_recv E m es).
     repeat eexists; crush.
   Case "RC_Invk_Arg".
-    exists (C_minv_arg e0 m es E es').
-    repeat eexists; crush. 
+    Hint Resolve nth_error_split.
+    exists (C_minv_arg e0 m (firstn i es) E (skipn (S i) es)).
+    remember (skipn (S i) es).
+    repeat eexists; eauto; simpl; subst;  apply f_equal.
+    lets ?H: (nth_error_split es) H0; auto.
+    erewrite firstn_same with (ys := es'); eauto. 
+    erewrite skipn_same with (ys := es'); eauto.
+  Case "RC_New_Arg".
+    exists (C_new C(firstn i es) E (skipn (S i) es)).
+    remember (skipn (S i) es).
+    repeat eexists; eauto; simpl; subst;  apply f_equal.
+    lets ?H: (nth_error_split es) H0; auto.
+    erewrite firstn_same with (ys := es'); eauto. 
+    erewrite skipn_same with (ys := es'); eauto.
+  Case "RC_Cast".
+    exists (C_cast C E). repeat eexists; crush.
 Qed.
-
 
 Fixpoint contains_downCast (e: Exp): Prop :=
   let fix contains_downCast_list (es: [Exp]): Prop:=

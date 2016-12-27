@@ -16,6 +16,7 @@ Lemma nth_error_nil : forall (A: Type) n,
 Proof.
   intros; induction n; auto.
 Qed.
+Hint Rewrite nth_error_nil.
 
 Lemma nth_error_Some' : forall {A: Type} (l: list A)  n,
   n < List.length l ->
@@ -93,4 +94,45 @@ Proof.
   lets ?H: H 0; inversion H0.
   lets ?H: H 0. crush. apply f_equal. apply IHxs. intro i.
   lets ?H: H (S i). crush.
+Qed.
+
+Lemma nth_error_split: forall {A: Type} (xs: list A) i x,  
+  nth_error xs i = Some x ->
+  xs = firstn i xs ++ x :: skipn (S i) xs.
+Proof.
+  induction xs; intros. rewrite nth_error_nil in H; inversion H.
+  destruct i; simpl in *. inversion H. reflexivity.
+  apply f_equal.
+  eapply IHxs; eauto.
+Qed.
+
+
+Lemma firstn_same : forall {A:Type} (xs ys: list A) i,
+  (forall j, j <> i -> nth_error xs j = nth_error ys j) ->
+  length xs = length ys ->
+  firstn i xs = firstn i ys.
+Proof.
+  induction xs; eauto; intros. inversion H0.
+  destruct ys; crush.
+  destruct ys; crush.
+  destruct i; crush.
+  lets H1: H 0. simpl in H1. crush.
+  apply f_equal.
+  eapply IHxs; eauto. intros.
+  lets H2: H (S j). crush.
+Qed.
+
+Lemma skipn_same : forall {A:Type} (xs ys: list A) i,
+  (forall j, j <> i -> nth_error xs j = nth_error ys j) ->
+  length xs = length ys ->
+  skipn (S i) xs = skipn (S i) ys.
+Proof.
+  induction xs; eauto; intros. inversion H0.
+  destruct ys; crush.
+  destruct ys; crush.
+  destruct i; crush.
+  lets ?H: (nth_error_same xs ys). apply H1. intros. 
+  lets ?H: H (S i). simpl in *. apply H2; eauto. intuition.
+  eapply IHxs; intros; auto.
+  lets H2: H (S j); crush.
 Qed.

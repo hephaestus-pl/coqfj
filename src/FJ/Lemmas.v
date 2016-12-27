@@ -281,7 +281,7 @@ Proof with eauto.
       apply nth_error_In' in xIn as [i]. symmetry in H3.
       edestruct (@nth_error_same_len id Exp) as [di]...
       assert (nth_error Bs i = Some Bi).
-      eapply get_wf_extds; eauto; constructor; eauto. 
+      eapply get_noDup_extds; eauto; constructor; eauto. 
       destruct (Forall2_nth_error _ _ (ExpTyping Gamma) ds As i di) as [Ai]...
       exists Ai.
       split.

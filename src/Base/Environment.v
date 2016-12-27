@@ -28,9 +28,6 @@ Notation " m 'extds' ids ':' vals" := (m ++ (combine ids vals)) (at level 20, id
 
 Definition Dom {A:Type} (m: env A):= map fst m.
 
-Inductive wf_extd {A: Type} (m:env A) xs : Prop :=
-  | wf_extds : (forall x, In x xs -> ~In x (Dom m)) -> NoDup xs -> wf_extd m xs.
-
 Lemma cons_snoc_empty
  :  forall A (x: A)
  ,  x :: nil = nil :> x.
@@ -144,27 +141,6 @@ Proof.
   rewrite get_nHead in H; auto.
 Qed.
 
-Lemma wf_weak: forall (A:Type) (m: env A) (x: id) xs,
-  wf_extd m (x::xs) ->
-  wf_extd m xs.
-Proof.
-  induction m.
-  intros. destruct H.
-  constructor; auto. intros.
-  inversion H0; auto.
-  destruct a; intros.
-  constructor.
-  intros.
-  simpl.
-  intro.
-  destruct H. destruct H1. eapply H.
-  simpl. right. apply H0.
-  rewrite H1; simpl; auto.
-  eapply H. simpl. right. exact H0.
-  simpl. right; auto.
-  destruct H. inversion H0; auto.
-Qed.
-
 Lemma get_In_Dom: forall (A: Type) (m: env A) x,
   In x (Dom m) ->
   exists x', get m x = Some x'.
@@ -217,82 +193,26 @@ Proof.
   apply In_Dom_weak; auto.
 Qed.
 
-Lemma get_notIn_Dom: forall (A: Type) (m: env A) x,
-  ~ In x (Dom m) ->
-  get m x = None.
-Proof.
-Admitted.
-
-Lemma extds_nshadow_In_Dom: forall {A: Type} xs (m: env A) x bs,
-  In x (Dom m) ->
-  get (m extds xs : bs) x = get m x.
-Proof.  
-Admitted.
-
-Lemma extends_nshadow_nIn_m: forall A (m: env A) x xs bs,
-  ~In x xs ->
-  get (m extds xs : bs) x = get m x.
-Proof.
-Admitted.
-
-Lemma get_extd_not_m: forall (A: Type) (m: env A) x' b' x,
-  ~ In x (Dom m) ->
-  get (m extd x' : b') x = get ([] extd x' : b') x.
-Proof.
-Admitted.
-
-
-Lemma get_extd_notin_Dom_nil: forall (A: Type) (b0: A) x xs bs,
-  get ([] extds (x::xs) : (b0 ::bs)) x = Some b0.
-Proof.
-Admitted.
-  
-
-Lemma get_extd_notin_Dom: forall (A: Type) (b0: A) m x xs bs,
-  ~In x (Dom m) ->
-  get (m extds (x::xs) : (b0 ::bs)) x = Some b0.
-Proof.
-Admitted.
-
-
-Lemma get_extds_notin_head: forall (A: Type) (m: env A) xs bs x' x b,
-  x <> x' ->
-  get (m ++ (x', b) :: combine xs bs) x = get (m extds xs : bs) x.
-Proof.
-  intros; simpl.
-Admitted.
-
-Theorem get_wf_extds: forall (A: Type)  xs (m: env A) bs x b i,
-  wf_extd m xs ->
-  get (m extds xs : bs) x = Some b ->
+Lemma get_combine: forall (A: Type) xs (bs: list A) x i b,
+  get (combine xs bs) x = Some b ->
+  NoDup xs ->
   nth_error xs i = Some x ->
   nth_error bs i = Some b.
 Proof.
-  induction xs. 
-  Case "xs = nil".
-    intros. rewrite nth_error_nil in H1; inversion H1.
-  Case "xs = a :: xs".
-    intros.
-    case bs in *.
-    SCase "bs = nil".
-      rewrite app_nil_r in H0.
-      simpl in *. inversion H. simpl in *.
-      false. case i in *.
-      SSCase "i = 0". 
-        eapply H2. left. inversion H1. auto.
-        apply get_in_Dom in H0. inversion H1. auto.
-      SSCase "i = S i".
-        eapply H2. simpl in *. right. 
-        apply nth_error_In in H1. eassumption.
-        apply get_in_Dom in H0; eauto.
-    SCase "bs = b :: bs".
-      case i in *.
-      SSCase "i = 0".
-        inversion H1. rewrite H3 in H0. rewrite get_extd_notin_Dom in H0; eauto. 
-        inversion H. eapply H2. apply nth_error_In in H1; auto.
-      SSCase "i = S i".
-        simpl in *. eapply IHxs. apply wf_weak in H; eauto.
-        inversion H. simpl in *. inversion H3. subst.
-        assert (x <> a). apply nth_error_In in H1. apply in_notin_noteq with xs; auto.
-        rewrite get_extds_notin_head in H0; eauto. auto.
+  induction xs; crush. inversion H0; subst.
+  destruct i; destruct bs; crush.
+  destruct beq_id_dec with x a. false.
+  subst. apply nth_error_In in H1; crush. 
+  rewrite not_eq_beq_id_false in H; auto.
+  eapply IHxs; eauto.
+Qed.
+
+Theorem get_noDup_extds: forall (A: Type)  xs (m: env A) (bs: list A) x b i,
+  NoDup xs ->
+  get (nil extds xs : bs) x = Some b ->
+  nth_error xs i = Some x ->
+  nth_error bs i = Some b.
+Proof.
+  induction 1; crush.
+  eapply get_combine; eauto.
 Qed.

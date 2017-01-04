@@ -167,6 +167,24 @@ Proof.
   unfold find.
   rewrite not_eq_beq_id_false; auto.
 Qed.
+
+
+
+Lemma findi_none: forall (A: Set) (R: @Referable A) k l,
+  find k l = None <-> (forall x, ~findi k l x).
+Proof.
+  intros.
+  split. intro. intros. intro. destruct H0. simpl in H.
+  rewrite beq_id_refl in H. inversion H.
+  apply <- find_iff_findi in H1.
+  simpl in H. rewrite not_eq_beq_id_false in H; auto. rewrite H1 in H; inversion H.
+  intros. induction l. reflexivity.
+  simpl in *. destruct beq_id_dec with k (ref a).
+  false. subst. destruct H with a. apply find_head.
+  rewrite not_eq_beq_id_false; auto. apply IHl.
+  intros. intro. destruct H with x. apply find_step; auto.
+Qed.
+
 End Findi.
 
 

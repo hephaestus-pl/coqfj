@@ -102,6 +102,7 @@ VFILES:=src/Base.v\
   src/Util/Referable.v\
   src/FJ/Lemmas.v\
   src/FJ/Syntax.v\
+  src/FJ/ClassTable.v\
   src/FJ/TypeSafety.v\
   src/FJ/EvaluationContext.v\
   src/FJ/Semantics.v\

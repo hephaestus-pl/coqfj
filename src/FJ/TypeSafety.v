@@ -1,9 +1,10 @@
 Require Import FJ.Base.
 Require Import FJ.Syntax.
 Require Import FJ.Semantics.
-Require Import FJ.Axioms.
 Require Import FJ.Lemmas.
 Require Import FJ.EvaluationContext.
+
+Include FJ.Semantics.CTSanity.
 
 (* This is Theorem 2.4.1 at the paper *)
 Theorem preservation_step : forall Gamma e e' C,

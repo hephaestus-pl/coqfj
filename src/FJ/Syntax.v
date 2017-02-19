@@ -77,6 +77,3 @@ Instance CDeclRef : Referable ClassDecl :={
 
 Inductive Program :=
   | CProgram : forall (cDecls: [ClassDecl]), NoDup (refs cDecls) -> Exp -> Program.
-
-(* We assume a fixed CT *)
-Parameter CT: [ClassDecl].

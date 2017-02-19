@@ -2,36 +2,7 @@ Require Import String.
 Require Import Relations.
 Require Import FJ.Base.
 Require Import FJ.Syntax.
-
-Reserved Notation "C '<:' D " (at level 40).
-Inductive Subtype : id -> ClassName -> Prop :=
-  | S_Refl: forall C: ClassName, C <: C
-  | S_Trans: forall (C D E: ClassName), 
-    C <: D -> 
-    D <: E -> 
-    C <: E
-  | S_Decl: forall C D fs noDupfs K mds noDupMds,
-    find C CT = Some (CDecl C D fs noDupfs K mds noDupMds ) ->
-    C <: D
-where "C '<:' D" := (Subtype C D).
-Hint Constructors Subtype.
-
-Tactic Notation "subtype_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "S_Refl" | Case_aux c "S_Trans" 
-  | Case_aux c "S_Decl"].
-
-Inductive fields : id -> [FieldDecl] -> Prop :=
- | F_Obj : fields Object nil
- | F_Decl : forall C D fs  noDupfs K mds noDupMds fs', 
-     find C CT = Some (CDecl C D fs noDupfs K mds noDupMds) ->
-     fields D fs' ->
-     NoDup (refs (fs' ++ fs)) ->
-     fields C (fs'++fs).
-Tactic Notation "fields_cases" tactic(first) ident(c) :=
-  first;
-  [ Case_aux c "F_Obj" | Case_aux c "F_Decl"].
-
+Require Import FJ.ClassTable.
 Reserved Notation "'mtype(' m ',' D ')' '=' c '~>' c0" (at level 40, c at next level).
 
 Inductive m_type (m: id) (C: ClassName) (Bs: [ClassName]) (B: ClassName) : Prop:=
@@ -65,6 +36,17 @@ Inductive m_body (m: id) (C: ClassName) (xs: [ClassName]) (e: Exp) : Prop:=
               m_body m C xs e.
 Notation "'mbody(' m ',' D ')' '=' xs 'o' e" := (m_body m D xs e) (at level 40).
 
+Inductive fields : id -> [FieldDecl] -> Prop :=
+ | F_Obj : fields Object nil
+ | F_Decl : forall C D fs  noDupfs K mds noDupMds fs', 
+     find C CT = Some (CDecl C D fs noDupfs K mds noDupMds) ->
+     fields D fs' ->
+     NoDup (refs (fs' ++ fs)) ->
+     fields C (fs'++fs).
+Tactic Notation "fields_cases" tactic(first) ident(c) :=
+  first;
+  [ Case_aux c "F_Obj" | Case_aux c "F_Decl"].
+
 Hint Constructors m_type m_body fields.
 Tactic Notation "mbdy_cases" tactic(first) ident(c) :=
   first;
@@ -89,8 +71,7 @@ Inductive Warning (s: string) : Prop :=
   | w_str : Warning s.
 Notation stupid_warning := (Warning "stupid warning").
 
-(* We can make a stupid cas at anytime, but that rule must be flagged. *)
-
+(* We can make a stupid cast at anytime, but that rule must be flagged. *)
 Axiom STUPID_STEP : stupid_warning.
 
 Reserved Notation "Gamma '|--' x ':' C" (at level 60, x at next level).

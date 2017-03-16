@@ -2,7 +2,9 @@ Require Import Relation_Definitions.
 Require Import FJ.Base.
 Require Import FJ.Syntax.
 Require Import FJ.Semantics.
-Require Import FJ.Axioms.
+
+Include FJ.Semantics.CTSanity.
+
 
 (* Auxiliary Lemmas *)
 (* mtype / MType_OK lemmas *)

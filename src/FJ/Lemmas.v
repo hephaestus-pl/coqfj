@@ -44,8 +44,8 @@ Lemma exists_mbody: forall C D Cs m,
 Proof.
   Hint Rewrite map_length.
   induction 1; eauto.
-  exists (refs fargs) e. split; eauto. split; eauto. crush.
-  destruct IHm_type as (xs & e & H2 & H3). exists xs e; eauto.
+  - exists (refs fargs) e; repeat (split; eauto). crush.
+  - crush; eexists; eauto.
 Qed.
 
 (* find C CT Lemmas *)

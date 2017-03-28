@@ -61,9 +61,10 @@ Lemma unify_find_mname: forall m Ms c i fargs n e,
   find m Ms = Some (MDecl c i fargs n e) ->
   find m Ms = Some (MDecl c m fargs n e) /\ m = i.
 Proof.
+  Hint Resolve find_ref_inv.
   intros.
-  assert (ref (MDecl c i fargs n e) = m). 
-  eapply find_ref_inv; eauto. crush.
+  assert (ref (MDecl c i fargs n e) = m). eauto.
+  crush.
 Qed.
 
 
@@ -72,11 +73,30 @@ Lemma super_obj_or_defined: forall C D Fs noDupfs K Ms noDupMds,
     D = Object \/ exists D0 Fs0 noDupfs0 K0 Ms0 noDupMds0, 
                     find D CT = Some (CDecl D D0 Fs0 noDupfs0 K0 Ms0 noDupMds0).
 Proof.
-  intros. destruct beq_id_dec with D Object; subst. 
+  intros. destruct beq_id_dec with D Object; subst.
   left; auto.
   right. eapply superClass_in_dom; eauto.
 Qed.
 
+Ltac classes_OK :=
+  match goal with
+    | [ H: find ?C ?CT = Some (CDecl _ _ _ _ _ _ _) |- _ ] => 
+      apply ClassesOK in H; inversion H; subst; sort; clear H
+  end.
+
+Ltac insterU H :=
+  repeat match type of H with
+           | forall x : ?T, _ =>
+             let x := fresh "x" in
+               evar (x : T);
+               let x' := eval unfold x in x in
+                 clear x; specialize (H x')
+         end.
+
+Ltac class_defined_or_obj C :=
+  match goal with
+  | [H1: find C _ = _ |- _ ] => edestruct super_obj_or_defined; [eexact H1 |  | ]; subst
+  end.
 
 Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
@@ -84,15 +104,14 @@ Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     mtype(m, C) = Ds ~> D0.
 Proof.
   Hint Resolve mtype_obj_False.  
-  intros. apply ClassesOK in H.
-  inversion H; subst; sort; clear H.
-  edestruct super_obj_or_defined; eauto; subst.
-  false; eapply mtype_obj_False; eauto.
-  destruct H as (?D & Fs1 & noDupfs0 & K0 & Ms0 & noDupMds0 & H).
-  destruct (@find_dec MethodDecl) with MDeclRef Ms m. destruct e. destruct x. sort.
+  intros.
+  classes_OK.
+  class_defined_or_obj C.
+  - false; eauto.
+  - destruct (@find_dec MethodDecl) with MDeclRef Ms m. destruct e. destruct x. sort.
   apply unify_find_mname in H1; destruct H1; subst.
   eapply Forall_find in H9; [|eexact H1].
-  destruct H9; subst; sort. assert (D2 = D) by crush; subst.
+  destruct H9; subst; sort. assert (D1 = D) by crush; subst.
   apply unify_find_mname in H1. destruct H1; subst.
   destruct H5 with Ds D0; subst; auto. eapply mty_ok; crush.
   eapply mty_no_override; eauto.

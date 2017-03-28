@@ -80,7 +80,7 @@ Qed.
 
 Ltac classes_OK :=
   match goal with
-    | [ H: find ?C ?CT = Some (CDecl _ _ _ _ _ _ _) |- _ ] => 
+    | [ H: find ?C ?CT = Some _ |- _ ] => 
       apply ClassesOK in H; inversion H; subst; sort; clear H
   end.
 
@@ -93,7 +93,7 @@ Ltac insterU H :=
                  clear x; specialize (H x')
          end.
 
-Ltac class_defined_or_obj C :=
+Ltac superclass_defined_or_obj C :=
   match goal with
   | [H1: find C _ = _ |- _ ] => edestruct super_obj_or_defined; [eexact H1 |  | ]; subst
   end.
@@ -106,7 +106,7 @@ Proof.
   Hint Resolve mtype_obj_False.  
   intros.
   classes_OK.
-  class_defined_or_obj C.
+  superclass_defined_or_obj C.
   - false; eauto.
   - destruct (@find_dec MethodDecl) with MDeclRef Ms m. destruct e. destruct x. sort.
   apply unify_find_mname in H1; destruct H1; subst.

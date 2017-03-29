@@ -120,13 +120,31 @@ Ltac decompose_exs :=
   | [H: exists x, _ |- _ ] => decompose_ex H
   end.
 
-Ltac inv_ast :=
+Ltac inv_decl :=
   let C := fresh "C" in
+  let D := fresh "D" in
+  let K := fresh "K" in
   let m := fresh "m" in
+  let f := fresh "f" in
   let fargs := fresh "fargs" in
   let noDupFargs := fresh "noDupFargs" in
+  let fDecls := fresh "fDecls" in
+  let noDupfDecls := fresh "noDupfDecls" in
+  let mDecls := fresh "mDecls" in
+  let noDupmDecls := fresh "noDupmDecls" in
+  repeat match goal with
+  | [ MD : MethodDecl |- _ ] => destruct MD as [C m fargs noDupFargs e]
+  | [ FD : FieldDecl |- _ ] => destruct FD as [C f]
+  | [ CD : ClassDecl |- _ ] => destruct CD as [C D fDecls noDupfDecls mDecls noDupmDecls]
+  end.
+
+Ltac unify_find_ref :=
+  let H := fresh "H" in
   match goal with
-  | [ M : MethodDecl |- _ ] => destruct M as [C m fargs noDupFargs e]
+  | [H1: find ?x ?xs = Some ?u |- _] => assert (ref u = x) as H; [eapply find_ref_inv; eauto|]; subst;
+    repeat match goal with
+      | [ H2 : context[ref u] |- _] => simpl in H2
+    end; simpl
   end.
 
 Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
@@ -140,8 +158,7 @@ Proof.
   superclass_defined_or_obj C.
   - false; eauto.
   - find_dec_tac Ms m; [ | eapply mty_no_override; eauto ].
-    decompose_exs. inv_ast.
-    apply unify_find_mname in H1; destruct H1; subst.
+    decompose_exs. inv_decl. unify_find_ref.
     eapply Forall_find in H9; [|eexact H1].
     destruct H9; subst; sort. assert (D2 = D) by crush; subst.
     apply unify_find_mname in H1. destruct H1; subst.

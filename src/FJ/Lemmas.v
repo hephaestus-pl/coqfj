@@ -147,6 +147,18 @@ Ltac unify_find_ref :=
     end; simpl
   end.
 
+
+Ltac Forall_find_tac :=
+  let H := fresh "H" in
+  match goal with
+  | [ H1: Forall ?P ?l, H2: find ?x ?l = _ |- _ ] => lets H: H1; eapply Forall_find in H; [|eexact H2]
+  end.
+
+Ltac mtypes_ok :=
+  match goal with
+  | [H: MType_OK _ _ |- _ ] => destruct H; subst; sort
+  end.
+
 Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
     mtype(m, D) = Ds ~> D0 ->
@@ -156,9 +168,8 @@ Proof.
   intros.
   class_OK C. superclass_defined_or_obj C; [false; eauto | ].
   - find_dec_tac Ms m; [ | eapply mty_no_override; eauto ].
-    decompose_exs. inv_decl. unify_find_ref. duplicate H9.
-    eapply Forall_find in H9; [|eexact H1].
-    destruct H9; subst; sort. assert (D2 = D) by crush; subst.
+    decompose_exs. inv_decl. unify_find_ref. Forall_find_tac.
+    mtypes_ok. assert (D2 = D) by crush; subst.
     apply unify_find_mname in H1. destruct H1; subst.
     destruct H5 with Ds D0; subst; auto. eapply mty_ok; crush.
 Qed.

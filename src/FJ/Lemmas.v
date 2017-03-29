@@ -97,6 +97,23 @@ Ltac superclass_defined_or_obj C :=
   match goal with
   | [H1: find C _ = _ |- _ ] => edestruct super_obj_or_defined; [eexact H1 |  | ]; subst
   end.
+Print MDeclRef.
+Print find_dec.
+
+Ltac find_dec_with T Ref L i :=
+  destruct (@find_dec T) with Ref L i.
+
+Ltac find_dec_tac L i:=
+  match type of L with
+  | list ?T => destruct (find_dec L i)
+  end.
+
+Ltac decompose_ex H :=
+  repeat match type of H with
+           | ex (fun x => _) =>
+             let x := fresh x in
+             destruct H as [x H]
+         end.
 
 Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
@@ -108,13 +125,13 @@ Proof.
   classes_OK.
   superclass_defined_or_obj C.
   - false; eauto.
-  - destruct (@find_dec MethodDecl) with MDeclRef Ms m. destruct e. destruct x. sort.
+  - find_dec_tac Ms m; [ | eapply mty_no_override; eauto ].
+  destruct e. destruct x.
   apply unify_find_mname in H1; destruct H1; subst.
   eapply Forall_find in H9; [|eexact H1].
   destruct H9; subst; sort. assert (D1 = D) by crush; subst.
   apply unify_find_mname in H1. destruct H1; subst.
   destruct H5 with Ds D0; subst; auto. eapply mty_ok; crush.
-  eapply mty_no_override; eauto.
 Qed.
 
 (* fields Lemmas *)

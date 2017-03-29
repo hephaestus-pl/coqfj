@@ -1,4 +1,5 @@
-#CoqFJ
+# CoqFJ
+
 Featherweight Java is a minimimum core calculus for Java formalized in [this paper](https://www.cis.upenn.edu/~bcpierce/papers/fj-toplas.pdf)
 
 CoqFJ is a mechanization of the standard theorems for type safety, i.e. progress and preservation, using coq.

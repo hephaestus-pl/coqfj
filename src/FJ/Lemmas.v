@@ -105,15 +105,29 @@ Ltac find_dec_with T Ref L i :=
 
 Ltac find_dec_tac L i:=
   match type of L with
-  | list ?T => destruct (find_dec L i)
+  | list ?T => let H := fresh "H" in destruct (find_dec L i) as [H|H]
   end.
 
 Ltac decompose_ex H :=
   repeat match type of H with
            | ex (fun x => _) =>
              let x := fresh x in
-             destruct H as [x H]
+             destruct H as [x H]; sort
          end.
+
+Ltac decompose_exs :=
+  repeat match goal with
+  | [H: exists x, _ |- _ ] => decompose_ex H
+  end.
+
+Ltac inv_ast :=
+  let C := fresh "C" in
+  let m := fresh "m" in
+  let fargs := fresh "fargs" in
+  let noDupFargs := fresh "noDupFargs" in
+  match goal with
+  | [ M : MethodDecl |- _ ] => destruct M as [C m fargs noDupFargs e]
+  end.
 
 Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
@@ -126,12 +140,12 @@ Proof.
   superclass_defined_or_obj C.
   - false; eauto.
   - find_dec_tac Ms m; [ | eapply mty_no_override; eauto ].
-  destruct e. destruct x.
-  apply unify_find_mname in H1; destruct H1; subst.
-  eapply Forall_find in H9; [|eexact H1].
-  destruct H9; subst; sort. assert (D1 = D) by crush; subst.
-  apply unify_find_mname in H1. destruct H1; subst.
-  destruct H5 with Ds D0; subst; auto. eapply mty_ok; crush.
+    decompose_exs. inv_ast.
+    apply unify_find_mname in H1; destruct H1; subst.
+    eapply Forall_find in H9; [|eexact H1].
+    destruct H9; subst; sort. assert (D2 = D) by crush; subst.
+    apply unify_find_mname in H1. destruct H1; subst.
+    destruct H5 with Ds D0; subst; auto. eapply mty_ok; crush.
 Qed.
 
 (* fields Lemmas *)

@@ -78,9 +78,9 @@ Proof.
   right. eapply superClass_in_dom; eauto.
 Qed.
 
-Ltac classes_OK :=
+Ltac class_OK C:=
   match goal with
-    | [ H: find ?C ?CT = Some _ |- _ ] => 
+    | [ H: find C ?CT = Some (CDecl _ _ _ _ _ _ _ ) |- _ ] => 
       apply ClassesOK in H; inversion H; subst; sort; clear H
   end.
 
@@ -140,7 +140,7 @@ Ltac inv_decl :=
 
 Ltac unify_find_ref :=
   let H := fresh "H" in
-  match goal with
+  repeat match goal with
   | [H1: find ?x ?xs = Some ?u |- _] => assert (ref u = x) as H; [eapply find_ref_inv; eauto|]; subst;
     repeat match goal with
       | [ H2 : context[ref u] |- _] => simpl in H2
@@ -152,13 +152,11 @@ Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     mtype(m, D) = Ds ~> D0 ->
     mtype(m, C) = Ds ~> D0.
 Proof.
-  Hint Resolve mtype_obj_False.  
+  Hint Resolve mtype_obj_False.
   intros.
-  classes_OK.
-  superclass_defined_or_obj C.
-  - false; eauto.
+  class_OK C. superclass_defined_or_obj C; [false; eauto | ].
   - find_dec_tac Ms m; [ | eapply mty_no_override; eauto ].
-    decompose_exs. inv_decl. unify_find_ref.
+    decompose_exs. inv_decl. unify_find_ref. duplicate H9.
     eapply Forall_find in H9; [|eexact H1].
     destruct H9; subst; sort. assert (D2 = D) by crush; subst.
     apply unify_find_mname in H1. destruct H1; subst.

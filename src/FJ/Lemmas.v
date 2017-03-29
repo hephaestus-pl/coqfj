@@ -159,6 +159,11 @@ Ltac mtypes_ok :=
   | [H: MType_OK _ _ |- _ ] => destruct H; subst; sort
   end.
 
+Ltac elim_eqs :=
+  match goal with
+  | [H: ?x = _, H1: ?x = _ |- _ ] => rewrite H in H1; inversion H1; clear H1; subst
+  end.
+
 Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
     mtype(m, D) = Ds ~> D0 ->
@@ -169,9 +174,8 @@ Proof.
   class_OK C. superclass_defined_or_obj C; [false; eauto | ].
   - find_dec_tac Ms m; [ | eapply mty_no_override; eauto ].
     decompose_exs. inv_decl. unify_find_ref. Forall_find_tac.
-    mtypes_ok. assert (D2 = D) by crush; subst.
-    apply unify_find_mname in H1. destruct H1; subst.
-    destruct H5 with Ds D0; subst; auto. eapply mty_ok; crush.
+    mtypes_ok. elim_eqs. unify_find_ref.
+    destruct H5 with Ds D0; subst; auto; clear H5. eapply mty_ok; crush.
 Qed.
 
 (* fields Lemmas *)

@@ -164,6 +164,11 @@ Ltac elim_eqs :=
   | [H: ?x = _, H1: ?x = _ |- _ ] => rewrite H in H1; inversion H1; clear H1; subst
   end.
 
+Ltac unify_override :=
+  match goal with
+  | [H: override ?m ?D ?Cs ?C0, H1: mtype(?m, ?D) = ?Ds ~> ?D0 |- _ ] => destruct H with Ds D0; [exact H1 | subst]
+  end.
+
 Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
     mtype(m, D) = Ds ~> D0 ->
@@ -174,8 +179,8 @@ Proof.
   class_OK C. superclass_defined_or_obj C; [false; eauto | ].
   - find_dec_tac Ms m; [ | eapply mty_no_override; eauto ].
     decompose_exs. inv_decl. unify_find_ref. Forall_find_tac.
-    mtypes_ok. elim_eqs. unify_find_ref.
-    destruct H5 with Ds D0; subst; auto; clear H5. eapply mty_ok; crush.
+    mtypes_ok. elim_eqs. unify_find_ref. unify_override.
+    eapply mty_ok; crush.
 Qed.
 
 (* fields Lemmas *)

@@ -56,17 +56,7 @@ Lemma mtype_obj_False: forall m Cs C,
 Proof.
   inversion 1; crush.
 Qed.
-
-Lemma unify_find_mname: forall m Ms c i fargs n e,
-  find m Ms = Some (MDecl c i fargs n e) ->
-  find m Ms = Some (MDecl c m fargs n e) /\ m = i.
-Proof.
-  Hint Resolve find_ref_inv.
-  intros.
-  assert (ref (MDecl c i fargs n e) = m). eauto.
-  crush.
-Qed.
-
+Hint Resolve mtype_obj_False.
 
 Lemma super_obj_or_defined: forall C D Fs noDupfs K Ms noDupMds,
     find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
@@ -151,12 +141,12 @@ Ltac unify_find_ref :=
 Ltac Forall_find_tac :=
   let H := fresh "H" in
   match goal with
-  | [ H1: Forall ?P ?l, H2: find ?x ?l = _ |- _ ] => lets H: H1; eapply Forall_find in H; [|eexact H2]
+  | [ H1: Forall ?P ?l, H2: find ?x ?l = _ |- _ ] => lets H: H1; eapply Forall_find in H; [|eexact H2]; clear H1
   end.
 
 Ltac mtypes_ok :=
   match goal with
-  | [H: MType_OK _ _ |- _ ] => destruct H; subst; sort
+  | [H: MType_OK _ _ |- _ ] => destruct H; subst; sort; clear H
   end.
 
 Ltac elim_eqs :=
@@ -166,21 +156,21 @@ Ltac elim_eqs :=
 
 Ltac unify_override :=
   match goal with
-  | [H: override ?m ?D ?Cs ?C0, H1: mtype(?m, ?D) = ?Ds ~> ?D0 |- _ ] => destruct H with Ds D0; [exact H1 | subst]
+  | [H: override ?m ?D ?Cs ?C0, H1: mtype(?m, ?D) = ?Ds ~> ?D0 |- _ ] => destruct H with Ds D0; [exact H1 | subst; clear H]
   end.
+
+Ltac pl :=
+  repeat (decompose_exs || inv_decl || unify_find_ref || Forall_find_tac 
+  || mtypes_ok || elim_eqs || unify_find_ref || unify_override).
 
 Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
     mtype(m, D) = Ds ~> D0 ->
     mtype(m, C) = Ds ~> D0.
 Proof.
-  Hint Resolve mtype_obj_False.
   intros.
-  class_OK C. superclass_defined_or_obj C; [false; eauto | ].
-  - find_dec_tac Ms m; [ | eapply mty_no_override; eauto ].
-    decompose_exs. inv_decl. unify_find_ref. Forall_find_tac.
-    mtypes_ok. elim_eqs. unify_find_ref. unify_override.
-    eapply mty_ok; crush.
+  class_OK C.
+  find_dec_tac Ms m; [pl; eapply mty_ok; crush | eapply mty_no_override; eauto ].
 Qed.
 
 (* fields Lemmas *)

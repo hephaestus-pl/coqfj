@@ -230,16 +230,12 @@ Proof.
   Hint Rewrite app_nil_r app_assoc.
   Hint Resolve fields_det.
   intros. gen H0. gen fs.
-  subtype_cases (induction H as [|C D E H1 IHSubtype1 H2 IHSubtype2|]) Case; intros.
-  Case "S_Refl".
-    exists (@nil FieldDecl); crush.
-  Case "S_Trans".
-    edestruct IHSubtype2; eauto.
-    edestruct IHSubtype1; eauto.
-    eexists.
-  Case "S_Decl".
-    class_OK C; unifall.
-    crush; eauto.
+  subtype_cases (induction H) Case; intros.
+  - exists (@nil FieldDecl); crush.
+  - repeat match goal with
+    | [H: forall fs, fields ?C fs -> _, H1: fields ?C ?fs|- _ ] => destruct (H fs H1); clear H
+    end; crush; eauto.
+  - class_OK C; unifall; crush; eauto.
 Qed.
 
 Lemma subtype_order:

@@ -223,6 +223,7 @@ Inductive MType_OK : ClassName -> MethodDecl -> Prop :=
             override m D Cs C0 ->
             map fargType fargs = Cs ->
             refs fargs = xs ->
+            find m Ms = Some (MDecl C0 m fargs noDupFargs e0) ->
             MType_OK C (MDecl C0 m fargs noDupFargs e0).
 
 Inductive CType_OK: ClassDecl -> Prop :=

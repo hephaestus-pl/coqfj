@@ -115,7 +115,15 @@ Qed.
 End Ref.
 
 Module Refs.
-Notation "'refs' x":= (map ref x) (at level 30).
+
+Definition refs {A: Set} {R: Referable A} (x: list A) := (map ref x).
+
+Hint Rewrite map_length.
+Lemma refs_lenght: forall  (A: Set) (R: @Referable A) xs,
+  length (refs xs) = length xs.
+Proof. unfold refs; crush. Qed.
+Hint Rewrite refs_lenght.
+
 End Refs.
 Export Refs.
 

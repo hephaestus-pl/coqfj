@@ -143,6 +143,7 @@ Ltac decompose_ex H :=
 Ltac decompose_exs :=
   repeat match goal with
   | [H: exists x, _ |- _ ] => decompose_ex H
+  | [H: _ |- exists x, _ ] => eexists
   end.
 
 Ltac inv_decl :=
@@ -199,7 +200,7 @@ Ltac unify_fields :=
   | [ H1: fields ?C ?f1, H2: fields ?C ?f2 |- _ ] => destruct (fields_det _ _ _ H1 H2); subst; clear H2
   end.
 
-Ltac pl :=
+Ltac unifall :=
   repeat (decompose_exs || inv_decl || unify_find_ref || Forall_find_tac 
   || mtypes_ok || elim_eqs || unify_find_ref || unify_override || unify_fields).
 
@@ -209,7 +210,7 @@ Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     mtype(m, C) = Ds ~> D0.
 Proof.
   intros; class_OK C.
-  find_dec_tac Ms m; [pl; eapply mty_ok; crush | eapply mty_no_override; eauto ].
+  find_dec_tac Ms m; [unifall; eapply mty_ok; crush | eapply mty_no_override; eauto ].
 Qed.
 (* Subtype Lemmas *)
 
@@ -235,10 +236,9 @@ Proof.
   Case "S_Trans".
     edestruct IHSubtype2; eauto.
     edestruct IHSubtype1; eauto.
-    eexists; crush; eassumption.
-  Case "S_Decl".
     eexists.
-    class_OK C. pl.
+  Case "S_Decl".
+    class_OK C; unifall.
     crush; eauto.
 Qed.
 

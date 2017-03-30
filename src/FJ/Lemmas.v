@@ -68,6 +68,41 @@ Proof.
   right. eapply superClass_in_dom; eauto.
 Qed.
 
+
+(* fields Lemmas *)
+Lemma fields_obj_nil: forall f,
+  fields Object f -> f = nil.
+Proof.
+  remember Object.
+  induction 1; crush.
+Qed.
+
+Lemma fields_NoDup : forall C fs,
+  fields C fs ->
+  NoDup (refs fs).
+Proof.
+  inversion 1; crush.
+Qed.
+
+Lemma fields_det: forall C f1 f2,
+  fields C f1 ->
+  fields C f2 ->
+  f1 = f2.
+Proof.
+  Hint Resolve fields_obj_nil.
+  intros; gen f1.
+  fields_cases (induction H0) Case; intros.
+  Case "F_Obj".
+    crush.
+  Case "F_Decl".
+    match goal with 
+    [ H: fields _ _ |- _ ] => destruct H; [crush |]
+    end.
+    match goal with
+    [ H: fields _ ?fs |- _] => specialize IHfields with fs; crush
+    end.
+Qed.
+
 Ltac class_OK C:=
   match goal with
     | [ H: find C ?CT = Some (CDecl _ _ _ _ _ _ _ ) |- _ ] => 
@@ -159,55 +194,23 @@ Ltac unify_override :=
   | [H: override ?m ?D ?Cs ?C0, H1: mtype(?m, ?D) = ?Ds ~> ?D0 |- _ ] => destruct H with Ds D0; [exact H1 | subst; clear H]
   end.
 
+Ltac unify_fields :=
+  match goal with
+  | [ H1: fields ?C ?f1, H2: fields ?C ?f2 |- _ ] => destruct (fields_det _ _ _ H1 H2); subst; clear H2
+  end.
+
 Ltac pl :=
   repeat (decompose_exs || inv_decl || unify_find_ref || Forall_find_tac 
-  || mtypes_ok || elim_eqs || unify_find_ref || unify_override).
+  || mtypes_ok || elim_eqs || unify_find_ref || unify_override || unify_fields).
 
 Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
     mtype(m, D) = Ds ~> D0 ->
     mtype(m, C) = Ds ~> D0.
 Proof.
-  intros.
-  class_OK C.
+  intros; class_OK C.
   find_dec_tac Ms m; [pl; eapply mty_ok; crush | eapply mty_no_override; eauto ].
 Qed.
-
-(* fields Lemmas *)
-Lemma fields_obj_nil: forall f,
-  fields Object f -> f = nil.
-Proof.
-  remember Object.
-  induction 1; crush.
-Qed.
-
-Lemma fields_NoDup : forall C fs,
-  fields C fs ->
-  NoDup (refs fs).
-Proof.
-  inversion 1; crush.
-Qed.
-
-Lemma fields_det: forall C f1 f2,
-  fields C f1 ->
-  fields C f2 ->
-  f1 = f2.
-Proof.
-  Hint Resolve fields_obj_nil.
-  intros.
-  gen f1.
-  fields_cases (induction H0) Case; intros.
-  Case "F_Obj".
-    crush.
-  Case "F_Decl".
-    match goal with 
-    [ H: fields _ _ |- _ ] => destruct H; [crush |]
-    end.
-    match goal with
-    [ H: fields _ ?fs |- _] => specialize IHfields with fs; crush
-    end.
-Qed.
-
 (* Subtype Lemmas *)
 
 Lemma obj_not_subtype: forall C,
@@ -218,26 +221,25 @@ Proof.
   subst. destruct beq_id_dec with D Object; subst; auto.
 Qed.
 
-
 Lemma subtype_fields: forall C D fs ,
   C <: D ->
   fields D fs ->
   exists fs', fields C (fs ++ fs').
 Proof.
   Hint Rewrite app_nil_r app_assoc.
+  Hint Resolve fields_det.
   intros. gen H0. gen fs.
-  subtype_cases (induction H) Case; intros.
+  subtype_cases (induction H as [|C D E H1 IHSubtype1 H2 IHSubtype2|]) Case; intros.
   Case "S_Refl".
     exists (@nil FieldDecl); crush.
   Case "S_Trans".
     edestruct IHSubtype2; eauto.
     edestruct IHSubtype1; eauto.
-    eexists ; crush; eassumption.
+    eexists; crush; eassumption.
   Case "S_Decl".
-    exists (fs); auto. eapply F_Decl; eauto.
-    apply ClassesOK in H. inversion H; subst; auto.
-    assert (fs0 = fdecl) by (apply fields_det with D; auto).
-    crush.
+    eexists.
+    class_OK C. pl.
+    crush; eauto.
 Qed.
 
 Lemma subtype_order:

@@ -110,6 +110,11 @@ Ltac class_OK C:=
   end.
 
 
+Ltac mtype_OK m :=
+  match goal with
+    | [ H: find ?C _ = Some (CDecl _ _ _ _ _ ?Ms _ ), H1: find m ?Ms = Some (MDecl _ _ _ _ _) |- _ ] => 
+      eapply methodDecl_OK in H1; eauto; inversion H1; subst; sort; clear H1
+  end.
 
 Ltac unify_returnType :=  match goal with
   | [H: mtype( ?m, ?C)= ?Ds ~> ?D,
@@ -222,13 +227,15 @@ Ltac unifall :=
   || unify_find_ref || unify_override || unify_fields || unify_returnType || unify_fargsType
   || mtypes_ok  || Forall_find_tac).
 
+Ltac ecrush := unifall; eauto; crush; eauto.
+
 Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
     mtype(m, D) = Ds ~> D0 ->
     mtype(m, C) = Ds ~> D0.
 Proof.
   intros; class_OK C.
-  find_dec_tac Ms m; [unifall; eapply mty_ok; crush | eapply mty_no_override; eauto ].
+  find_dec_tac Ms m; [ecrush; eapply mty_ok; ecrush | eapply mty_no_override; ecrush ].
 Qed.
 (* Subtype Lemmas *)
 
@@ -246,14 +253,16 @@ Lemma subtype_fields: forall C D fs ,
   exists fs', fields C (fs ++ fs').
 Proof.
   Hint Rewrite app_nil_r app_assoc.
-  Hint Resolve fields_det.
   intros. gen H0. gen fs.
   subtype_cases (induction H) Case; intros.
-  - exists (@nil FieldDecl); crush.
-  - repeat match goal with
+  Case "S_Refl".
+    exists (@nil FieldDecl); crush.
+  Case "S_Trans".
+    repeat match goal with
     | [H: forall fs, fields ?C fs -> _, H1: fields ?C ?fs|- _ ] => destruct (H fs H1); clear H
-    end; crush; eauto.
-  - class_OK C; unifall; crush; eauto.
+    end; ecrush.
+  Case "S_Decl".
+    class_OK C; ecrush.
 Qed.
 
 Lemma subtype_order:
@@ -270,9 +279,7 @@ Proof.
   intros C D D0 fs noDupfs K mds noDupMds H.
   gen D0 fs noDupfs K mds noDupMds.
   induction H; [crush | intros | crush].
-  destruct beq_id_dec with C D.
-  eapply IHSubtype2; crush.
-  edestruct IHSubtype1; eauto.
+  destruct beq_id_dec with C D; ecrush.
 Qed.
 
 Lemma subtype_not_sub': forall C D E,
@@ -280,11 +287,11 @@ Lemma subtype_not_sub': forall C D E,
   E <: D ->
   C <: D \/ D <: C.
 Proof.
+  Hint Resolve super_class_subtype.
   intros C D E H. gen D.
-  induction H; auto; intros.
-  edestruct IHSubtype1; eauto.
-  destruct beq_id_dec with C D0. subst. apply S_Decl in H. auto.
-  eapply super_class_subtype in H0; eauto.
+  induction H; auto; intros. 
+  - edestruct IHSubtype1; eauto.
+  - destruct beq_id_dec with C D0; ecrush.
 Qed.
 
 Lemma subtype_not_sub: forall C D E,
@@ -332,12 +339,6 @@ Proof.
 Qed.
 
 
-Ltac mtype_OK m :=
-  match goal with
-    | [ H: find ?C _ = Some (CDecl _ _ _ _ _ ?Ms _ ), H1: find m ?Ms = Some (MDecl _ _ _ _ _) |- _ ] => 
-      eapply methodDecl_OK in H1; eauto; inversion H1; subst; sort; clear H1
-  end.
-
 
 Lemma A14: forall D m C0 xs Ds e,
   mtype(m,C0) = Ds ~> D ->
@@ -349,8 +350,8 @@ Proof.
   mbdy_cases (induction H0) Case.
   mtype_OK m. exists C E0. unifall; eauto.
   Case "mbdy_no_override".
-    inversion H; unifall; crush.
-    exists x x0; unifall; eauto.
+    inversion H; ecrush.
+    exists x x0; ecrush.
 Qed.
 
 
@@ -365,7 +366,7 @@ Proof with eauto.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case; sort.
   Case "T_Var".
-    destruct (In_dec (beq_id_dec) x xs) as [xIn|xNIn]; unifall; eauto; crush.
+    destruct (In_dec (beq_id_dec) x xs) as [xIn|xNIn]; unifall; eauto.
     SCase "In x xs". rename C into Bi.
       assert (In x xs); eauto.
       apply nth_error_In' in xIn as [i]. symmetry in H3.

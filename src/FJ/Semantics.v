@@ -238,14 +238,17 @@ Inductive CType_OK: ClassDecl -> Prop :=
 (* Hypothesis for ClassTable sanity *)
 Module CTSanity.
 
-Hypothesis dec_subtype: forall C D,
-  decidable (Subtype C D).
+Hypothesis obj_notin_dom: find Object CT = None.
+Hint Rewrite obj_notin_dom.
+
+Hypothesis sub_inCT_inv: forall C D,
+  C <: D ->
+  C <> Object ->
+  exists D' Fs noDupfs K Ms noDupMds, find C CT = Some (CDecl C D' Fs noDupfs K Ms noDupMds).
 
 Hypothesis antisym_subtype:
   antisymmetric _ Subtype.
 
-Hypothesis obj_notin_dom: find Object CT = None.
-Hint Rewrite obj_notin_dom.
 
 Hypothesis superClass_in_dom: forall C D Fs noDupfs K Ms noDupMds,
   find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
@@ -256,6 +259,33 @@ Hypothesis ClassesOK: forall C D Fs noDupfs K Ms noDupMds,
   find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds) ->
   CType_OK (CDecl C D Fs noDupfs K Ms noDupMds).
 Hint Resolve ClassesOK.
+
+Lemma subtype_obj_obj: forall C,
+  Object <: C ->
+  Object = C.
+Proof.
+  intros_all. remember Object as Obj.
+  induction H; crush.
+Qed.
+
+Lemma sub_not_obj: forall C,
+  Object <> C ->
+  ~ Object <: C.
+Proof.
+  Hint Resolve subtype_obj_obj.
+  intros_all. remember Object as Obj.
+  induction H; crush.
+Qed.
+
+Lemma dec_subtype: forall C D,
+  decidable (Subtype C D).
+Proof.
+  intros. unfold decidable.
+  destruct beq_id_dec with C D. subst; eauto.
+  destruct beq_id_dec with C Object. subst. right; apply sub_not_obj;auto.
+  destruct find_dec with CT C. destruct e. gen H. gen C. gen D.
+  induction CT; intros. inversion H. destruct beq_id_dec with C (ref a); subst; auto.
+Admitted.
 
 End CTSanity.
 

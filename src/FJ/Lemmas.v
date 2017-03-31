@@ -161,7 +161,6 @@ Ltac decompose_ex H :=
 Ltac decompose_exs :=
   repeat match goal with
   | [H: exists x, _ |- _ ] => decompose_ex H
-  | [H: _ |- exists x, _ ] => eexists
   end.
 
 Ltac inv_decl :=
@@ -350,11 +349,8 @@ Proof.
   mbdy_cases (induction H0) Case.
   mtype_OK m. exists C E0. unifall; eauto.
   Case "mbdy_no_override".
-    inversion H; [crush|]. 
-    assert (D1 = D0) by crush; subst.
-    eapply IHm_body in H5.
-    destruct H5 as (C1 & E0 & ?H & ?H & ?H).
-    exists C1 E0; eauto.
+    inversion H; unifall; crush.
+    exists x x0; unifall; eauto.
 Qed.
 
 
@@ -369,7 +365,7 @@ Proof with eauto.
   intros.
   typing_cases (induction H using ExpTyping_ind') Case; sort.
   Case "T_Var".
-    destruct (In_dec (beq_id_dec) x xs) as [xIn|xNIn].
+    destruct (In_dec (beq_id_dec) x xs) as [xIn|xNIn]; unifall; eauto; crush.
     SCase "In x xs". rename C into Bi.
       assert (In x xs); eauto.
       apply nth_error_In' in xIn as [i]. symmetry in H3.

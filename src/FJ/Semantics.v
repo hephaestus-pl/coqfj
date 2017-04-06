@@ -41,7 +41,7 @@ Tactic Notation "mtype_cases" tactic(first) ident(c) :=
   first;
   [ Case_aux c "mty_ok" | Case_aux c "mty_no_override"].
 
-Inductive m_body (m: id) (C: ClassName) (xs: [ClassName]) (e: Exp) : Prop:=
+Inductive m_body (m: id) (C: ClassName) (xs: [id]) (e: Exp) : Prop:=
   | mbdy_ok : forall D Fs K Ms noDupfs noDupMds C0 fargs noDupfargs,
               find C CT = Some (CDecl C D Fs noDupfs K Ms noDupMds)->
               find m Ms = Some (MDecl C0 m fargs noDupfargs e) ->

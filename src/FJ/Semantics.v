@@ -277,6 +277,22 @@ Proof.
   induction H; crush.
 Qed.
 
+Hypothesis obj_sub_all: forall C,
+  C <: Object.
+
+Lemma subtype_wf: forall D,
+  D <> Object ->
+  exists E Fs noDupfs K Ms noDupMds, D <: E /\ find E CT = Some (CDecl E Object Fs noDupfs K Ms noDupMds).
+Proof.
+  intros. assert (D <: Object) by (exact (obj_sub_all D)).
+  remember Object. gen H. gen Heqc. induction H0; intros; subst.
+  false. apply H. reflexivity. destruct beq_id_dec with D Object.
+  subst. eapply IHSubtype1; auto.
+  subst. destruct IHSubtype2; auto. do 6 destruct H0.
+  exists x. do 5 eexists; split; eauto.
+  exists C; do 5 eexists; split; eauto.
+Qed.
+
 Lemma dec_subtype: forall C D,
   decidable (Subtype C D).
 Proof.

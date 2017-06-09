@@ -25,7 +25,7 @@ Inductive FormalArg :=
 Inductive FieldDecl :=
   | FDecl : ClassName -> id -> FieldDecl.
 
-(* Referable essentialy means I can use the ref function
+(* The class Referable essentialy means I can use the ref function
  * to retrieve the id of a value.
  * And it also gives me a nice function ´find´ for free.
  * See Util.Referable
@@ -63,12 +63,21 @@ Inductive Exp : Type :=
 Inductive Assignment :=
   | Assgnmt : Exp -> Exp -> Assignment.
 
-
+(* Constructor declaration \texttt{C(\={C}~\={f})\{super(\={f}); this.\={f}=\={f};\}} and a constructor refinement 
+ * \texttt{refines~C(\={E}~\={h}, \={C}~\={f}) \{original(\={f}); this.\={f}=\={f};\}} introduces a constructor with 
+ * for the class \texttt{C} with fields \texttt{\=f} of type \texttt{\=C}. The constructor declaration body is simply 
+ * a list of assignment of the arguments with its correspondent field preceded by calling its superclass constructor with the correspondent arguments.
+ * The constructor refinement only differs from constructor declaration that instead of calling the superclass constructor
+ * it will call its predecessor constructor (denoted by \texttt{original}).
+ *)
 Inductive Constructor :=
   | KDecl : id -> [FormalArg] -> [Argument] -> [Assignment] -> Constructor.
 
 
-(* Arguments cannot have duplicate names *)
+(* Method declaration \texttt{C~m~(\={C}~\={x})\ \{return~e;\}} 
+ * introduces a method \texttt{m} of return type \texttt{C} with arguments \texttt{\={C}~\={x}} and body \texttt{e}.
+ * Method declarations should only appear inside a class declaration.
+ *)
 Inductive MethodDecl :=
   | MDecl : ClassName -> id -> forall (fargs: [FormalArg]), NoDup (this :: refs fargs) -> Exp -> MethodDecl.
 
@@ -79,6 +88,14 @@ Instance MDeclRef : Referable MethodDecl :={
    | MDecl _ id _ _ _ => id end
 }.
 
+(* A class declaration \texttt{class\ C~extends~D\ \{\={C} \={f}; K \={M}\}} 
+ * introduces a class \texttt{C} with superclass \texttt{D}. This class has fields \texttt{\=f}
+ * of type \texttt{C}, a constructor \texttt{K} and methdos \texttt{\=M}. The fields of class \texttt{C}
+ * is \texttt{\=f} added to the fields of its superclass \texttt{D}, all of them must have distinct names.
+ * Methods, in the other, hand may override another superclass method with the same name.
+ * Method override in \ac{FJ} is basically method rewrite. 
+ * Methods are uniquely identified by its name, i.e. overload is not supported.
+ *)
 Inductive ClassDecl:=
   | CDecl: id -> ClassName -> 
     forall (fDecls:[FieldDecl]), NoDup (refs fDecls) -> Constructor -> 

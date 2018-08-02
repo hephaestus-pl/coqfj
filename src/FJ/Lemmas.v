@@ -187,14 +187,14 @@ Ltac inv_decl :=
   end.
 
 Ltac unify_find_ref :=
-  let H := fresh "H" in
-  repeat match goal with
-  | [H1: find ?x ?xs = Some ?u |- _] => assert (ref u = x) as H; [eapply find_ref_inv; eauto|]; subst;
-    repeat match goal with
-      | [ H2 : context[ref u] |- _] => simpl in H2
-    end; simpl
+let H := fresh "H" in
+  match goal with
+  | [H1: find ?x ?xs = Some ?u |- _] =>
+    match eval cbn in (ref u) with
+    | x  => fail 1
+    | _ => assert (ref u = x) as H by (eapply find_ref_inv; eauto); simpl in H; subst
+    end
   end.
-
 
 Ltac Forall_find_tac :=
   let H := fresh "H" in
@@ -224,7 +224,7 @@ Ltac unify_fields :=
 
 Ltac unifall :=
   repeat (decompose_exs || inv_decl || unify_find_ref || elim_eqs
-  || unify_find_ref || unify_override || unify_fields || unify_returnType || unify_fargsType
+  || unify_override || unify_fields || unify_returnType || unify_fargsType
   || mtypes_ok  || Forall_find_tac).
 
 Ltac ecrush := unifall; eauto; crush; eauto.
@@ -235,7 +235,7 @@ Lemma methods_same_signature: forall C D Fs noDupfs K Ms noDupMds Ds D0 m,
     mtype(m, C) = Ds ~> D0.
 Proof.
   intros; class_OK C.
-  find_dec_tac Ms m; [ecrush; eapply mty_ok; ecrush | eapply mty_no_override; ecrush ].
+  find_dec_tac Ms m; ecrush.
 Qed.
 (* Subtype Lemmas *)
 
